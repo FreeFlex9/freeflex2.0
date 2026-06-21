@@ -2,7 +2,6 @@
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import AuthenticationCard from '@/Components/AuthenticationCard.vue';
 import AuthenticationCardLogo from '@/Components/AuthenticationCardLogo.vue';
-import Checkbox from '@/Components/Checkbox.vue';
 import InputError from '@/Components/InputError.vue';
 import InputLabel from '@/Components/InputLabel.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
@@ -13,29 +12,28 @@ const form = useForm({
     email: '',
     password: '',
     password_confirmation: '',
-    terms: false,
 });
 
 const submit = () => {
-    form.post(route('register'), {
+    form.post(route('empresa.register.submit'), {
         onFinish: () => form.reset('password', 'password_confirmation'),
     });
 };
 </script>
 
 <template>
-    <Head title="Cadastrar" />
+    <Head title="Cadastrar Empresa" />
 
     <AuthenticationCard>
         <template #logo>
             <AuthenticationCardLogo />
         </template>
 
-        <h2 class="text-center text-lg font-semibold text-gray-800 mb-6">Cadastro de Prestador</h2>
+        <h2 class="text-center text-lg font-semibold text-gray-800 mb-6">Cadastro de Empresa</h2>
 
         <form @submit.prevent="submit">
             <div>
-                <InputLabel for="name" value="Nome completo" />
+                <InputLabel for="name" value="Nome da empresa" />
                 <TextInput
                     id="name"
                     v-model="form.name"
@@ -43,13 +41,13 @@ const submit = () => {
                     class="mt-1 block w-full"
                     required
                     autofocus
-                    autocomplete="name"
+                    autocomplete="organization"
                 />
                 <InputError class="mt-2" :message="form.errors.name" />
             </div>
 
             <div class="mt-4">
-                <InputLabel for="email" value="E-mail" />
+                <InputLabel for="email" value="E-mail corporativo" />
                 <TextInput
                     id="email"
                     v-model="form.email"
@@ -87,37 +85,26 @@ const submit = () => {
                 <InputError class="mt-2" :message="form.errors.password_confirmation" />
             </div>
 
-            <div v-if="$page.props.jetstream.hasTermsAndPrivacyPolicyFeature" class="mt-4">
-                <InputLabel for="terms">
-                    <div class="flex items-center">
-                        <Checkbox id="terms" v-model:checked="form.terms" name="terms" required />
-                        <div class="ms-2 text-sm text-gray-600">
-                            Concordo com os
-                            <a target="_blank" :href="route('terms.show')" class="underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500">Termos de Uso</a>
-                            e a
-                            <a target="_blank" :href="route('policy.show')" class="underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500">Política de Privacidade</a>
-                        </div>
-                    </div>
-                    <InputError class="mt-2" :message="form.errors.terms" />
-                </InputLabel>
-            </div>
-
             <div class="flex items-center justify-end mt-6">
-                <PrimaryButton class="w-full justify-center" :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
-                    Criar conta de prestador
+                <PrimaryButton
+                    class="w-full justify-center bg-emerald-500 hover:bg-emerald-600"
+                    :class="{ 'opacity-25': form.processing }"
+                    :disabled="form.processing"
+                >
+                    Criar conta de empresa
                 </PrimaryButton>
             </div>
 
             <div class="mt-6 text-center text-sm text-gray-500">
                 Já tem conta?
-                <Link :href="route('login')" class="text-emerald-500 dark:text-emerald-400 font-medium hover:underline">
-                    Entrar
+                <Link :href="route('empresa.login')" class="text-emerald-500 dark:text-emerald-400 font-medium hover:underline">
+                    Entrar como empresa
                 </Link>
             </div>
 
             <div class="mt-3 text-center text-sm text-gray-400">
-                <Link :href="route('empresa.register')" class="hover:underline">
-                    Sou empresa →
+                <Link :href="route('register')" class="hover:underline">
+                    Sou prestador de serviços →
                 </Link>
             </div>
         </form>

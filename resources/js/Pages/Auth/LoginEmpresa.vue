@@ -3,15 +3,11 @@ import { Head, Link, useForm } from '@inertiajs/vue3';
 import AuthenticationCard from '@/Components/AuthenticationCard.vue';
 import AuthenticationCardLogo from '@/Components/AuthenticationCardLogo.vue';
 import Checkbox from '@/Components/Checkbox.vue';
+
 import InputError from '@/Components/InputError.vue';
 import InputLabel from '@/Components/InputLabel.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
-
-defineProps({
-    canResetPassword: Boolean,
-    status: String,
-});
 
 const form = useForm({
     email: '',
@@ -23,29 +19,25 @@ const submit = () => {
     form.transform(data => ({
         ...data,
         remember: form.remember ? 'on' : '',
-    })).post(route('login'), {
+    })).post(route('empresa.login.submit'), {
         onFinish: () => form.reset('password'),
     });
 };
 </script>
 
 <template>
-    <Head title="Entrar" />
+    <Head title="Entrar como Empresa" />
 
     <AuthenticationCard>
         <template #logo>
             <AuthenticationCardLogo />
         </template>
 
-        <h2 class="text-center text-lg font-semibold text-gray-800 mb-6">Acesso Prestador</h2>
-
-        <div v-if="status" class="mb-4 font-medium text-sm text-green-600">
-            {{ status }}
-        </div>
+        <h2 class="text-center text-lg font-semibold text-gray-800 mb-6">Acesso Empresa</h2>
 
         <form @submit.prevent="submit">
             <div>
-                <InputLabel for="email" value="E-mail" />
+                <InputLabel for="email" value="E-mail corporativo" />
                 <TextInput
                     id="email"
                     v-model="form.email"
@@ -79,29 +71,25 @@ const submit = () => {
             </div>
 
             <div class="flex items-center justify-end mt-6">
-                <Link
-                    v-if="canResetPassword"
-                    :href="route('password.request')"
-                    class="text-sm text-gray-500 hover:text-gray-700 underline rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
+                <PrimaryButton
+                    class="w-full justify-center bg-emerald-500 hover:bg-emerald-600"
+                    :class="{ 'opacity-25': form.processing }"
+                    :disabled="form.processing"
                 >
-                    Esqueci minha senha
-                </Link>
-
-                <PrimaryButton class="ms-4" :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
                     Entrar
                 </PrimaryButton>
             </div>
 
             <div class="mt-6 text-center text-sm text-gray-500">
                 Não tem conta?
-                <Link :href="route('register')" class="text-emerald-500 dark:text-emerald-400 font-medium hover:underline">
-                    Criar conta de prestador
+                <Link :href="route('empresa.register')" class="text-emerald-500 dark:text-emerald-400 font-medium hover:underline">
+                    Cadastrar empresa
                 </Link>
             </div>
 
             <div class="mt-3 text-center text-sm text-gray-400">
-                <Link :href="route('empresa.login')" class="hover:underline">
-                    Sou empresa →
+                <Link :href="route('login')" class="hover:underline">
+                    Sou prestador de serviços →
                 </Link>
             </div>
         </form>
