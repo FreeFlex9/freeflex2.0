@@ -38,15 +38,9 @@ defineProps({
                         <template v-else>
                             <Link
                                 :href="route('login')"
-                                class="text-sm font-medium text-gray-600 hover:text-gray-900 transition"
-                            >
-                                Entrar como Prestador
-                            </Link>
-                            <Link
-                                :href="route('empresa.login')"
                                 class="text-sm font-semibold bg-emerald-500 text-white px-4 py-2 rounded-lg hover:bg-emerald-600 transition"
                             >
-                                Entrar como Empresa
+                                Entrar
                             </Link>
                         </template>
                     </div> 
@@ -281,8 +275,7 @@ defineProps({
                 </div>
                 <p class="text-sm text-gray-400">&copy; {{ new Date().getFullYear() }} FreeFlex. Todos os direitos reservados.</p>
                 <div class="flex items-center gap-6">
-                    <Link :href="route('login')" class="text-sm text-gray-500 hover:text-emerald-500 transition">Login Prestador</Link>
-                    <Link :href="route('empresa.login')" class="text-sm text-gray-500 hover:text-emerald-500 transition">Login Empresa</Link>
+                    <Link :href="route('login')" class="text-sm text-gray-500 hover:text-emerald-500 transition">Entrar</Link>
                 </div>
             </div>
         </footer>

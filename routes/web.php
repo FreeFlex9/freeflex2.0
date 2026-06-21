@@ -12,10 +12,8 @@ Route::get('/', function () {
     ]);
 })->name('home');
 
-// Rotas de auth para Empresa
+// Cadastro de empresa (login unificado via Fortify em /login)
 Route::middleware('guest')->prefix('empresa')->name('empresa.')->group(function () {
-    Route::get('/login', [EmpresaAuthController::class, 'showLogin'])->name('login');
-    Route::post('/login', [EmpresaAuthController::class, 'login'])->name('login.submit');
     Route::get('/cadastro', [EmpresaAuthController::class, 'showRegister'])->name('register');
     Route::post('/cadastro', [EmpresaAuthController::class, 'register'])->name('register.submit');
 });

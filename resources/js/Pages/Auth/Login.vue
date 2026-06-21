@@ -37,7 +37,7 @@ const submit = () => {
             <AuthenticationCardLogo />
         </template>
 
-        <h2 class="text-center text-lg font-semibold text-gray-800 mb-6">Acesso Prestador</h2>
+        <h2 class="text-center text-xl font-bold text-gray-800 mb-6">Entrar</h2>
 
         <div v-if="status" class="mb-4 font-medium text-sm text-green-600">
             {{ status }}
@@ -45,11 +45,11 @@ const submit = () => {
 
         <form @submit.prevent="submit">
             <div>
-                <InputLabel for="email" value="E-mail" />
+                <InputLabel for="email" value="CPF, CNPJ ou e-mail" />
                 <TextInput
                     id="email"
                     v-model="form.email"
-                    type="email"
+                    type="text"
                     class="mt-1 block w-full"
                     required
                     autofocus
@@ -78,30 +78,35 @@ const submit = () => {
                 </label>
             </div>
 
-            <div class="flex items-center justify-end mt-6">
-                <Link
-                    v-if="canResetPassword"
-                    :href="route('password.request')"
-                    class="text-sm text-gray-500 hover:text-gray-700 underline rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
-                >
-                    Esqueci minha senha
+            <div v-if="canResetPassword" class="mt-3 flex justify-end items-center gap-2 text-sm text-gray-500">
+                <Link :href="route('password.request')" class="underline hover:text-gray-700">
+                    Esqueci a senha (prestador)
                 </Link>
+                <span>|</span>
+                <Link :href="route('password.request')" class="underline hover:text-gray-700">
+                    (empresa)
+                </Link>
+            </div>
 
-                <PrimaryButton class="ms-4" :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
+            <div class="mt-5">
+                <PrimaryButton
+                    class="w-full justify-center"
+                    :class="{ 'opacity-25': form.processing }"
+                    :disabled="form.processing"
+                >
                     Entrar
                 </PrimaryButton>
             </div>
 
-            <div class="mt-6 text-center text-sm text-gray-500">
-                Não tem conta?
-                <Link :href="route('register')" class="text-emerald-500 dark:text-emerald-400 font-medium hover:underline">
-                    Criar conta de prestador
+            <div class="mt-6 flex flex-col items-center gap-2 text-sm">
+                <Link :href="route('register')" class="text-blue-500 hover:underline">
+                    Cadastrar como prestador
                 </Link>
-            </div>
-
-            <div class="mt-3 text-center text-sm text-gray-400">
-                <Link :href="route('empresa.login')" class="hover:underline">
-                    Sou empresa →
+                <Link :href="route('empresa.register')" class="text-blue-500 hover:underline">
+                    Cadastrar como empresa
+                </Link>
+                <Link :href="route('home')" class="text-gray-400 hover:underline">
+                    Voltar para página inicial
                 </Link>
             </div>
         </form>
