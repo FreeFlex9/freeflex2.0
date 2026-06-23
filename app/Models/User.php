@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -14,69 +13,72 @@ use Laravel\Sanctum\HasApiTokens;
 class User extends Authenticatable
 {
     use HasApiTokens;
-
-    /** @use HasFactory<UserFactory> */
     use HasFactory;
-
     use HasProfilePhoto;
     use Notifiable;
     use TwoFactorAuthenticatable;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
-        'name',
-        'email',
-        'password',
-        'role',
-        'cpf',
-        'cnpj',
-        'nome_fantasia',
-        'telefone',
-        'cep',
-        'logradouro',
-        'numero',
-        'complemento',
-        'bairro',
-        'cidade',
-        'estado',
-        'is_mei',
+        'name', 'email', 'password', 'role',
+        'cpf', 'cnpj', 'nome_fantasia', 'telefone',
+        'cep', 'logradouro', 'numero', 'complemento', 'bairro', 'cidade', 'estado',
+        'is_mei', 'status_aprovacao', 'motivo_rejeicao',
+        'possui_cnh', 'cnh_digital', 'numero_cnh', 'cnpj_mei',
+        'cartao_cnpj_path', 'cnh_frente_path', 'cnh_verso_path',
+        'rg_frente_path', 'rg_verso_path', 'ccmei_path',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var array<int, string>
-     */
     protected $hidden = [
-        'password',
-        'remember_token',
-        'two_factor_recovery_codes',
-        'two_factor_secret',
+        'password', 'remember_token',
+        'two_factor_recovery_codes', 'two_factor_secret',
     ];
 
-    /**
-     * The accessors to append to the model's array form.
-     *
-     * @var array<int, string>
-     */
-    protected $appends = [
-        'profile_photo_url',
-    ];
+    protected $appends = ['profile_photo_url'];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
     protected function casts(): array
     {
         return [
             'email_verified_at' => 'datetime',
-            'password' => 'hashed',
+            'password'          => 'hashed',
+            'is_mei'            => 'boolean',
+            'possui_cnh'        => 'boolean',
+            'cnh_digital'       => 'boolean',
         ];
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
+    }
+
+    public function isEmpresa(): bool
+    {
+        return $this->role === 'empresa';
+    }
+
+    public function isPrestador(): bool
+    {
+        return $this->role === 'prestador';
+    }
+
+    // Relacionamentos
+    public function demandas()
+    {
+        return $this->hasMany(Demanda::class, 'empresa_id');
+    }
+
+    public function propostas()
+    {
+        return $this->hasMany(Proposta::class, 'prestador_id');
+    }
+
+    public function agendamentos()
+    {
+        return $this->hasMany(Agendamento::class, 'prestador_id');
+    }
+
+    public function documentos()
+    {
+        return $this->hasMany(PrestadorDocumento::class, 'prestador_id');
     }
 }
