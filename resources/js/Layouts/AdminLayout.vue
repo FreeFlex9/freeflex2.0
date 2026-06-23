@@ -34,7 +34,7 @@
             {{ pendentes.prestadores }}
           </span>
         </NavItem>
-        <NavItem :href="route('admin.demandas.propostas')" icon="clipboard-check">
+        <NavItem :href="route('admin.demandas.index')" icon="clipboard-check">
           Contratações
           <span v-if="pendentes.propostas" class="ml-auto text-xs bg-red-500 text-white rounded-full px-2 py-0.5">
             {{ pendentes.propostas }}
@@ -56,9 +56,9 @@
 
       <!-- Logout -->
       <div class="p-4 border-t border-gray-700">
-        <div class="text-xs text-gray-400 mb-2 truncate">{{ $page.props.auth.user?.email }}</div>
+        <div class="text-xs text-gray-400 mb-2 truncate">{{ $page.props.auth.admin?.email }}</div>
         <Link
-          :href="route('logout')"
+          :href="route('admin.logout')"
           method="post"
           as="button"
           class="w-full text-left text-sm text-gray-300 hover:text-white flex items-center gap-2"

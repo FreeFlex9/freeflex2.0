@@ -6,6 +6,11 @@ use Illuminate\Database\Eloquent\Model;
 
 class Proposta extends Model
 {
+    protected $table = 'propostas';
+
+    const CREATED_AT = 'enviado_em';
+    const UPDATED_AT = null;
+
     protected $fillable = [
         'demanda_id', 'prestador_id', 'mensagem', 'valor_total', 'status', 'enviado_em',
     ];
@@ -25,6 +30,6 @@ class Proposta extends Model
 
     public function prestador()
     {
-        return $this->belongsTo(User::class, 'prestador_id');
+        return $this->belongsTo(Prestador::class, 'prestador_id');
     }
 }

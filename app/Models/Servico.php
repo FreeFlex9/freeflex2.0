@@ -6,6 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class Servico extends Model
 {
+    protected $table = 'servicos';
+
+    public $timestamps = false;
+
     protected $fillable = ['nome', 'valor_hora', 'valor_repasse', 'precisa_cnh'];
 
     protected function casts(): array

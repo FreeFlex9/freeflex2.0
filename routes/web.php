@@ -2,7 +2,6 @@
 
 use App\Http\Controllers\Admin;
 use App\Http\Controllers\EmpresaAuthController;
-use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -19,7 +18,7 @@ Route::middleware('guest')->prefix('empresa')->name('empresa.')->group(function 
     Route::post('/cadastro', [EmpresaAuthController::class, 'register'])->name('register.submit');
 });
 
-// Dashboard do usuário comum
+// Dashboard usuário comum (Jetstream)
 Route::middleware([
     'auth:sanctum',
     config('jetstream.auth_session'),
@@ -30,11 +29,16 @@ Route::middleware([
     })->name('dashboard');
 });
 
-// Área Admin
-Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'is_admin'])
-    ->prefix('admin')
-    ->name('admin.')
-    ->group(function () {
+// ─── Área Admin ──────────────────────────────────────────────────────────────
+Route::prefix('admin')->name('admin.')->group(function () {
+
+    // Rotas públicas (login/logout)
+    Route::get('/login', [Admin\AuthController::class, 'showLogin'])->name('login');
+    Route::post('/login', [Admin\AuthController::class, 'login'])->name('login.submit');
+    Route::post('/logout', [Admin\AuthController::class, 'logout'])->name('logout');
+
+    // Rotas protegidas
+    Route::middleware('is_admin')->group(function () {
 
         Route::get('/', [Admin\DashboardController::class, 'index'])->name('dashboard');
 
@@ -48,9 +52,9 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'is_admin']
         Route::post('/prestadores/{prestador}/aprovar', [Admin\PrestadoresController::class, 'aprovar'])->name('prestadores.aprovar');
         Route::post('/prestadores/{prestador}/rejeitar', [Admin\PrestadoresController::class, 'rejeitar'])->name('prestadores.rejeitar');
 
-        // Demandas e propostas
+        // Demandas
         Route::get('/demandas', [Admin\DemandasController::class, 'index'])->name('demandas.index');
-        Route::get('/demandas/propostas', [Admin\DemandasController::class, 'propostas'])->name('demandas.propostas');
+        Route::get('/demandas/{demanda}/propostas', [Admin\DemandasController::class, 'propostas'])->name('demandas.propostas');
         Route::post('/demandas/propostas/{proposta}/aprovar', [Admin\DemandasController::class, 'aprovarProposta'])->name('demandas.propostas.aprovar');
         Route::post('/demandas/propostas/{proposta}/rejeitar', [Admin\DemandasController::class, 'rejeitarProposta'])->name('demandas.propostas.rejeitar');
 
@@ -60,11 +64,12 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'is_admin']
         Route::put('/servicos/{servico}', [Admin\ServicosController::class, 'update'])->name('servicos.update');
         Route::delete('/servicos/{servico}', [Admin\ServicosController::class, 'destroy'])->name('servicos.destroy');
 
-        // Perfil do admin
+        // Perfil
         Route::get('/perfil', [Admin\PerfilController::class, 'edit'])->name('perfil.edit');
-        Route::post('/perfil', [Admin\PerfilController::class, 'update'])->name('perfil.update');
+        Route::put('/perfil', [Admin\PerfilController::class, 'update'])->name('perfil.update');
 
         // Config e-mail
         Route::get('/config-email', [Admin\ConfigEmailController::class, 'index'])->name('config-email.index');
-        Route::post('/config-email', [Admin\ConfigEmailController::class, 'salvar'])->name('config-email.salvar');
+        Route::put('/config-email', [Admin\ConfigEmailController::class, 'salvar'])->name('config-email.update');
     });
+});

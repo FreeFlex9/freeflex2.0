@@ -4,17 +4,18 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
 class IsAdmin
 {
     public function handle(Request $request, Closure $next): Response
     {
-        if (!auth()->check() || !auth()->user()->isAdmin()) {
+        if (!Auth::guard('admin')->check()) {
             if ($request->expectsJson()) {
-                return response()->json(['message' => 'Acesso negado.'], 403);
+                return response()->json(['message' => 'Não autenticado.'], 401);
             }
-            return redirect()->route('login')->with('error', 'Acesso restrito a administradores.');
+            return redirect()->route('admin.login');
         }
 
         return $next($request);
