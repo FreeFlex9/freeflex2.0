@@ -1,6 +1,5 @@
 <template>
   <AdminLayout title="Serviços" :pendentes="pendentes">
-    <!-- Botão novo -->
     <div class="flex justify-end mb-4">
       <button @click="abrirCriar" class="px-4 py-2 bg-green-500 text-white text-sm font-semibold rounded-lg hover:bg-green-600 transition-colors">
         + Novo Serviço
@@ -24,11 +23,11 @@
         </thead>
         <tbody class="divide-y divide-gray-100">
           <tr v-for="sv in servicos" :key="sv.id" class="hover:bg-gray-50">
-            <td class="px-4 py-3 font-medium text-gray-800">{{ sv.nome }}</td>
-            <td class="px-4 py-3 text-right text-gray-600">{{ formatMoeda(sv.valor_hora) }}</td>
-            <td class="px-4 py-3 text-right text-gray-600">{{ formatMoeda(sv.valor_repasse) }}</td>
+            <td class="px-4 py-3 font-medium text-gray-800">{{ sv.name }}</td>
+            <td class="px-4 py-3 text-right text-gray-600">{{ formatMoeda(sv.hourly_rate) }}</td>
+            <td class="px-4 py-3 text-right text-gray-600">{{ formatMoeda(sv.provider_rate) }}</td>
             <td class="px-4 py-3 text-center">
-              <span :class="sv.precisa_cnh ? 'text-green-600' : 'text-gray-400'">{{ sv.precisa_cnh ? 'Sim' : 'Não' }}</span>
+              <span :class="sv.requires_license ? 'text-green-600' : 'text-gray-400'">{{ sv.requires_license ? 'Sim' : 'Não' }}</span>
             </td>
             <td class="px-4 py-3 text-center">
               <div class="flex gap-2 justify-center">
@@ -84,7 +83,6 @@ import AdminLayout from '@/Layouts/AdminLayout.vue'
 
 const props = defineProps({ servicos: Array })
 const pendentes = { empresas: 0, prestadores: 0, propostas: 0 }
-
 const modal = ref(false)
 const erros = reactive({})
 const form = reactive({ id: null, nome: '', valor_hora: '', valor_repasse: '', precisa_cnh: false })
@@ -92,7 +90,7 @@ const form = reactive({ id: null, nome: '', valor_hora: '', valor_repasse: '', p
 function formatMoeda(v) { return v != null ? Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : '-' }
 
 function abrirCriar() { Object.assign(form, { id: null, nome: '', valor_hora: '', valor_repasse: '', precisa_cnh: false }); modal.value = true }
-function abrirEditar(sv) { Object.assign(form, { id: sv.id, nome: sv.nome, valor_hora: sv.valor_hora, valor_repasse: sv.valor_repasse, precisa_cnh: !!sv.precisa_cnh }); modal.value = true }
+function abrirEditar(sv) { Object.assign(form, { id: sv.id, nome: sv.name, valor_hora: sv.hourly_rate, valor_repasse: sv.provider_rate, precisa_cnh: !!sv.requires_license }); modal.value = true }
 function fecharModal() { modal.value = false; Object.assign(erros, { nome: null, valor_hora: null, valor_repasse: null }) }
 
 function validar() {
@@ -115,7 +113,7 @@ function salvar() {
 }
 
 function excluir(sv) {
-  if (!confirm(`Excluir o serviço "${sv.nome}"?`)) return
+  if (!confirm(`Excluir o serviço "${sv.name}"?`)) return
   useForm({}).delete(route('admin.servicos.destroy', sv.id))
 }
 </script>

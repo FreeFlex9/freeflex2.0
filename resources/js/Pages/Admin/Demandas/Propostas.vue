@@ -3,9 +3,9 @@
     <div class="mb-4">
       <Link :href="route('admin.demandas.index')" class="text-sm text-gray-500 hover:text-gray-700">&larr; Voltar às demandas</Link>
       <div class="mt-2 bg-white rounded-xl shadow p-4 text-sm text-gray-600">
-        <span class="font-semibold text-gray-800">{{ demanda.titulo }}</span>
-        &nbsp;|&nbsp; {{ demanda.empresa?.nome_fantasia ?? '—' }}
-        &nbsp;|&nbsp; Vagas: {{ demanda.quantidade_vagas }} | Confirmados: {{ demanda.quantidade_confirmada }}
+        <span class="font-semibold text-gray-800">{{ demanda.title }}</span>
+        &nbsp;|&nbsp; {{ demanda.company?.trade_name ?? '—' }}
+        &nbsp;|&nbsp; Vagas: {{ demanda.slots_needed }} | Confirmados: {{ demanda.slots_confirmed }}
       </div>
     </div>
 
@@ -17,11 +17,11 @@
       <div v-for="prop in propostas" :key="prop.id" class="bg-white rounded-xl shadow p-5">
         <div class="flex flex-wrap items-start justify-between gap-3">
           <div class="flex-1 min-w-0">
-            <p class="font-semibold text-gray-800">{{ prop.prestador?.nome ?? '—' }}</p>
+            <p class="font-semibold text-gray-800">{{ prop.provider?.name ?? '—' }}</p>
             <div class="mt-1 text-sm text-gray-500 space-y-0.5">
-              <p>CPF: {{ prop.prestador?.cpf ?? '—' }}</p>
-              <p>Enviado em: {{ formatDate(prop.enviado_em) }}</p>
-              <p v-if="prop.mensagem" class="italic">"{{ prop.mensagem }}"</p>
+              <p>CPF: {{ prop.provider?.cpf ?? '—' }}</p>
+              <p>Enviado em: {{ formatDate(prop.created_at) }}</p>
+              <p v-if="prop.message" class="italic">"{{ prop.message }}"</p>
             </div>
           </div>
           <div class="flex gap-2">
@@ -41,7 +41,7 @@
     <!-- Modal rejeição -->
     <div v-if="modalProposta" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div class="bg-white rounded-xl w-full max-w-md p-6">
-        <h3 class="text-lg font-semibold text-gray-800 mb-4">Rejeitar proposta de {{ modalProposta.prestador?.nome }}</h3>
+        <h3 class="text-lg font-semibold text-gray-800 mb-4">Rejeitar proposta de {{ modalProposta.provider?.name }}</h3>
         <textarea v-model="motivo" rows="3"
           class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-400"
           placeholder="Motivo (opcional)" />
@@ -61,14 +61,13 @@ import AdminLayout from '@/Layouts/AdminLayout.vue'
 
 const props = defineProps({ demanda: Object, propostas: Array })
 const pendentes = { empresas: 0, prestadores: 0, propostas: props.propostas.length }
-
 const modalProposta = ref(null)
 const motivo = ref('')
 
 function formatDate(d) { return d ? new Date(d).toLocaleString('pt-BR') : '-' }
 
 function aprovar(prop) {
-  if (!confirm(`Aprovar proposta de "${prop.prestador?.nome}"?`)) return
+  if (!confirm(`Aprovar proposta de "${prop.provider?.name}"?`)) return
   useForm({}).post(route('admin.demandas.propostas.aprovar', prop.id))
 }
 

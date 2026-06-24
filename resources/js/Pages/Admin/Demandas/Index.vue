@@ -6,10 +6,11 @@
         <label class="block text-xs font-medium text-gray-500 mb-1">Status</label>
         <select v-model="filtros.status" @change="filtrar" class="text-sm border border-gray-300 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-green-400">
           <option value="">Todos</option>
-          <option value="aberta">Aberta</option>
-          <option value="em_andamento">Em andamento</option>
-          <option value="concluida">Concluída</option>
-          <option value="cancelada">Cancelada</option>
+          <option value="open">Aberta</option>
+          <option value="scheduled">Agendada</option>
+          <option value="in_progress">Em andamento</option>
+          <option value="completed">Concluída</option>
+          <option value="cancelled">Cancelada</option>
         </select>
       </div>
       <div>
@@ -34,15 +35,15 @@
         <div class="flex flex-wrap items-start justify-between gap-2">
           <div class="flex-1 min-w-0">
             <div class="flex items-center gap-2 flex-wrap">
-              <h3 class="font-semibold text-gray-800">#{{ dem.id }}</h3>
+              <h3 class="font-semibold text-gray-800">#{{ dem.id }} — {{ dem.title }}</h3>
               <StatusBadge :status="dem.status" />
             </div>
             <div class="mt-1 text-sm text-gray-500 space-y-0.5">
-              <p>Empresa: <span class="text-gray-700">{{ dem.empresa?.nome_fantasia ?? '—' }}</span></p>
-              <p>Serviço: <span class="text-gray-700">{{ dem.servico?.nome ?? '—' }}</span></p>
-              <p>Data: {{ formatDate(dem.data) }} | {{ dem.hora_inicio }} – {{ dem.hora_fim }}</p>
-              <p>Vagas: {{ dem.quantidade_necessaria }} | Confirmados: {{ dem.quantidade_confirmada }}</p>
-              <p v-if="dem.descricao" class="truncate max-w-xs">{{ dem.descricao }}</p>
+              <p>Empresa: <span class="text-gray-700">{{ dem.company?.trade_name ?? '—' }}</span></p>
+              <p>Serviço: <span class="text-gray-700">{{ dem.service?.name ?? '—' }}</span></p>
+              <p>Data: {{ formatDate(dem.date) }} | {{ dem.start_time }} – {{ dem.end_time }}</p>
+              <p>Vagas: {{ dem.slots_needed }} | Confirmados: {{ dem.slots_confirmed }}</p>
+              <p v-if="dem.description" class="truncate max-w-xs">{{ dem.description }}</p>
             </div>
           </div>
           <Link :href="route('admin.demandas.propostas', dem.id)"
@@ -55,11 +56,9 @@
 
     <!-- Paginação -->
     <div v-if="demandas.last_page > 1" class="mt-4 flex gap-2 justify-center">
-      <Link v-for="link in demandas.links" :key="link.label"
-        :href="link.url ?? '#'"
+      <Link v-for="link in demandas.links" :key="link.label" :href="link.url ?? '#'"
         :class="['px-3 py-1 text-sm rounded border', link.active ? 'bg-green-500 text-white border-green-500' : 'border-gray-300 text-gray-600 hover:bg-gray-50']"
-        v-html="link.label"
-      />
+        v-html="link.label" />
     </div>
   </AdminLayout>
 </template>
@@ -73,15 +72,10 @@ const StatusBadge = {
   props: { status: String },
   computed: {
     cls() {
-      return {
-        aberta: 'bg-green-100 text-green-700',
-        em_andamento: 'bg-blue-100 text-blue-700',
-        concluida: 'bg-gray-100 text-gray-600',
-        cancelada: 'bg-red-100 text-red-600',
-      }[this.status] ?? 'bg-gray-100 text-gray-600'
+      return { open: 'bg-green-100 text-green-700', scheduled: 'bg-blue-100 text-blue-700', in_progress: 'bg-yellow-100 text-yellow-700', completed: 'bg-gray-100 text-gray-600', cancelled: 'bg-red-100 text-red-600' }[this.status] ?? 'bg-gray-100 text-gray-600'
     },
     label() {
-      return { aberta: 'Aberta', em_andamento: 'Em andamento', concluida: 'Concluída', cancelada: 'Cancelada' }[this.status] ?? this.status
+      return { open: 'Aberta', scheduled: 'Agendada', in_progress: 'Em andamento', completed: 'Concluída', cancelled: 'Cancelada' }[this.status] ?? this.status
     }
   },
   template: `<span class="text-xs px-2 py-0.5 rounded-full font-medium" :class="cls">{{ label }}</span>`,
@@ -99,6 +93,5 @@ function filtrar() {
   }, 400)
 }
 function limpar() { filtros.value = { status: '', empresa: '', servico: '' }; filtrar() }
-
 function formatDate(d) { return d ? new Date(d).toLocaleDateString('pt-BR') : '-' }
 </script>

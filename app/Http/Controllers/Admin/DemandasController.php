@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Agendamento;
-use App\Models\Demanda;
-use App\Models\Proposta;
+use App\Models\Demand;
+use App\Models\Proposal;
+use App\Models\Schedule;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -14,20 +14,20 @@ class DemandasController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Demanda::with(['empresa:id,nome_fantasia', 'servico:id,nome'])
-            ->withCount('propostas');
+        $query = Demand::with(['company:id,trade_name', 'service:id,name'])
+            ->withCount('proposals');
 
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
         if ($request->filled('empresa')) {
-            $query->whereHas('empresa', fn ($q) => $q->where('nome_fantasia', 'like', '%' . $request->empresa . '%'));
+            $query->whereHas('company', fn ($q) => $q->where('trade_name', 'like', '%' . $request->empresa . '%'));
         }
         if ($request->filled('servico')) {
-            $query->whereHas('servico', fn ($q) => $q->where('nome', 'like', '%' . $request->servico . '%'));
+            $query->whereHas('service', fn ($q) => $q->where('name', 'like', '%' . $request->servico . '%'));
         }
 
-        $demandas = $query->orderByDesc('criado_em')->paginate(20)->withQueryString();
+        $demandas = $query->orderByDesc('created_at')->paginate(20)->withQueryString();
 
         return Inertia::render('Admin/Demandas/Index', [
             'demandas' => $demandas,
@@ -35,37 +35,36 @@ class DemandasController extends Controller
         ]);
     }
 
-    public function propostas(Demanda $demanda)
+    public function propostas(Demand $demanda)
     {
-        $propostas = Proposta::with(['prestador:id,nome,cpf,email'])
-            ->where('demanda_id', $demanda->id)
-            ->where('status', 'pendente_aprovacao_admin')
-            ->orderBy('enviado_em')
+        $propostas = Proposal::with(['provider:id,name,cpf,email'])
+            ->where('demand_id', $demanda->id)
+            ->where('status', 'pending_admin_approval')
+            ->orderBy('created_at')
             ->get();
 
         return Inertia::render('Admin/Demandas/Propostas', [
-            'demanda'  => $demanda->load(['empresa:id,nome_fantasia', 'servico:id,nome']),
+            'demanda'  => $demanda->load(['company:id,trade_name', 'service:id,name']),
             'propostas' => $propostas,
         ]);
     }
 
-    public function aprovarProposta(Request $request, Proposta $proposta)
+    public function aprovarProposta(Request $request, Proposal $proposta)
     {
-        abort_if($proposta->status !== 'pendente_aprovacao_admin', 422, 'Status inválido.');
+        abort_if($proposta->status !== 'pending_admin_approval', 422, 'Status inválido.');
 
-        $demanda = $proposta->demanda;
+        $demanda = $proposta->demand;
 
-        if ($demanda->quantidade_confirmada >= $demanda->quantidade_necessaria) {
+        if ($demanda->slots_confirmed >= $demanda->slots_needed) {
             return back()->withErrors(['msg' => 'Vagas já preenchidas para esta demanda.']);
         }
 
-        // Valida limite de 8h/dia
-        $horasJa = Agendamento::where('prestador_id', $proposta->prestador_id)
-            ->where('data', $demanda->data)
-            ->selectRaw('IFNULL(SUM(TIME_TO_SEC(TIMEDIFF(hora_fim, hora_inicio))) / 3600, 0) as total')
+        $horasJa = Schedule::where('provider_id', $proposta->provider_id)
+            ->where('date', $demanda->date)
+            ->selectRaw('IFNULL(SUM(TIME_TO_SEC(TIMEDIFF(end_time, start_time))) / 3600, 0) as total')
             ->value('total') ?? 0;
 
-        $duracao = (strtotime($demanda->hora_fim) - strtotime($demanda->hora_inicio)) / 3600;
+        $duracao = (strtotime($demanda->end_time) - strtotime($demanda->start_time)) / 3600;
 
         if (($horasJa + $duracao) > 8) {
             return back()->withErrors(['msg' => "Excede limite de 8h/dia do prestador (já possui {$horasJa}h nessa data)."]);
@@ -74,29 +73,28 @@ class DemandasController extends Controller
         try {
             DB::beginTransaction();
 
-            $proposta->update(['status' => 'aceita']);
-            $demanda->increment('quantidade_confirmada');
-            $novaQtd = $demanda->quantidade_confirmada;
+            $proposta->update(['status' => 'accepted']);
+            $demanda->increment('slots_confirmed');
+            $novaQtd = $demanda->slots_confirmed;
 
-            $novoStatus = $novaQtd >= $demanda->quantidade_necessaria ? 'agendada' : 'parcialmente_agendada';
+            $novoStatus = $novaQtd >= $demanda->slots_needed ? 'scheduled' : 'open';
             $demanda->update(['status' => $novoStatus]);
 
-            if ($novoStatus === 'agendada') {
-                Proposta::where('demanda_id', $demanda->id)
+            if ($novoStatus === 'scheduled') {
+                Proposal::where('demand_id', $demanda->id)
                     ->where('id', '!=', $proposta->id)
-                    ->where('status', 'pendente_aprovacao_admin')
-                    ->update(['status' => 'rejeitada_admin']);
+                    ->where('status', 'pending_admin_approval')
+                    ->update(['status' => 'rejected_admin']);
             }
 
-            Agendamento::create([
-                'prestador_id' => $proposta->prestador_id,
-                'demanda_id'   => $demanda->id,
-                'data'         => $demanda->data,
-                'hora_inicio'  => $demanda->hora_inicio,
-                'hora_fim'     => $demanda->hora_fim,
-                'descricao'    => $demanda->descricao,
-                'tipo'         => 'servico',
-                'origem'       => 'proposta',
+            Schedule::create([
+                'provider_id' => $proposta->provider_id,
+                'demand_id'   => $demanda->id,
+                'date'        => $demanda->date,
+                'start_time'  => $demanda->start_time,
+                'end_time'    => $demanda->end_time,
+                'description' => $demanda->description,
+                'status'      => 'scheduled',
             ]);
 
             DB::commit();
@@ -106,18 +104,18 @@ class DemandasController extends Controller
         }
 
         $msg = 'Contratação aprovada e agendada.';
-        if ($novoStatus === 'agendada') {
-            $msg .= ' Quantidade completa — outras propostas pendentes foram rejeitadas.';
+        if ($novoStatus === 'scheduled') {
+            $msg .= ' Vagas completas — outras propostas rejeitadas.';
         }
 
         return back()->with('success', $msg);
     }
 
-    public function rejeitarProposta(Proposta $proposta)
+    public function rejeitarProposta(Proposal $proposta)
     {
-        abort_if($proposta->status !== 'pendente_aprovacao_admin', 422, 'Status inválido.');
+        abort_if($proposta->status !== 'pending_admin_approval', 422, 'Status inválido.');
 
-        $proposta->update(['status' => 'rejeitada_admin']);
+        $proposta->update(['status' => 'rejected_admin']);
 
         return back()->with('success', 'Contratação rejeitada.');
     }

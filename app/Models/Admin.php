@@ -3,20 +3,18 @@
 namespace App\Models;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
 
 class Admin extends Authenticatable
 {
-    protected $table = 'admins';
+    use Notifiable;
 
-    public $timestamps = false;
+    protected $fillable = ['email', 'password'];
 
-    protected $fillable = ['email', 'senha'];
+    protected $hidden = ['password', 'remember_token'];
 
-    protected $hidden = ['senha'];
-
-    // A coluna de senha no banco é 'senha', não 'password'
-    public function getAuthPasswordName(): string
+    protected function casts(): array
     {
-        return 'senha';
+        return ['password' => 'hashed'];
     }
 }

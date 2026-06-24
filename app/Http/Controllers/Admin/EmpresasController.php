@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Empresa;
+use App\Models\Company;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -11,35 +11,32 @@ class EmpresasController extends Controller
 {
     public function index()
     {
-        $empresas = Empresa::where('status_aprovacao', 'pendente')
-            ->orderBy('data_cadastro')
-            ->get(['id', 'nome_fantasia', 'cnpj', 'email', 'telefone', 'cartao_cnpj_path', 'data_cadastro']);
+        $companies = Company::where('status', 'pending')
+            ->orderBy('created_at')
+            ->get(['id', 'trade_name', 'cnpj', 'email', 'phone', 'cnpj_card_path', 'created_at']);
 
         return Inertia::render('Admin/Empresas/Index', [
-            'empresas' => $empresas,
+            'empresas' => $companies,
         ]);
     }
 
-    public function aprovar(Request $request, Empresa $empresa)
+    public function aprovar(Request $request, Company $empresa)
     {
-        abort_if($empresa->status_aprovacao !== 'pendente', 422, 'Status inválido.');
+        abort_if($empresa->status !== 'pending', 422, 'Status inválido.');
 
-        $empresa->update(['status_aprovacao' => 'aprovado', 'motivo_rejeicao' => null]);
+        $empresa->update(['status' => 'approved', 'rejection_reason' => null]);
 
-        return back()->with('success', "Empresa {$empresa->nome_fantasia} aprovada com sucesso!");
+        return back()->with('success', "Empresa {$empresa->trade_name} aprovada com sucesso!");
     }
 
-    public function rejeitar(Request $request, Empresa $empresa)
+    public function rejeitar(Request $request, Company $empresa)
     {
-        abort_if($empresa->status_aprovacao !== 'pendente', 422, 'Status inválido.');
+        abort_if($empresa->status !== 'pending', 422, 'Status inválido.');
 
         $request->validate(['motivo' => 'required|string|max:1000']);
 
-        $empresa->update([
-            'status_aprovacao' => 'rejeitado',
-            'motivo_rejeicao'  => $request->motivo,
-        ]);
+        $empresa->update(['status' => 'rejected', 'rejection_reason' => $request->motivo]);
 
-        return back()->with('success', "Empresa {$empresa->nome_fantasia} rejeitada.");
+        return back()->with('success', "Empresa {$empresa->trade_name} rejeitada.");
     }
 }
