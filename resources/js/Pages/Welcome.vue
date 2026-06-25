@@ -25,24 +25,20 @@ defineProps({
                         <span class="text-xl font-bold text-gray-900">Free<span class="text-emerald-500">Flex</span></span>
                     </div>
 
-                    <!-- Nav links (center) -->
-                    <div v-if="canLogin" class="flex items-center gap-3">
-                        <template v-if="$page.props.auth.user">
-                            <Link
-                                :href="route('dashboard')"
-                                class="text-sm font-medium text-emerald-500 hover:text-emerald-600 transition"
-                            >
-                                Ir para o Dashboard →
-                            </Link>
-                        </template>
-                        <template v-else>
-                            <Link
-                                :href="route('login')"
-                                class="text-sm font-semibold bg-emerald-500 text-white px-4 py-2 rounded-lg hover:bg-emerald-600 transition"
-                            >
-                                Entrar
-                            </Link>
-                        </template>
+                    <!-- Nav links -->
+                    <div class="flex items-center gap-2">
+                        <Link
+                            :href="route('empresa.login')"
+                            class="text-sm font-semibold text-teal-600 border border-teal-500 px-4 py-2 rounded-lg hover:bg-teal-50 transition"
+                        >
+                            Sou Empresa
+                        </Link>
+                        <Link
+                            :href="route('prestador.login')"
+                            class="text-sm font-semibold bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition"
+                        >
+                            Sou Prestador
+                        </Link>
                     </div> 
                 </div>
             </div>
@@ -76,8 +72,8 @@ defineProps({
                     </Link>
                     <Link
                         v-if="canRegister"
-                        :href="route('register')"
-                        class="w-full sm:w-auto inline-flex items-center justify-center gap-2 border-2 border-emerald-500 text-emerald-500 font-semibold px-8 py-4 rounded-xl hover:bg-emerald-50 transition text-base"
+                        :href="route('prestador.register')"
+                        class="w-full sm:w-auto inline-flex items-center justify-center gap-2 border-2 border-orange-400 text-orange-500 font-semibold px-8 py-4 rounded-xl hover:bg-orange-50 transition text-base"
                     >
                         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -248,8 +244,8 @@ defineProps({
                         </ul>
                         <div class="mt-8">
                             <Link
-                                :href="route('register')"
-                                class="inline-flex items-center gap-2 border-2 border-emerald-500 text-emerald-500 font-semibold px-6 py-3 rounded-xl hover:bg-emerald-50 transition"
+                                :href="route('prestador.register')"
+                                class="inline-flex items-center gap-2 border-2 border-orange-400 text-orange-500 font-semibold px-6 py-3 rounded-xl hover:bg-orange-50 transition"
                             >
                                 Criar meu perfil de prestador
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -274,8 +270,9 @@ defineProps({
                     <span class="font-bold text-gray-900">Free<span class="text-emerald-500">Flex</span></span>
                 </div>
                 <p class="text-sm text-gray-400">&copy; {{ new Date().getFullYear() }} FreeFlex. Todos os direitos reservados.</p>
-                <div class="flex items-center gap-6">
-                    <Link :href="route('login')" class="text-sm text-gray-500 hover:text-emerald-500 transition">Entrar</Link>
+                <div class="flex items-center gap-4">
+                    <Link :href="route('empresa.login')" class="text-sm text-gray-500 hover:text-teal-600 transition">Empresa</Link>
+                    <Link :href="route('prestador.login')" class="text-sm text-gray-500 hover:text-orange-500 transition">Prestador</Link>
                 </div>
             </div>
         </footer>
