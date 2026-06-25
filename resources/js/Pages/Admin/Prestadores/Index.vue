@@ -87,7 +87,7 @@ import AdminLayout from '@/Layouts/AdminLayout.vue'
 const DocBadge = {
   props: { path: String, label: String },
   template: `
-    <a v-if="path" :href="'/' + path" target="_blank" class="text-xs px-2 py-0.5 bg-blue-100 text-blue-700 rounded hover:bg-blue-200">{{ label }}</a>
+    <a v-if="path" :href="'/storage/' + path" target="_blank" class="text-xs px-2 py-0.5 bg-blue-100 text-blue-700 rounded hover:bg-blue-200">{{ label }}</a>
     <span v-else class="text-xs px-2 py-0.5 bg-red-100 text-red-600 rounded">{{ label }} PENDENTE</span>
   `,
 }

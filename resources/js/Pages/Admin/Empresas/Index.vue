@@ -19,7 +19,7 @@
             </div>
 
             <div class="flex flex-col gap-2 items-end">
-              <a v-if="emp.cnpj_card_path" :href="'/' + emp.cnpj_card_path" target="_blank"
+              <a v-if="emp.cnpj_card_path" :href="'/storage/' + emp.cnpj_card_path" target="_blank"
                 class="text-xs px-3 py-1 bg-blue-100 text-blue-700 rounded-full hover:bg-blue-200 transition-colors">
                 Ver Cartão CNPJ
               </a>

@@ -32,7 +32,7 @@
           <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Conta</p>
         </div>
         <NavItem href="#" icon="star">Avaliações</NavItem>
-        <NavItem href="#" icon="user">Perfil</NavItem>
+        <NavItem :href="route('prestador.perfil')" icon="user">Perfil</NavItem>
       </nav>
 
       <!-- Logout -->

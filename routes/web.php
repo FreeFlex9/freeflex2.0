@@ -24,6 +24,9 @@ Route::prefix('empresa')->name('empresa.')->group(function () {
 
     Route::middleware('is_company')->group(function () {
         Route::get('/dashboard', [Company\DashboardController::class, 'index'])->name('dashboard');
+        Route::get('/perfil',    [Company\PerfilController::class, 'index'])->name('perfil');
+        Route::put('/perfil',    [Company\PerfilController::class, 'updateInfo'])->name('perfil.update');
+        Route::post('/perfil/documento', [Company\PerfilController::class, 'uploadDocument'])->name('perfil.documento');
     });
 });
 
@@ -40,7 +43,11 @@ Route::prefix('prestador')->name('prestador.')->group(function () {
     Route::post('/logout', [Provider\AuthController::class, 'logout'])->name('logout');
 
     Route::middleware('is_provider')->group(function () {
-        Route::get('/dashboard', [Provider\DashboardController::class, 'index'])->name('dashboard');
+        Route::get('/dashboard',          [Provider\DashboardController::class, 'index'])->name('dashboard');
+        Route::get('/perfil',             [Provider\PerfilController::class, 'index'])->name('perfil');
+        Route::put('/perfil',             [Provider\PerfilController::class, 'updateInfo'])->name('perfil.update');
+        Route::post('/perfil/documento',  [Provider\PerfilController::class, 'uploadDocument'])->name('perfil.documento');
+        Route::delete('/perfil/documento',[Provider\PerfilController::class, 'removeDocument'])->name('perfil.documento.remove');
     });
 });
 
