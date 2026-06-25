@@ -88,8 +88,39 @@
         </form>
       </div>
 
-      <!-- Documentos -->
+      <!-- Documentos + Senha -->
       <div class="space-y-4">
+
+        <!-- Alterar senha -->
+        <div class="bg-white rounded-xl border border-gray-200 p-5">
+          <h3 class="font-semibold text-gray-800 text-sm mb-4">Alterar Senha</h3>
+          <form @submit.prevent="savePassword" class="space-y-3">
+            <div>
+              <label class="text-xs font-medium text-gray-500">Senha atual</label>
+              <input v-model="passForm.current_password" type="password"
+                class="w-full mt-1 px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                :class="passForm.errors.current_password ? 'border-red-400' : 'border-gray-300'" />
+              <p v-if="passForm.errors.current_password" class="text-xs text-red-500 mt-1">{{ passForm.errors.current_password }}</p>
+            </div>
+            <div>
+              <label class="text-xs font-medium text-gray-500">Nova senha</label>
+              <input v-model="passForm.password" type="password"
+                class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                placeholder="Mínimo 8 caracteres" />
+              <p v-if="passForm.errors.password" class="text-xs text-red-500 mt-1">{{ passForm.errors.password }}</p>
+            </div>
+            <div>
+              <label class="text-xs font-medium text-gray-500">Confirmar nova senha</label>
+              <input v-model="passForm.password_confirmation" type="password"
+                class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500" />
+            </div>
+            <button type="submit" :disabled="passForm.processing"
+              class="w-full bg-gray-700 hover:bg-gray-800 text-white text-sm font-medium py-2 rounded-lg transition disabled:opacity-60">
+              Alterar senha
+            </button>
+          </form>
+        </div>
+
         <div class="bg-white rounded-xl border border-gray-200 p-5">
           <h3 class="font-semibold text-gray-800 text-sm mb-1">Documentos</h3>
           <p class="text-xs text-gray-400 mb-4">JPG, PNG ou PDF · máx. 5 MB</p>
@@ -165,6 +196,18 @@ async function fetchAddress() {
       infoForm.state        = data.state        || infoForm.state
     }
   } catch {}
+}
+
+const passForm = useForm({
+  current_password:      '',
+  password:              '',
+  password_confirmation: '',
+})
+
+function savePassword() {
+  passForm.put(route('empresa.perfil.senha'), {
+    onSuccess: () => passForm.reset(),
+  })
 }
 
 const uploading = ref(false)

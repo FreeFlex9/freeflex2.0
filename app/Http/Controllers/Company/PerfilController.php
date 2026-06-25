@@ -4,15 +4,18 @@ namespace App\Http\Controllers\Company;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
-use Inertia\Inertia;
+use Illuminate\Support\Str;
+use Illuminate\Validation\Rules\Password;
 
 class PerfilController extends Controller
 {
     public function index()
     {
-        return Inertia::render('Empresa/Perfil', [
+        return inertia('Empresa/Perfil', [
             'company' => Auth::guard('company')->user(),
         ]);
     }
@@ -38,24 +41,81 @@ class PerfilController extends Controller
         return back()->with('success', 'Informações atualizadas!');
     }
 
+    public function updatePassword(Request $request)
+    {
+        $company = Auth::guard('company')->user();
+
+        $request->validate([
+            'current_password' => 'required|string',
+            'password'         => ['required', 'confirmed', Password::min(8)],
+        ], [
+            'current_password.required' => 'Informe a senha atual.',
+            'password.confirmed'        => 'A nova senha não confere.',
+            'password.min'              => 'A nova senha deve ter pelo menos 8 caracteres.',
+        ]);
+
+        if (!Hash::check($request->current_password, $company->password)) {
+            return back()->withErrors(['current_password' => 'Senha atual incorreta.']);
+        }
+
+        $company->update(['password' => Hash::make($request->password)]);
+        return back()->with('success', 'Senha alterada com sucesso!');
+    }
+
     public function uploadDocument(Request $request)
     {
         $company = Auth::guard('company')->user();
 
         $request->validate([
-            'arquivo' => 'required|file|mimes:jpg,jpeg,png,pdf|max:5120',
+            'arquivo' => 'required|file|mimes:jpg,jpeg,png,pdf,webp|max:5120',
         ], [
             'arquivo.max'   => 'Arquivo muito grande. Máximo 5 MB.',
-            'arquivo.mimes' => 'Somente JPG, PNG ou PDF.',
+            'arquivo.mimes' => 'Somente JPG, PNG, WebP ou PDF.',
         ]);
 
         if ($company->cnpj_card_path) {
             Storage::disk('public')->delete($company->cnpj_card_path);
         }
 
-        $path = $request->file('arquivo')->store("companies/{$company->id}", 'public');
+        $path = $this->storeOptimized($request->file('arquivo'), "companies/{$company->id}");
         $company->update(['cnpj_card_path' => $path]);
 
         return back()->with('success', 'Cartão CNPJ enviado com sucesso!');
+    }
+
+    private function storeOptimized(UploadedFile $file, string $directory): string
+    {
+        $mime = $file->getMimeType();
+
+        if ($mime === 'application/pdf') {
+            return $file->store($directory, 'public');
+        }
+
+        $source = match ($mime) {
+            'image/jpeg' => imagecreatefromjpeg($file->getRealPath()),
+            'image/png'  => imagecreatefrompng($file->getRealPath()),
+            'image/webp' => imagecreatefromwebp($file->getRealPath()),
+            default      => null,
+        };
+
+        if (!$source) {
+            return $file->store($directory, 'public');
+        }
+
+        if ($mime === 'image/png') {
+            imagealphablending($source, false);
+            imagesavealpha($source, true);
+        }
+
+        $filename = Str::uuid() . '.webp';
+        $path     = $directory . '/' . $filename;
+
+        Storage::disk('public')->makeDirectory($directory);
+        $fullPath = Storage::disk('public')->path($path);
+
+        imagewebp($source, $fullPath, 82);
+        imagedestroy($source);
+
+        return $path;
     }
 }

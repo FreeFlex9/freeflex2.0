@@ -9,13 +9,13 @@
       </svg>
       <div>
         <strong>Complete seu cadastro para ser aprovado.</strong>
-        Envie os documentos obrigatórios: {{ missingRequired.map(d => d.label).join(', ') }}.
+        Envie: {{ missingRequired.map(d => d.label).join(', ') }}.
       </div>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-      <!-- Coluna esquerda: foto + info -->
+      <!-- Coluna esquerda: foto + info + senha -->
       <div class="space-y-4">
 
         <!-- Foto de perfil -->
@@ -32,7 +32,6 @@
           </div>
           <p class="font-semibold text-gray-800 text-sm text-center">{{ provider.name }}</p>
           <p class="text-xs text-gray-500">{{ provider.email }}</p>
-
           <label class="cursor-pointer w-full">
             <input type="file" class="hidden" accept="image/*" @change="upload('profile_photo', $event)" />
             <span class="block text-center text-xs font-medium text-orange-500 border border-orange-300 rounded-lg py-1.5 hover:bg-orange-50 transition">
@@ -64,6 +63,36 @@
           </form>
         </div>
 
+        <!-- Alterar senha -->
+        <div class="bg-white rounded-xl border border-gray-200 p-5">
+          <h3 class="font-semibold text-gray-800 text-sm mb-4">Alterar Senha</h3>
+          <form @submit.prevent="savePassword" class="space-y-3">
+            <div>
+              <label class="text-xs font-medium text-gray-500">Senha atual</label>
+              <input v-model="passForm.current_password" type="password"
+                class="w-full mt-1 px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                :class="passForm.errors.current_password ? 'border-red-400' : 'border-gray-300'" />
+              <p v-if="passForm.errors.current_password" class="text-xs text-red-500 mt-1">{{ passForm.errors.current_password }}</p>
+            </div>
+            <div>
+              <label class="text-xs font-medium text-gray-500">Nova senha</label>
+              <input v-model="passForm.password" type="password"
+                class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                placeholder="Mínimo 8 caracteres" />
+              <p v-if="passForm.errors.password" class="text-xs text-red-500 mt-1">{{ passForm.errors.password }}</p>
+            </div>
+            <div>
+              <label class="text-xs font-medium text-gray-500">Confirmar nova senha</label>
+              <input v-model="passForm.password_confirmation" type="password"
+                class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500" />
+            </div>
+            <button type="submit" :disabled="passForm.processing"
+              class="w-full bg-gray-700 hover:bg-gray-800 text-white text-sm font-medium py-2 rounded-lg transition disabled:opacity-60">
+              Alterar senha
+            </button>
+          </form>
+        </div>
+
       </div>
 
       <!-- Coluna direita: documentos -->
@@ -73,11 +102,47 @@
           <p class="text-xs text-gray-400 mb-5">JPG, PNG ou PDF · máx. 5 MB por arquivo</p>
 
           <div class="space-y-3">
-            <DocItem v-for="doc in documentos" :key="doc.tipo"
-              :doc="doc"
-              :uploading="uploading === doc.tipo"
-              @upload="upload(doc.tipo, $event)"
-              @remove="remove(doc.tipo)" />
+            <div v-for="doc in documentos" :key="doc.tipo"
+              class="flex items-center justify-between p-3 rounded-lg border"
+              :class="doc.path ? 'border-green-200 bg-green-50' : doc.obrigatorio ? 'border-red-100 bg-red-50' : 'border-gray-200 bg-gray-50'">
+
+              <div class="flex items-center gap-3 min-w-0">
+                <div class="shrink-0 w-8 h-8 rounded-lg flex items-center justify-center"
+                  :class="doc.path ? 'bg-green-100' : 'bg-gray-200'">
+                  <svg v-if="doc.path" class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                  </svg>
+                  <svg v-else class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                  </svg>
+                </div>
+                <div>
+                  <p class="text-sm font-medium text-gray-700">
+                    {{ doc.label }}
+                    <span v-if="doc.obrigatorio" class="text-red-400 text-xs">*</span>
+                  </p>
+                  <p class="text-xs" :class="doc.path ? 'text-green-600' : 'text-gray-400'">
+                    {{ doc.path ? 'Enviado ✓' : 'Não enviado' }}
+                  </p>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-2 shrink-0 ml-3">
+                <a v-if="doc.path" :href="'/storage/' + doc.path" target="_blank"
+                  class="text-xs text-blue-500 hover:underline">Ver</a>
+                <label class="cursor-pointer">
+                  <input type="file" class="hidden" accept=".jpg,.jpeg,.png,.pdf"
+                    @change="upload(doc.tipo, $event)"
+                    :disabled="uploading === doc.tipo" />
+                  <span class="text-xs font-medium text-orange-500 border border-orange-300 rounded px-2 py-1 hover:bg-orange-50 transition"
+                    :class="uploading === doc.tipo ? 'opacity-50 cursor-not-allowed' : ''">
+                    {{ uploading === doc.tipo ? 'Enviando...' : doc.path ? 'Trocar' : 'Enviar' }}
+                  </span>
+                </label>
+                <button v-if="doc.path" type="button" @click="remove(doc.tipo)"
+                  class="text-xs text-red-400 hover:text-red-600">✕</button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -87,7 +152,7 @@
 </template>
 
 <script setup>
-import { computed, reactive, ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useForm, router } from '@inertiajs/vue3'
 import PrestadorLayout from '@/Layouts/PrestadorLayout.vue'
 
@@ -102,17 +167,28 @@ function saveInfo() {
   infoForm.put(route('prestador.perfil.update'))
 }
 
+const passForm = useForm({
+  current_password:      '',
+  password:              '',
+  password_confirmation: '',
+})
+
+function savePassword() {
+  passForm.put(route('prestador.perfil.senha'), {
+    onSuccess: () => passForm.reset(),
+  })
+}
+
 const uploading = ref(null)
 
 function upload(tipo, event) {
-  const file = event.target?.files?.[0] ?? event
+  const file = event.target?.files?.[0]
   if (!file) return
   uploading.value = tipo
 
   const form = new FormData()
   form.append('tipo', tipo)
   form.append('arquivo', file)
-  form.append('_method', 'POST')
 
   router.post(route('prestador.perfil.documento'), form, {
     forceFormData: true,
@@ -145,48 +221,4 @@ const documentos = computed(() => {
 const missingRequired = computed(() =>
   documentos.value.filter(d => d.obrigatorio && !d.path)
 )
-
-// Componente inline de item de documento
-const DocItem = {
-  props: { doc: Object, uploading: Boolean },
-  emits: ['upload', 'remove'],
-  template: `
-    <div class="flex items-center justify-between p-3 rounded-lg border"
-      :class="doc.path ? 'border-green-200 bg-green-50' : doc.obrigatorio ? 'border-red-100 bg-red-50' : 'border-gray-200 bg-gray-50'">
-      <div class="flex items-center gap-3 min-w-0">
-        <div class="shrink-0 w-8 h-8 rounded-lg flex items-center justify-center"
-          :class="doc.path ? 'bg-green-100' : 'bg-gray-200'">
-          <svg v-if="doc.path" class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-          </svg>
-          <svg v-else class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-          </svg>
-        </div>
-        <div>
-          <p class="text-sm font-medium text-gray-700">
-            {{ doc.label }}
-            <span v-if="doc.obrigatorio" class="text-red-400 text-xs">*</span>
-          </p>
-          <p class="text-xs" :class="doc.path ? 'text-green-600' : 'text-gray-400'">
-            {{ doc.path ? 'Enviado ✓' : 'Não enviado' }}
-          </p>
-        </div>
-      </div>
-      <div class="flex items-center gap-2 shrink-0 ml-3">
-        <a v-if="doc.path" :href="'/storage/' + doc.path" target="_blank"
-          class="text-xs text-blue-500 hover:underline">Ver</a>
-        <label class="cursor-pointer">
-          <input type="file" class="hidden" accept=".jpg,.jpeg,.png,.pdf" @change="$emit('upload', $event)" :disabled="uploading" />
-          <span class="text-xs font-medium text-orange-500 border border-orange-300 rounded px-2 py-1 hover:bg-orange-50 transition"
-            :class="uploading ? 'opacity-50 cursor-not-allowed' : ''">
-            {{ uploading ? 'Enviando...' : doc.path ? 'Trocar' : 'Enviar' }}
-          </span>
-        </label>
-        <button v-if="doc.path" type="button" @click="$emit('remove')"
-          class="text-xs text-red-400 hover:text-red-600">✕</button>
-      </div>
-    </div>
-  `
-}
 </script>
