@@ -45,15 +45,21 @@ class DashboardController extends Controller
             ->limit(5)
             ->get(['id', 'demand_id', 'status', 'message', 'created_at']);
 
-        // Demandas disponíveis para o prestador (matching seus serviços)
-        $serviceIds = $provider->services()->pluck('services.id');
-        $availableDemands = Demand::whereIn('service_id', $serviceIds)
+        // Demandas disponíveis (mesma lógica do BuscarDemandas — sem filtro por serviços do prestador)
+        $availableDemands = Demand::with(['service:id,name,requires_license,provider_rate', 'company:id,trade_name'])
             ->whereIn('status', ['open', 'partially_scheduled'])
-            ->whereDoesntHave('proposals', fn ($q) => $q->where('provider_id', $provider->id))
-            ->with(['service:id,name', 'company:id,trade_name', 'company:id,trade_name,city,state'])
+            ->when(!$provider->has_license, fn ($q) =>
+                $q->whereHas('service', fn ($s) => $s->where('requires_license', false))
+            )
+            ->whereNotExists(fn ($sub) =>
+                $sub->from('proposals')
+                    ->whereColumn('proposals.demand_id', 'demands.id')
+                    ->where('proposals.provider_id', $provider->id)
+                    ->whereNotIn('proposals.status', ['rejected_provider'])
+            )
             ->orderBy('date')
             ->limit(3)
-            ->get(['id', 'title', 'date', 'start_time', 'end_time', 'slots_needed', 'slots_confirmed', 'service_id', 'company_id', 'city', 'state', 'total_value']);
+            ->get();
 
         return Inertia::render('Prestador/Dashboard', [
             'provider'          => $provider->only('id', 'name', 'status', 'profile_photo_path'),

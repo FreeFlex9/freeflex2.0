@@ -10,7 +10,7 @@ class Demand extends Model
         'company_id', 'service_id', 'title', 'description',
         'date', 'start_time', 'end_time', 'slots_needed', 'slots_confirmed',
         'zip_code', 'street', 'number', 'complement', 'neighborhood', 'city', 'state',
-        'status',
+        'latitude', 'longitude', 'total_value', 'status',
     ];
 
     protected function casts(): array

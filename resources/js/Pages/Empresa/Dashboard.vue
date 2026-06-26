@@ -28,7 +28,7 @@
         <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
           <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
             <h2 class="font-semibold text-gray-800 text-sm">Demandas Recentes</h2>
-            <a href="#" class="text-xs text-teal-600 hover:underline">Ver todas</a>
+            <Link :href="route('empresa.demandas.index')" class="text-xs text-teal-600 hover:underline">Ver todas</Link>
           </div>
           <div v-if="recentDemands.length" class="divide-y divide-gray-50">
             <div v-for="d in recentDemands" :key="d.id"
@@ -46,7 +46,7 @@
           <div v-else class="px-5 py-10 text-center text-sm text-gray-400">
             Nenhuma demanda ainda.
             <br/>
-            <a href="#" class="text-teal-600 font-medium hover:underline mt-1 inline-block">Criar primeira demanda</a>
+            <Link :href="route('empresa.demandas.create')" class="text-teal-600 font-medium hover:underline mt-1 inline-block">Criar primeira demanda</Link>
           </div>
         </div>
 
@@ -80,6 +80,7 @@
 </template>
 
 <script setup>
+import { Link } from '@inertiajs/vue3'
 import EmpresaLayout from '@/Layouts/EmpresaLayout.vue'
 
 defineProps({

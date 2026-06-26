@@ -41,7 +41,7 @@ class HandleInertiaRequests extends Middleware
                 'user'    => $request->user(),
                 'admin'   => $request->user('admin')   ? ['id' => $request->user('admin')->id,   'email' => $request->user('admin')->email]   : null,
                 'company' => $request->user('company') ? ['id' => $request->user('company')->id, 'trade_name' => $request->user('company')->trade_name, 'status' => $request->user('company')->status] : null,
-                'provider'=> $request->user('provider')? ['id' => $request->user('provider')->id, 'name' => $request->user('provider')->name,  'status' => $request->user('provider')->status]  : null,
+                'provider'=> $request->user('provider')? ['id' => $request->user('provider')->id, 'name' => $request->user('provider')->name, 'status' => $request->user('provider')->status, 'has_license' => (bool) $request->user('provider')->has_license] : null,
             ],
             'flash' => [
                 'success' => $request->session()->get('success'),

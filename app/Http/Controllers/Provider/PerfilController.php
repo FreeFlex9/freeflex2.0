@@ -25,11 +25,20 @@ class PerfilController extends Controller
         $provider = Auth::guard('provider')->user();
 
         $data = $request->validate([
-            'phone' => 'nullable|string|max:20',
-            'bio'   => 'nullable|string|max:1000',
+            'phone'       => 'nullable|string|max:20',
+            'bio'         => 'nullable|string|max:1000',
+            'has_license' => 'boolean',
         ]);
 
+        $hadLicense = (bool) $provider->has_license;
         $provider->update($data);
+
+        // Se removeu a CNH, desvincula serviços que exigem habilitação
+        if ($hadLicense && !$data['has_license']) {
+            $cnhServiceIds = \App\Models\Service::where('requires_license', true)->pluck('id');
+            $provider->services()->detach($cnhServiceIds);
+        }
+
         return back()->with('success', 'Informações atualizadas!');
     }
 

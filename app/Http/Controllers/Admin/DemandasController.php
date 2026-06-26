@@ -59,15 +59,18 @@ class DemandasController extends Controller
             return back()->withErrors(['msg' => 'Vagas já preenchidas para esta demanda.']);
         }
 
-        $horasJa = Schedule::where('provider_id', $proposta->provider_id)
+        $horasJa = (float) (Schedule::where('provider_id', $proposta->provider_id)
             ->where('date', $demanda->date)
             ->selectRaw('IFNULL(SUM(TIME_TO_SEC(TIMEDIFF(end_time, start_time))) / 3600, 0) as total')
-            ->value('total') ?? 0;
+            ->value('total') ?? 0);
 
         $duracao = (strtotime($demanda->end_time) - strtotime($demanda->start_time)) / 3600;
 
-        if (($horasJa + $duracao) > 8) {
-            return back()->withErrors(['msg' => "Excede limite de 8h/dia do prestador (já possui {$horasJa}h nessa data)."]);
+        // Limite de 9h/dia (8h trabalho + 1h almoço — CLT)
+        // Só bloqueia se o prestador já tem outras demandas nesse dia e o total ultrapassaria 9h
+        if ($horasJa > 0 && ($horasJa + $duracao) > 9) {
+            $jaFormatado = number_format($horasJa, 1, ',', '');
+            return back()->withErrors(['msg' => "Prestador já tem {$jaFormatado}h agendadas nessa data. Acumulado ultrapassaria 9h/dia."]);
         }
 
         try {

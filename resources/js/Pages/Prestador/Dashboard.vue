@@ -54,7 +54,7 @@
         <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
           <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
             <h2 class="font-semibold text-gray-800 text-sm">Minhas Propostas</h2>
-            <a href="#" class="text-xs text-orange-500 hover:underline">Ver todas</a>
+            <Link :href="route('prestador.propostas.index')" class="text-xs text-orange-500 hover:underline">Ver todas</Link>
           </div>
           <div v-if="recentProposals.length" class="divide-y divide-gray-50">
             <div v-for="p in recentProposals" :key="p.id"
@@ -79,7 +79,7 @@
       <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
         <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
           <h2 class="font-semibold text-gray-800 text-sm">Demandas Disponíveis para Você</h2>
-          <a href="#" class="text-xs text-orange-500 hover:underline">Ver mais</a>
+          <Link :href="route('prestador.demandas.index')" class="text-xs text-orange-500 hover:underline">Ver mais</Link>
         </div>
         <div v-if="availableDemands.length" class="divide-y divide-gray-50">
           <div v-for="d in availableDemands" :key="d.id"
@@ -94,9 +94,10 @@
                 <span v-if="d.slots_needed > 1"> · {{ d.slots_needed }} vagas</span>
               </p>
             </div>
-            <button class="ml-4 shrink-0 bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors">
-              Enviar Proposta
-            </button>
+            <Link :href="route('prestador.demandas.index')"
+              class="ml-4 shrink-0 bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors">
+              Ver demanda
+            </Link>
           </div>
         </div>
         <div v-else class="px-5 py-10 text-center text-sm text-gray-400">
@@ -109,6 +110,7 @@
 </template>
 
 <script setup>
+import { Link } from '@inertiajs/vue3'
 import PrestadorLayout from '@/Layouts/PrestadorLayout.vue'
 
 defineProps({
@@ -121,7 +123,7 @@ defineProps({
 
 function formatDate(d) {
   if (!d) return '—'
-  const [y, m, day] = d.split('-')
+  const [y, m, day] = d.slice(0, 10).split('-')
   return `${day}/${m}/${y}`
 }
 

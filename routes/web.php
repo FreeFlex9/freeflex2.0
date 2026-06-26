@@ -24,6 +24,23 @@ Route::prefix('empresa')->name('empresa.')->group(function () {
 
     Route::middleware('is_company')->group(function () {
         Route::get('/dashboard', [Company\DashboardController::class, 'index'])->name('dashboard');
+
+        Route::get('/demandas',                    [Company\DemandasController::class, 'index'])->name('demandas.index');
+        Route::get('/demandas/nova',               [Company\DemandasController::class, 'create'])->name('demandas.create');
+        Route::post('/demandas',                   [Company\DemandasController::class, 'store'])->name('demandas.store');
+        Route::get('/demandas/{demand}',           [Company\DemandasController::class, 'show'])->name('demandas.show');
+        Route::get('/demandas/{demand}/editar',    [Company\DemandasController::class, 'edit'])->name('demandas.edit');
+        Route::put('/demandas/{demand}',           [Company\DemandasController::class, 'update'])->name('demandas.update');
+        Route::delete('/demandas/{demand}',        [Company\DemandasController::class, 'destroy'])->name('demandas.destroy');
+
+        Route::post('/propostas/{proposal}/aceitar',    [Company\PropostasController::class, 'aceitar'])->name('propostas.aceitar');
+        Route::post('/propostas/{proposal}/rejeitar',   [Company\PropostasController::class, 'rejeitar'])->name('propostas.rejeitar');
+        Route::get('/propostas/{proposal}/mensagens',   [Company\PropostasController::class, 'mensagens'])->name('propostas.mensagens');
+        Route::post('/propostas/{proposal}/mensagens',  [Company\PropostasController::class, 'enviarMensagem'])->name('propostas.mensagens.enviar');
+
+        Route::get('/avaliacoes',          [Company\AvaliacoesController::class, 'index'])->name('avaliacoes.index');
+        Route::post('/avaliacoes',         [Company\AvaliacoesController::class, 'store'])->name('avaliacoes.store');
+
         Route::get('/perfil',            [Company\PerfilController::class, 'index'])->name('perfil');
         Route::put('/perfil',            [Company\PerfilController::class, 'updateInfo'])->name('perfil.update');
         Route::put('/perfil/senha',      [Company\PerfilController::class, 'updatePassword'])->name('perfil.senha');
@@ -44,7 +61,18 @@ Route::prefix('prestador')->name('prestador.')->group(function () {
     Route::post('/logout', [Provider\AuthController::class, 'logout'])->name('logout');
 
     Route::middleware('is_provider')->group(function () {
-        Route::get('/dashboard',          [Provider\DashboardController::class, 'index'])->name('dashboard');
+        Route::get('/dashboard',           [Provider\DashboardController::class, 'index'])->name('dashboard');
+        Route::get('/agenda',              [Provider\AgendaController::class, 'index'])->name('agenda.index');
+        Route::get('/avaliacoes',          [Provider\AvaliacoesController::class, 'index'])->name('avaliacoes.index');
+        Route::get('/servicos',            [Provider\MeusServicosController::class, 'index'])->name('servicos.index');
+        Route::post('/servicos/toggle',    [Provider\MeusServicosController::class, 'toggle'])->name('servicos.toggle');
+        Route::get('/demandas',            [Provider\DemandasController::class, 'index'])->name('demandas.index');
+        Route::post('/demandas/proposta',  [Provider\DemandasController::class, 'enviarProposta'])->name('demandas.proposta');
+
+        Route::get('/propostas',                             [Provider\PropostasController::class, 'index'])->name('propostas.index');
+        Route::delete('/propostas/{proposal}/cancelar',      [Provider\PropostasController::class, 'cancelar'])->name('propostas.cancelar');
+        Route::get('/propostas/{proposal}/mensagens',        [Provider\PropostasController::class, 'mensagens'])->name('propostas.mensagens');
+        Route::post('/propostas/{proposal}/mensagens',       [Provider\PropostasController::class, 'enviarMensagem'])->name('propostas.mensagens.enviar');
         Route::get('/perfil',              [Provider\PerfilController::class, 'index'])->name('perfil');
         Route::put('/perfil',              [Provider\PerfilController::class, 'updateInfo'])->name('perfil.update');
         Route::put('/perfil/senha',        [Provider\PerfilController::class, 'updatePassword'])->name('perfil.senha');

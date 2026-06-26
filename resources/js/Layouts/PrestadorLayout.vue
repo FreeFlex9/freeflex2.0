@@ -33,38 +33,48 @@
         </Link>
 
         <!-- Buscar Demandas -->
-        <a href="#" class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-100 hover:text-gray-800 transition-colors">
+        <Link :href="route('prestador.demandas.index')"
+          :class="isActive('/prestador/demandas') ? 'bg-orange-50 text-orange-600 font-medium' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-800'"
+          class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors">
           <svg class="w-4 h-4 shrink-0 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
           Buscar Demandas
-        </a>
+        </Link>
 
         <!-- Minhas Propostas -->
-        <a href="#" class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-100 hover:text-gray-800 transition-colors">
+        <Link :href="route('prestador.propostas.index')"
+          :class="isActive('/prestador/propostas') ? 'bg-orange-50 text-orange-600 font-medium' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-800'"
+          class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors">
           <svg class="w-4 h-4 shrink-0 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
           Minhas Propostas
-        </a>
+        </Link>
 
         <!-- Minha Agenda -->
-        <a href="#" class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-100 hover:text-gray-800 transition-colors">
+        <Link :href="route('prestador.agenda.index')"
+          :class="isActive('/prestador/agenda') ? 'bg-orange-50 text-orange-600 font-medium' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-800'"
+          class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors">
           <svg class="w-4 h-4 shrink-0 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
           Minha Agenda
-        </a>
+        </Link>
 
         <!-- Meus Serviços -->
-        <a href="#" class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-100 hover:text-gray-800 transition-colors">
+        <Link :href="route('prestador.servicos.index')"
+          :class="isActive('/prestador/servicos') ? 'bg-orange-50 text-orange-600 font-medium' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-800'"
+          class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors">
           <svg class="w-4 h-4 shrink-0 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
           Meus Serviços
-        </a>
+        </Link>
 
         <div class="pt-3 pb-1 px-3">
           <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Conta</p>
         </div>
 
         <!-- Avaliações -->
-        <a href="#" class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-100 hover:text-gray-800 transition-colors">
+        <Link :href="route('prestador.avaliacoes.index')"
+          :class="isActive('/prestador/avaliacoes') ? 'bg-orange-50 text-orange-600 font-medium' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-800'"
+          class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors">
           <svg class="w-4 h-4 shrink-0 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
           Avaliações
-        </a>
+        </Link>
 
         <!-- Perfil -->
         <Link :href="route('prestador.perfil')"

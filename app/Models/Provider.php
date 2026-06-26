@@ -16,6 +16,8 @@ class Provider extends Authenticatable
         'rg_front_path', 'rg_back_path',
         'mei_cnpj', 'ccmei_path', 'profile_photo_path', 'bio',
         'status', 'rejection_reason', 'active',
+        'zip_code', 'street', 'number', 'complement', 'neighborhood', 'city', 'state',
+        'latitude', 'longitude', 'start_hour', 'end_hour',
     ];
 
     protected $hidden = ['password', 'remember_token'];

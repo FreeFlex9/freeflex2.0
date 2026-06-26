@@ -56,6 +56,27 @@
                 class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none"
                 placeholder="Sobre você..." />
             </div>
+
+            <!-- Toggle CNH -->
+            <div class="flex items-start justify-between gap-4 pt-1">
+              <div>
+                <p class="text-sm font-medium text-gray-700">Possuo Carteira de Motorista (CNH)</p>
+                <p class="text-xs text-gray-400 mt-0.5">
+                  {{ infoForm.has_license ? 'Habilitado para serviços que exigem CNH' : 'Não habilitado para serviços com CNH' }}
+                </p>
+              </div>
+              <button type="button" @click="infoForm.has_license = !infoForm.has_license"
+                class="shrink-0 w-12 h-6 rounded-full relative transition-colors duration-200 focus:outline-none mt-0.5"
+                :class="infoForm.has_license ? 'bg-orange-500' : 'bg-gray-200'">
+                <span class="absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform duration-200"
+                  :class="infoForm.has_license ? 'translate-x-6' : 'translate-x-0'" />
+              </button>
+            </div>
+
+            <div v-if="removendoCnh" class="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-2">
+              Ao salvar sem CNH, os serviços que exigem habilitação serão removidos dos seus serviços.
+            </div>
+
             <button type="submit" :disabled="infoForm.processing"
               class="w-full bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium py-2 rounded-lg transition disabled:opacity-60">
               Salvar
@@ -159,9 +180,14 @@ import PrestadorLayout from '@/Layouts/PrestadorLayout.vue'
 const props = defineProps({ provider: Object })
 
 const infoForm = useForm({
-  phone: props.provider.phone ?? '',
-  bio:   props.provider.bio   ?? '',
+  phone:       props.provider.phone       ?? '',
+  bio:         props.provider.bio         ?? '',
+  has_license: props.provider.has_license ?? false,
 })
+
+const removendoCnh = computed(() =>
+  props.provider.has_license && !infoForm.has_license
+)
 
 function saveInfo() {
   infoForm.put(route('prestador.perfil.update'))
