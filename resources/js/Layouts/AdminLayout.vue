@@ -7,7 +7,10 @@
     >
       <!-- Logo -->
       <div class="flex items-center justify-between h-16 px-6 bg-gray-800">
-        <span class="text-xl font-bold text-green-400">FreeFlex Admin</span>
+        <div class="flex items-center gap-2">
+          <img src="/images/logoFreeFlex.png" alt="FreeFlex" class="h-8 w-auto rounded-full" />
+          <span class="text-xs font-semibold text-green-400 uppercase tracking-wider">Admin</span>
+        </div>
         <button class="lg:hidden text-gray-400 hover:text-white" @click="sidebarOpen = false">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />

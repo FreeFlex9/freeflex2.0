@@ -2,8 +2,11 @@
   <div class="min-h-screen bg-gradient-to-br from-orange-50 to-gray-100 flex items-center justify-center p-4">
     <div class="w-full max-w-2xl">
       <div class="text-center mb-6">
-        <h1 class="text-3xl font-bold text-orange-500">FreeFlex</h1>
-        <p class="text-gray-500 mt-1 text-sm">Cadastro de Prestador</p>
+        <div class="flex justify-center items-center gap-2">
+          <img src="/images/logoFreeFlex.png" alt="FreeFlex" class="h-8 w-auto rounded-full" />
+          <span class="text-xl font-bold text-orange-500">FreeFlex</span>
+        </div>
+        <p class="text-gray-500 mt-2 text-sm">Cadastro de Prestador</p>
       </div>
 
       <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">

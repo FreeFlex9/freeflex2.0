@@ -2,7 +2,10 @@
   <div class="min-h-screen bg-gradient-to-br from-teal-50 to-gray-100 flex items-center justify-center p-4">
     <div class="w-full max-w-2xl">
       <div class="text-center mb-6">
-        <h1 class="text-3xl font-bold text-teal-600">FreeFlex</h1>
+        <div class="flex justify-center items-center gap-2">
+          <img src="/images/logoFreeFlex.png" alt="FreeFlex" class="h-8 w-auto rounded-full" />
+          <span class="text-xl font-bold text-teal-600">FreeFlex</span>
+        </div>
         <p class="text-gray-500 mt-1 text-sm">Cadastro de Empresa</p>
       </div>
 

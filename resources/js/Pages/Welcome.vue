@@ -16,13 +16,11 @@ defineProps({
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex items-center justify-between h-16">
                     <!-- Logo -->
-                    <div class="flex items-center gap-2">
-                        <div class="w-8 h-8 rounded-lg bg-emerald-500 flex items-center justify-center">
-                            <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                            </svg>
-                        </div>
-                        <span class="text-xl font-bold text-gray-900">Free<span class="text-emerald-500">Flex</span></span>
+                    <div class="flex items-center">
+                        <div class="flex justify-center items-center gap-2">
+                            <img src="/images/logoFreeFlex.png" alt="FreeFlex" class="h-10 w-auto rounded-full" />
+                            <span class="text-xl font-bold text-teal-600">FreeFlex</span>
+                        </div> 
                     </div>
 
                     <!-- Nav links -->
@@ -261,13 +259,8 @@ defineProps({
         <!-- Footer -->
         <footer class="py-10 border-t border-gray-100">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
-                <div class="flex items-center gap-2">
-                    <div class="w-6 h-6 rounded bg-emerald-500 flex items-center justify-center">
-                        <svg class="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                        </svg>
-                    </div>
-                    <span class="font-bold text-gray-900">Free<span class="text-emerald-500">Flex</span></span>
+                <div class="flex items-center">
+                    <img src="/images/logoFreeFlex.png" alt="FreeFlex" class="h-7 w-auto" />
                 </div>
                 <p class="text-sm text-gray-400">&copy; {{ new Date().getFullYear() }} FreeFlex. Todos os direitos reservados.</p>
                 <div class="flex items-center gap-4">
