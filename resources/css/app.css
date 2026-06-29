@@ -5,3 +5,52 @@
 [x-cloak] {
     display: none;
 }
+
+/* ────────────────────────────────────────
+   Modo escuro — overrides globais
+   Complementa as dark: classes do Tailwind
+   nos componentes de página e formulários
+──────────────────────────────────────── */
+html.dark {
+  color-scheme: dark;
+}
+
+/* Superfícies */
+html.dark .bg-white           { background-color: rgb(31 41 55); }   /* gray-800 */
+html.dark .bg-gray-50         { background-color: rgb(17 24 39); }   /* gray-900 */
+html.dark .bg-gray-100        { background-color: rgb(31 41 55); }   /* gray-800 */
+html.dark .bg-gray-200        { background-color: rgb(55 65 81); }   /* gray-700 */
+
+/* Bordas */
+html.dark .border-gray-100    { border-color: rgb(55 65 81); }       /* gray-700 */
+html.dark .border-gray-200    { border-color: rgb(55 65 81); }       /* gray-700 */
+html.dark .border-gray-300    { border-color: rgb(75 85 99); }       /* gray-600 */
+
+/* Texto neutro */
+html.dark .text-gray-900      { color: rgb(249 250 251); }           /* gray-50  */
+html.dark .text-gray-800      { color: rgb(229 231 235); }           /* gray-200 */
+html.dark .text-gray-700      { color: rgb(209 213 219); }           /* gray-300 */
+html.dark .text-gray-600      { color: rgb(156 163 175); }           /* gray-400 */
+
+/* Hover states */
+html.dark .hover\:bg-gray-50:hover  { background-color: rgb(55 65 81); }    /* gray-700 — um tom acima do card gray-800 */
+html.dark .hover\:bg-gray-100:hover { background-color: rgb(75 85 99); }    /* gray-600 */
+
+/* Dividers (divide-y) */
+html.dark .divide-gray-50  > :not([hidden]) ~ :not([hidden]) { border-color: rgb(55 65 81); }
+html.dark .divide-gray-100 > :not([hidden]) ~ :not([hidden]) { border-color: rgb(55 65 81); }
+html.dark .divide-gray-200 > :not([hidden]) ~ :not([hidden]) { border-color: rgb(55 65 81); }
+
+/* Inputs / textareas / selects */
+html.dark input:not([type="file"]):not([type="checkbox"]):not([type="radio"]),
+html.dark textarea,
+html.dark select {
+  background-color: rgb(55 65 81)  !important;    /* gray-700 */
+  border-color:     rgb(75 85 99)  !important;    /* gray-600 */
+  color:            rgb(229 231 235) !important;  /* gray-200 */
+}
+
+html.dark input::placeholder,
+html.dark textarea::placeholder {
+  color: rgb(107 114 128);                        /* gray-500 */
+}

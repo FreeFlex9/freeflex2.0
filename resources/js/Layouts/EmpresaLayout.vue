@@ -1,23 +1,23 @@
 <template>
-  <div class="min-h-screen bg-gray-50 flex">
+  <div class="min-h-screen bg-gray-50 dark:bg-gray-950 flex">
 
     <!-- Sidebar -->
     <aside
-      class="fixed inset-y-0 left-0 z-50 bg-white border-r border-gray-200 flex flex-col transition-all duration-300"
+      class="fixed inset-y-0 left-0 z-50 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 flex flex-col transition-all duration-300"
       :class="[
         collapsed ? 'w-16' : 'w-64',
         open ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
       ]"
     >
       <!-- Logo -->
-      <div class="h-16 flex items-center border-b border-gray-100 shrink-0"
+      <div class="h-16 flex items-center border-b border-gray-100 dark:border-gray-800 shrink-0"
         :class="collapsed ? 'justify-center px-2' : 'justify-between px-5'">
         <div class="flex justify-center items-center gap-2">
           <img src="/images/logoFreeFlex.png" alt="FreeFlex" class="h-8 w-auto rounded-full" />
           <span v-if="!collapsed" class="text-xl font-bold text-teal-600">FreeFlex</span>
         </div>
 
-        <button v-if="!collapsed" class="lg:hidden text-gray-400 hover:text-gray-600" @click="open = false">
+        <button v-if="!collapsed" class="lg:hidden text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300" @click="open = false">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
           </svg>
@@ -25,15 +25,15 @@
       </div>
 
       <!-- Company info -->
-      <div v-if="!collapsed" class="px-5 py-4 border-b border-gray-100 shrink-0">
-        <p class="text-xs text-gray-400 uppercase tracking-wider font-medium mb-1">Empresa</p>
-        <p class="font-semibold text-gray-800 text-sm truncate">{{ $page.props.auth.company?.trade_name }}</p>
+      <div v-if="!collapsed" class="px-5 py-4 border-b border-gray-100 dark:border-gray-800 shrink-0">
+        <p class="text-xs text-gray-400 dark:text-gray-500 uppercase tracking-wider font-medium mb-1">Empresa</p>
+        <p class="font-semibold text-gray-800 dark:text-gray-100 text-sm truncate">{{ $page.props.auth.company?.trade_name }}</p>
         <span :class="statusClass" class="inline-block text-xs px-2 py-0.5 rounded-full mt-1 font-medium">{{ statusLabel }}</span>
       </div>
 
       <!-- Toggle desktop -->
-      <button class="hidden lg:flex w-full items-center py-2 border-t border-gray-100 text-gray-400 hover:text-gray-600 hover:bg-gray-50 transition-colors"
-        :class="collapsed ? 'justify-center px-2' : 'justify-end px-4'"          @click="toggleCollapse"
+      <button class="hidden lg:flex w-full items-center py-2 border-t border-gray-100 dark:border-gray-800 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+        :class="collapsed ? 'justify-center px-2' : 'justify-end px-4'" @click="toggleCollapse"
         :title="collapsed ? 'Expandir menu' : 'Recolher menu'">
         <svg class="w-4 h-4 transition-transform duration-300" :class="collapsed ? 'rotate-180' : ''"
           fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -67,8 +67,8 @@
         </NavLink>
 
         <!-- Divider -->
-        <div :class="collapsed ? 'my-2 mx-1 border-t border-gray-100' : 'pt-3 pb-1 px-3'">
-          <p v-if="!collapsed" class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Conta</p>
+        <div :class="collapsed ? 'my-2 mx-1 border-t border-gray-100 dark:border-gray-800' : 'pt-3 pb-1 px-3'">
+          <p v-if="!collapsed" class="text-xs font-semibold text-gray-400 dark:text-gray-600 uppercase tracking-wider">Conta</p>
         </div>
 
         <NavLink :href="route('empresa.avaliacoes.index')" :active="isActive('/empresa/avaliacoes')"
@@ -87,20 +87,19 @@
 
       </nav>
 
-      <!-- Footer: logout + collapse toggle -->
-      <div class="border-t border-gray-100 shrink-0">
+      <!-- Footer: logout -->
+      <div class="border-t border-gray-100 dark:border-gray-800 shrink-0">
         <div :class="collapsed ? 'flex justify-center p-2' : 'px-4 py-3'">
           <Link :href="route('empresa.logout')" method="post" as="button"
             :title="collapsed ? 'Sair' : undefined"
-            class="flex items-center gap-2 text-sm text-gray-500 hover:text-red-500 transition-colors"
-            :class="collapsed ? 'p-2 rounded-lg hover:bg-red-50' : 'w-full'">
+            class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+            :class="collapsed ? 'p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20' : 'w-full'">
             <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
             </svg>
             <span v-if="!collapsed">Sair</span>
           </Link>
         </div>
-
       </div>
     </aside>
 
@@ -112,13 +111,13 @@
       :class="collapsed ? 'lg:ml-16' : 'lg:ml-64'">
 
       <!-- Top bar -->
-      <header class="h-16 bg-white border-b border-gray-200 flex items-center px-6 gap-4 sticky top-0 z-30">
-        <button class="lg:hidden text-gray-500 hover:text-gray-700" @click="open = true">
+      <header class="h-16 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 flex items-center px-6 gap-4 sticky top-0 z-30">
+        <button class="lg:hidden text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200" @click="open = true">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
           </svg>
         </button>
-        <h1 class="text-gray-800 font-semibold text-base flex-1">{{ title }}</h1>
+        <h1 class="text-gray-800 dark:text-gray-100 font-semibold text-base flex-1">{{ title }}</h1>
         <slot name="header-actions" />
       </header>
 
@@ -191,9 +190,9 @@ const NavLink = {
   setup(props, { slots }) {
     return () => {
       const activeClasses = props.activeColor === 'teal'
-        ? 'bg-teal-50 text-teal-700 font-medium'
-        : 'bg-orange-50 text-orange-600 font-medium'
-      const inactiveClasses = 'text-gray-600 hover:bg-gray-100 hover:text-gray-800'
+        ? 'bg-teal-50 text-teal-700 font-medium dark:bg-teal-500/10 dark:text-teal-400'
+        : 'bg-orange-50 text-orange-600 font-medium dark:bg-orange-500/10 dark:text-orange-400'
+      const inactiveClasses = 'text-gray-600 hover:bg-gray-100 hover:text-gray-800 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-100'
       return h(Link, {
         href: props.href,
         title: props.collapsed ? props.label : undefined,

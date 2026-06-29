@@ -116,7 +116,7 @@
 
       </div>
 
-      <!-- Coluna direita: documentos -->
+      <!-- Coluna direita: documentos + configuração -->
       <div class="lg:col-span-2 space-y-4">
         <div class="bg-white rounded-xl border border-gray-200 p-5">
           <h3 class="font-semibold text-gray-800 text-sm mb-1">Documentos</h3>
@@ -166,6 +166,41 @@
             </div>
           </div>
         </div>
+
+        <!-- Configuração do Sistema -->
+        <div class="bg-white rounded-xl border border-gray-200 p-5">
+          <h3 class="font-semibold text-gray-800 text-sm mb-4">Configuração do Sistema</h3>
+
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <!-- Ícone sol/lua -->
+              <div class="w-9 h-9 rounded-lg flex items-center justify-center"
+                :class="isDark ? 'bg-indigo-100 text-indigo-600' : 'bg-amber-100 text-amber-600'">
+                <svg v-if="!isDark" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707M17.657 17.657l-.707-.707M6.343 6.343l-.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z"/>
+                </svg>
+                <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+                </svg>
+              </div>
+              <div>
+                <p class="text-sm font-medium text-gray-700">Modo escuro</p>
+                <p class="text-xs text-gray-400 mt-0.5">
+                  {{ isDark ? 'Interface escura ativada' : 'Interface clara ativada' }}
+                </p>
+              </div>
+            </div>
+            <button type="button" @click="toggle"
+              class="shrink-0 w-12 h-6 rounded-full relative transition-colors duration-200 focus:outline-none"
+              :class="isDark ? 'bg-indigo-500' : 'bg-gray-200'">
+              <span class="absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform duration-200"
+                :class="isDark ? 'translate-x-6' : 'translate-x-0'" />
+            </button>
+          </div>
+        </div>
+
       </div>
 
     </div>
@@ -176,6 +211,9 @@
 import { computed, ref } from 'vue'
 import { useForm, router } from '@inertiajs/vue3'
 import PrestadorLayout from '@/Layouts/PrestadorLayout.vue'
+import { useDarkMode } from '@/composables/useDarkMode.js'
+
+const { isDark, toggle } = useDarkMode()
 
 const props = defineProps({ provider: Object })
 

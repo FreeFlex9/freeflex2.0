@@ -5,6 +5,9 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
+        <!-- Dark mode: aplica a classe antes do render para evitar flash -->
+        <script>try{if(localStorage.getItem('freeflex-theme')==='dark')document.documentElement.classList.add('dark')}catch(e){}</script>
+
         <title inertia>{{ config('app.name', 'Laravel') }}</title>
 
         <!-- Fonts -->
