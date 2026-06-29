@@ -38,6 +38,8 @@ Route::prefix('empresa')->name('empresa.')->group(function () {
         Route::get('/propostas/{proposal}/mensagens',   [Company\PropostasController::class, 'mensagens'])->name('propostas.mensagens');
         Route::post('/propostas/{proposal}/mensagens',  [Company\PropostasController::class, 'enviarMensagem'])->name('propostas.mensagens.enviar');
 
+        Route::get('/prestadores',         [Company\BuscaPrestadoresController::class, 'index'])->name('prestadores.index');
+
         Route::get('/avaliacoes',          [Company\AvaliacoesController::class, 'index'])->name('avaliacoes.index');
         Route::post('/avaliacoes',         [Company\AvaliacoesController::class, 'store'])->name('avaliacoes.store');
 
