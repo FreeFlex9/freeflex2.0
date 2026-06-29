@@ -43,6 +43,16 @@
       </div>
     </div>
 
+    <!-- Modal confirmar aprovação -->
+    <ConfirmModal
+      :show="!!confirmAprovar"
+      title="Aprovar empresa"
+      :message="`Aprovar a empresa &quot;${confirmAprovar?.trade_name}&quot;? O acesso completo será liberado.`"
+      confirm-text="Aprovar"
+      variant="success"
+      @confirm="confirmarAprovar"
+      @cancel="confirmAprovar = null" />
+
     <!-- Modal rejeição -->
     <div v-if="modalEmpresa" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div class="bg-white rounded-xl w-full max-w-md p-6">
@@ -64,20 +74,27 @@
 import { ref } from 'vue'
 import { useForm } from '@inertiajs/vue3'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
+import ConfirmModal from '@/Components/ConfirmModal.vue'
 
 const props = defineProps({ empresas: Array })
 const pendentes = { empresas: props.empresas.length, prestadores: 0, propostas: 0 }
 const loading = ref(null)
 const modalEmpresa = ref(null)
+const confirmAprovar = ref(null)
 const motivo = ref('')
 const erroMotivo = ref('')
 
 function formatDate(d) { return d ? new Date(d).toLocaleDateString('pt-BR') : '-' }
 
 function aprovar(emp) {
-  if (!confirm(`Aprovar a empresa "${emp.trade_name}"?`)) return
-  loading.value = emp.id
-  useForm({}).post(route('admin.empresas.aprovar', emp.id), { onFinish: () => { loading.value = null } })
+  confirmAprovar.value = emp
+}
+
+function confirmarAprovar() {
+  loading.value = confirmAprovar.value.id
+  useForm({}).post(route('admin.empresas.aprovar', confirmAprovar.value.id), {
+    onFinish: () => { loading.value = null; confirmAprovar.value = null },
+  })
 }
 
 function abrirRejeicao(emp) { modalEmpresa.value = emp; motivo.value = ''; erroMotivo.value = '' }

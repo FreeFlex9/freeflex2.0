@@ -76,6 +76,16 @@
       </div>
     </div>
 
+    <!-- Modal confirmar aprovação -->
+    <ConfirmModal
+      :show="!!confirmAprovar"
+      title="Aprovar prestador"
+      :message="`Aprovar o prestador &quot;${confirmAprovar?.name}&quot;? O acesso completo será liberado.`"
+      confirm-text="Aprovar"
+      variant="success"
+      @confirm="confirmarAprovar"
+      @cancel="confirmAprovar = null" />
+
     <!-- Modal rejeição -->
     <div v-if="modalPrestador" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div class="bg-white rounded-xl w-full max-w-md p-6">
@@ -97,6 +107,7 @@
 import { ref, h, resolveComponent } from 'vue'
 import { useForm } from '@inertiajs/vue3'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
+import ConfirmModal from '@/Components/ConfirmModal.vue'
 
 // Componente de card de documento (SFC inline com render function — sem template string)
 const DocCard = {
@@ -174,6 +185,7 @@ const DocCard = {
 const props = defineProps({ prestadores: Array })
 const pendentes = { empresas: 0, prestadores: props.prestadores.length, propostas: 0 }
 const modalPrestador = ref(null)
+const confirmAprovar = ref(null)
 const motivo = ref('')
 const erroMotivo = ref('')
 
@@ -190,8 +202,13 @@ function docsOk(pres) {
 }
 
 function aprovar(pres) {
-  if (!confirm(`Aprovar o prestador "${pres.name}"?`)) return
-  useForm({}).post(route('admin.prestadores.aprovar', pres.id))
+  confirmAprovar.value = pres
+}
+
+function confirmarAprovar() {
+  useForm({}).post(route('admin.prestadores.aprovar', confirmAprovar.value.id), {
+    onFinish: () => { confirmAprovar.value = null },
+  })
 }
 
 function abrirRejeicao(pres) { modalPrestador.value = pres; motivo.value = ''; erroMotivo.value = '' }

@@ -38,6 +38,16 @@
       </div>
     </div>
 
+    <!-- Modal confirmar aprovação -->
+    <ConfirmModal
+      :show="!!confirmAprovar"
+      title="Aprovar proposta"
+      :message="`Aprovar a proposta de &quot;${confirmAprovar?.provider?.name}&quot;?`"
+      confirm-text="Aprovar"
+      variant="success"
+      @confirm="confirmarAprovar"
+      @cancel="confirmAprovar = null" />
+
     <!-- Modal rejeição -->
     <div v-if="modalProposta" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div class="bg-white rounded-xl w-full max-w-md p-6">
@@ -58,17 +68,24 @@
 import { ref } from 'vue'
 import { Link, useForm } from '@inertiajs/vue3'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
+import ConfirmModal from '@/Components/ConfirmModal.vue'
 
 const props = defineProps({ demanda: Object, propostas: Array })
 const pendentes = { empresas: 0, prestadores: 0, propostas: props.propostas.length }
 const modalProposta = ref(null)
+const confirmAprovar = ref(null)
 const motivo = ref('')
 
 function formatDate(d) { return d ? new Date(d).toLocaleString('pt-BR') : '-' }
 
 function aprovar(prop) {
-  if (!confirm(`Aprovar proposta de "${prop.provider?.name}"?`)) return
-  useForm({}).post(route('admin.demandas.propostas.aprovar', prop.id))
+  confirmAprovar.value = prop
+}
+
+function confirmarAprovar() {
+  useForm({}).post(route('admin.demandas.propostas.aprovar', confirmAprovar.value.id), {
+    onFinish: () => { confirmAprovar.value = null },
+  })
 }
 
 function abrirRejeicao(prop) { modalProposta.value = prop; motivo.value = '' }

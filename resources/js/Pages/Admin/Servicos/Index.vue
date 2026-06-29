@@ -40,6 +40,16 @@
       </table>
     </div>
 
+    <!-- Modal confirmar exclusão -->
+    <ConfirmModal
+      :show="!!confirmDelete"
+      title="Excluir serviço"
+      :message="`Excluir o serviço &quot;${confirmDelete?.name}&quot;? Esta ação não pode ser desfeita.`"
+      confirm-text="Excluir"
+      variant="danger"
+      @confirm="confirmarExclusao"
+      @cancel="confirmDelete = null" />
+
     <!-- Modal criar/editar -->
     <div v-if="modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div class="bg-white rounded-xl w-full max-w-md p-6">
@@ -80,10 +90,12 @@
 import { ref, reactive } from 'vue'
 import { useForm } from '@inertiajs/vue3'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
+import ConfirmModal from '@/Components/ConfirmModal.vue'
 
 const props = defineProps({ servicos: Array })
 const pendentes = { empresas: 0, prestadores: 0, propostas: 0 }
 const modal = ref(false)
+const confirmDelete = ref(null)
 const erros = reactive({})
 const form = reactive({ id: null, nome: '', valor_hora: '', valor_repasse: '', precisa_cnh: false })
 
@@ -113,7 +125,12 @@ function salvar() {
 }
 
 function excluir(sv) {
-  if (!confirm(`Excluir o serviço "${sv.name}"?`)) return
-  useForm({}).delete(route('admin.servicos.destroy', sv.id))
+  confirmDelete.value = sv
+}
+
+function confirmarExclusao() {
+  useForm({}).delete(route('admin.servicos.destroy', confirmDelete.value.id), {
+    onFinish: () => { confirmDelete.value = null },
+  })
 }
 </script>

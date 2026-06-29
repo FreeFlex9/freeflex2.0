@@ -136,6 +136,16 @@
       </div>
     </div>
 
+    <!-- Modal confirmar cancelamento -->
+    <ConfirmModal
+      :show="!!confirmCancelar"
+      title="Cancelar proposta"
+      message="Tem certeza que deseja cancelar esta proposta? Esta ação não pode ser desfeita."
+      confirm-text="Cancelar proposta"
+      variant="danger"
+      @confirm="confirmarCancelar"
+      @cancel="confirmCancelar = null" />
+
   </PrestadorLayout>
 </template>
 
@@ -143,6 +153,7 @@
 import { ref, computed, nextTick, onUnmounted } from 'vue'
 import { router, useForm } from '@inertiajs/vue3'
 import PrestadorLayout from '@/Layouts/PrestadorLayout.vue'
+import ConfirmModal from '@/Components/ConfirmModal.vue'
 
 const props = defineProps({
   proposals: Array,
@@ -189,9 +200,16 @@ function podeChat(status) {
 }
 
 // ── Cancelar proposta ──────────────────────────────────────────────────────────
+const confirmCancelar = ref(null)
+
 function cancelar(proposta) {
-  if (!confirm('Cancelar esta proposta?')) return
-  router.delete(route('prestador.propostas.cancelar', proposta.id))
+  confirmCancelar.value = proposta
+}
+
+function confirmarCancelar() {
+  router.delete(route('prestador.propostas.cancelar', confirmCancelar.value.id), {
+    onFinish: () => { confirmCancelar.value = null },
+  })
 }
 
 // ── Chat ───────────────────────────────────────────────────────────────────────
