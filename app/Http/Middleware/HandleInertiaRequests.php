@@ -40,12 +40,24 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user'    => $request->user(),
                 'admin'   => $request->user('admin')   ? ['id' => $request->user('admin')->id,   'email' => $request->user('admin')->email]   : null,
-                'company' => $request->user('company') ? ['id' => $request->user('company')->id, 'trade_name' => $request->user('company')->trade_name, 'status' => $request->user('company')->status] : null,
-                'provider'=> $request->user('provider')? ['id' => $request->user('provider')->id, 'name' => $request->user('provider')->name, 'status' => $request->user('provider')->status, 'has_license' => (bool) $request->user('provider')->has_license] : null,
+                'company'  => $request->user('company')  ? [
+                    'id'          => $request->user('company')->id,
+                    'trade_name'  => $request->user('company')->trade_name,
+                    'status'      => $request->user('company')->status,
+                    'approved_at' => $request->user('company')->approved_at?->toISOString(),
+                ] : null,
+                'provider' => $request->user('provider') ? [
+                    'id'          => $request->user('provider')->id,
+                    'name'        => $request->user('provider')->name,
+                    'status'      => $request->user('provider')->status,
+                    'approved_at' => $request->user('provider')->approved_at?->toISOString(),
+                    'has_license' => (bool) $request->user('provider')->has_license,
+                ] : null,
             ],
             'flash' => [
-                'success' => $request->session()->get('success'),
-                'error'   => $request->session()->get('error'),
+                'success'    => $request->session()->get('success'),
+                'error'      => $request->session()->get('error'),
+                'cnh_notice' => $request->session()->get('cnh_notice'),
             ],
         ];
     }

@@ -104,6 +104,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/prestadores', [Admin\PrestadoresController::class, 'index'])->name('prestadores.index');
         Route::post('/prestadores/{prestador}/aprovar', [Admin\PrestadoresController::class, 'aprovar'])->name('prestadores.aprovar');
         Route::post('/prestadores/{prestador}/rejeitar', [Admin\PrestadoresController::class, 'rejeitar'])->name('prestadores.rejeitar');
+        Route::post('/prestadores/{prestador}/aprovar-cnh', [Admin\PrestadoresController::class, 'aprovarCnh'])->name('prestadores.aprovarCnh');
+        Route::post('/prestadores/{prestador}/rejeitar-cnh', [Admin\PrestadoresController::class, 'rejeitarCnh'])->name('prestadores.rejeitarCnh');
 
         Route::get('/demandas', [Admin\DemandasController::class, 'index'])->name('demandas.index');
         Route::get('/demandas/{demanda}/propostas', [Admin\DemandasController::class, 'propostas'])->name('demandas.propostas');

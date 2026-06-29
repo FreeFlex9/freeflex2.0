@@ -24,7 +24,7 @@ class EmpresasController extends Controller
     {
         abort_if($empresa->status !== 'pending', 422, 'Status inválido.');
 
-        $empresa->update(['status' => 'approved', 'rejection_reason' => null]);
+        $empresa->update(['status' => 'approved', 'approved_at' => now(), 'rejection_reason' => null]);
 
         return back()->with('success', "Empresa {$empresa->trade_name} aprovada com sucesso!");
     }

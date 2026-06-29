@@ -27,7 +27,7 @@
       <div v-if="!collapsed" class="px-5 py-4 border-b border-gray-100 dark:border-gray-800 shrink-0">
         <p class="text-xs text-gray-400 dark:text-gray-500 uppercase tracking-wider font-medium mb-1">Prestador</p>
         <p class="font-semibold text-gray-800 dark:text-gray-100 text-sm truncate">{{ $page.props.auth.provider?.name }}</p>
-        <span :class="statusClass" class="inline-block text-xs px-2 py-0.5 rounded-full mt-1 font-medium">{{ statusLabel }}</span>
+        <span v-if="showStatusBadge" :class="statusClass" class="inline-block text-xs px-2 py-0.5 rounded-full mt-1 font-medium">{{ statusLabel }}</span>
       </div>
 
       <button class="hidden lg:flex w-full items-center py-2 border-t border-gray-100 dark:border-gray-800 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
@@ -178,10 +178,20 @@ function isActive(path) {
   return page.url.startsWith(path)
 }
 
+const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000
+
+const showStatusBadge = computed(() => {
+  const p = page.props.auth.provider
+  if (!p) return false
+  if (p.status !== 'approved') return true
+  if (!p.approved_at) return true
+  return (Date.now() - new Date(p.approved_at).getTime()) < THIRTY_DAYS_MS
+})
+
 const statusClass = computed(() => ({
-  'bg-yellow-100 text-yellow-700': page.props.auth.provider?.status === 'pending',
-  'bg-green-100 text-green-700':   page.props.auth.provider?.status === 'approved',
-  'bg-red-100 text-red-700':       page.props.auth.provider?.status === 'rejected',
+  'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300': page.props.auth.provider?.status === 'pending',
+  'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300':     page.props.auth.provider?.status === 'approved',
+  'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300':             page.props.auth.provider?.status === 'rejected',
 }))
 
 const statusLabel = computed(() => ({

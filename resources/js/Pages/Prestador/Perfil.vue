@@ -1,6 +1,45 @@
 <template>
   <PrestadorLayout title="Meu Perfil">
 
+    <!-- CNH: recém solicitada (flash) -->
+    <div v-if="$page.props.flash?.cnh_notice"
+      class="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-xl text-sm text-blue-800 flex items-start gap-3">
+      <svg class="w-5 h-5 shrink-0 mt-0.5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+      <div>
+        <strong>CNH solicitada!</strong>
+        Faça o upload dos documentos da sua CNH na seção <strong>Documentos</strong> abaixo.
+        O administrador irá revisar e aprovar antes de liberar os serviços que exigem habilitação.
+      </div>
+    </div>
+
+    <!-- CNH: aguardando aprovação -->
+    <div v-else-if="provider.cnh_status === 'pending'"
+      class="mb-4 p-4 bg-amber-50 border border-amber-200 rounded-xl text-sm text-amber-800 flex items-start gap-3">
+      <svg class="w-5 h-5 shrink-0 mt-0.5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+      <div>
+        <strong>CNH aguardando aprovação.</strong>
+        Seus documentos de CNH estão sendo analisados pelo administrador.
+        Assim que aprovados, você poderá oferecer serviços que exigem habilitação.
+      </div>
+    </div>
+
+    <!-- CNH: rejeitada -->
+    <div v-else-if="provider.cnh_status === 'rejected'"
+      class="mb-4 p-4 bg-red-50 border border-red-200 rounded-xl text-sm text-red-800 flex items-start gap-3">
+      <svg class="w-5 h-5 shrink-0 mt-0.5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+      <div>
+        <strong>CNH rejeitada.</strong>
+        <span v-if="provider.cnh_rejection_reason"> Motivo: {{ provider.cnh_rejection_reason }}.</span>
+        Você pode reenviar os documentos corretos na seção <strong>Documentos</strong> abaixo ou desabilitar a CNH.
+      </div>
+    </div>
+
     <!-- Aviso de documentos pendentes -->
     <div v-if="missingRequired.length && provider.status === 'pending'"
       class="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-xl text-sm text-amber-800 flex items-start gap-3">
@@ -149,7 +188,10 @@
               <div>
                 <p class="text-sm font-medium text-gray-700">Possuo Carteira de Motorista (CNH)</p>
                 <p class="text-xs text-gray-400 mt-0.5">
-                  {{ infoForm.has_license ? 'Habilitado para serviços que exigem CNH (Adicione o documento)' : 'Não habilitado para serviços com CNH' }}
+                  <template v-if="provider.cnh_status === 'pending'">Aguardando aprovação do administrador</template>
+                  <template v-else-if="provider.cnh_status === 'rejected'">Rejeitada — reenvie os documentos ou desabilite</template>
+                  <template v-else-if="infoForm.has_license">Habilitado para serviços que exigem CNH</template>
+                  <template v-else>Não habilitado para serviços com CNH</template>
                 </p>
               </div>
               <button type="button" @click="infoForm.has_license = !infoForm.has_license"
@@ -349,7 +391,8 @@ function formatDate(d) {
 const infoForm = useForm({
   phone:       props.provider.phone       ?? '',
   bio:         props.provider.bio         ?? '',
-  has_license: props.provider.has_license ?? false,
+  // Toggle ON se CNH aprovada, pendente ou rejeitada (usuário expressou intenção)
+  has_license: props.provider.has_license || ['pending', 'rejected'].includes(props.provider.cnh_status),
 })
 
 const removendoCnh = computed(() =>
@@ -451,7 +494,8 @@ const documentos = computed(() => {
     { tipo: 'rg_front',  label: 'RG (frente)', obrigatorio: true,  path: p.rg_front_path },
     { tipo: 'rg_back',   label: 'RG (verso)',  obrigatorio: true,  path: p.rg_back_path },
   ]
-  if (p.has_license) {
+  const showCnh = p.has_license || ['pending', 'rejected'].includes(p.cnh_status)
+  if (showCnh) {
     list.push({ tipo: 'license_front', label: 'CNH (frente)', obrigatorio: true,  path: p.license_front_path })
     list.push({ tipo: 'license_back',  label: 'CNH (verso)',  obrigatorio: false, path: p.license_back_path })
   }

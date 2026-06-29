@@ -15,7 +15,8 @@ class Provider extends Authenticatable
         'license_front_path', 'license_back_path',
         'rg_front_path', 'rg_back_path',
         'mei_cnpj', 'ccmei_path', 'profile_photo_path', 'bio',
-        'status', 'rejection_reason', 'active',
+        'status', 'approved_at', 'rejection_reason', 'active',
+        'cnh_status', 'cnh_rejection_reason',
         'zip_code', 'street', 'number', 'complement', 'neighborhood', 'city', 'state',
         'latitude', 'longitude', 'start_hour', 'end_hour',
     ];
@@ -30,6 +31,7 @@ class Provider extends Authenticatable
             'is_digital_license'=> 'boolean',
             'active'            => 'boolean',
             'email_verified_at' => 'datetime',
+            'approved_at'       => 'datetime',
             'birth_date'        => 'date',
         ];
     }

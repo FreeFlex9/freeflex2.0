@@ -30,15 +30,49 @@ class PerfilController extends Controller
             'has_license' => 'boolean',
         ]);
 
-        $hadLicense = (bool) $provider->has_license;
-        $provider->update($data);
+        $wantsCnh   = (bool) $data['has_license'];
+        $isApproved = $provider->status === 'approved';
 
-        // Se removeu a CNH, desvincula serviços que exigem habilitação
-        if ($hadLicense && !$data['has_license']) {
-            $cnhServiceIds = \App\Models\Service::where('requires_license', true)->pluck('id');
-            $provider->services()->detach($cnhServiceIds);
+        $update = [
+            'phone' => $data['phone'] ?? null,
+            'bio'   => $data['bio']   ?? null,
+        ];
+
+        if ($isApproved) {
+            if (!$wantsCnh) {
+                // Prestador quer remover CNH (ou cancelar solicitação pendente)
+                if ($provider->has_license) {
+                    $cnhIds = \App\Models\Service::where('requires_license', true)->pluck('id');
+                    $provider->services()->detach($cnhIds);
+                }
+                $update['has_license']          = false;
+                $update['cnh_status']           = null;
+                $update['cnh_rejection_reason'] = null;
+            } elseif (!$provider->has_license && $provider->cnh_status !== 'pending') {
+                // Nova solicitação de CNH (ou reenvio após rejeição)
+                $update['cnh_status']           = 'pending';
+                $update['cnh_rejection_reason'] = null;
+                $provider->update($update);
+                return back()->with('cnh_notice', true);
+            }
+            // Se wantsCnh && (has_license || cnh_status=pending): sem mudança na CNH
+        } else {
+            // Prestador em cadastro inicial: salva has_license diretamente
+            $hadLicense          = (bool) $provider->has_license;
+            $update['has_license'] = $wantsCnh;
+
+            if ($hadLicense && !$wantsCnh) {
+                $cnhIds = \App\Models\Service::where('requires_license', true)->pluck('id');
+                $provider->services()->detach($cnhIds);
+            }
+
+            if (!$hadLicense && $wantsCnh) {
+                $provider->update($update);
+                return back()->with('cnh_notice', true);
+            }
         }
 
+        $provider->update($update);
         return back()->with('success', 'Informações atualizadas!');
     }
 

@@ -22,8 +22,17 @@ class PrestadoresController extends Controller
                 'profile_photo_path', 'created_at',
             ]);
 
+        $cnhPendentes = Provider::where('status', 'approved')
+            ->where('cnh_status', 'pending')
+            ->orderBy('updated_at')
+            ->get([
+                'id', 'name', 'email', 'phone',
+                'is_digital_license', 'license_front_path', 'license_back_path',
+            ]);
+
         return Inertia::render('Admin/Prestadores/Index', [
-            'prestadores' => $providers,
+            'prestadores'  => $providers,
+            'cnhPendentes' => $cnhPendentes,
         ]);
     }
 
@@ -51,7 +60,7 @@ class PrestadoresController extends Controller
             abort(422, 'CCMEI não enviado para MEI.');
         }
 
-        $prestador->update(['status' => 'approved', 'rejection_reason' => null]);
+        $prestador->update(['status' => 'approved', 'approved_at' => now(), 'rejection_reason' => null]);
 
         return back()->with('success', "Prestador {$prestador->name} aprovado com sucesso!");
     }
@@ -65,5 +74,39 @@ class PrestadoresController extends Controller
         $prestador->update(['status' => 'rejected', 'rejection_reason' => $request->motivo]);
 
         return back()->with('success', "Prestador {$prestador->name} rejeitado.");
+    }
+
+    public function aprovarCnh(Provider $prestador)
+    {
+        abort_if($prestador->cnh_status !== 'pending', 422, 'CNH não está pendente.');
+
+        $docsOk = $prestador->is_digital_license
+            ? !empty($prestador->license_front_path)
+            : !empty($prestador->license_front_path) && !empty($prestador->license_back_path);
+
+        abort_if(!$docsOk, 422, 'Documentos de CNH não enviados.');
+
+        $prestador->update([
+            'has_license'          => true,
+            'cnh_status'           => 'approved',
+            'cnh_rejection_reason' => null,
+        ]);
+
+        return back()->with('success', "CNH de {$prestador->name} aprovada!");
+    }
+
+    public function rejeitarCnh(Request $request, Provider $prestador)
+    {
+        abort_if($prestador->cnh_status !== 'pending', 422, 'CNH não está pendente.');
+
+        $request->validate(['motivo' => 'required|string|max:1000']);
+
+        $prestador->update([
+            'has_license'          => false,
+            'cnh_status'           => 'rejected',
+            'cnh_rejection_reason' => $request->motivo,
+        ]);
+
+        return back()->with('success', "CNH de {$prestador->name} rejeitada.");
     }
 }
