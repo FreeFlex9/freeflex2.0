@@ -15,10 +15,10 @@
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-      <!-- Coluna esquerda: foto + info + senha -->
+      <!-- ── Coluna esquerda ── -->
       <div class="space-y-4">
 
-        <!-- Foto de perfil -->
+        <!-- Foto + dados pessoais (somente leitura) -->
         <div class="bg-white rounded-xl border border-gray-200 p-5 flex flex-col items-center gap-3">
           <div class="relative">
             <img v-if="provider.profile_photo_path"
@@ -30,58 +30,33 @@
               </svg>
             </div>
           </div>
-          <p class="font-semibold text-gray-800 text-sm text-center">{{ provider.name }}</p>
-          <p class="text-xs text-gray-500">{{ provider.email }}</p>
+
           <label class="cursor-pointer w-full">
             <input type="file" class="hidden" accept="image/*" @change="upload('profile_photo', $event)" />
             <span class="block text-center text-xs font-medium text-orange-500 border border-orange-300 rounded-lg py-1.5 hover:bg-orange-50 transition">
               {{ provider.profile_photo_path ? 'Trocar foto' : 'Adicionar foto' }}
             </span>
           </label>
-        </div>
 
-        <!-- Informações básicas -->
-        <div class="bg-white rounded-xl border border-gray-200 p-5">
-          <h3 class="font-semibold text-gray-800 text-sm mb-4">Informações</h3>
-          <form @submit.prevent="saveInfo" class="space-y-3">
+          <!-- Dados pessoais somente leitura -->
+          <div class="w-full space-y-2 pt-1">
             <div>
-              <label class="text-xs font-medium text-gray-500">Telefone</label>
-              <input v-model="infoForm.phone" type="text"
-                class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
-                placeholder="(00) 00000-0000" />
+              <p class="text-xs font-medium text-gray-400">Nome</p>
+              <p class="text-sm text-gray-800 font-medium">{{ provider.name }}</p>
             </div>
             <div>
-              <label class="text-xs font-medium text-gray-500">Bio</label>
-              <textarea v-model="infoForm.bio" rows="3"
-                class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none"
-                placeholder="Sobre você..." />
+              <p class="text-xs font-medium text-gray-400">E-mail</p>
+              <p class="text-sm text-gray-700">{{ provider.email }}</p>
             </div>
-
-            <!-- Toggle CNH -->
-            <div class="flex items-start justify-between gap-4 pt-1">
-              <div>
-                <p class="text-sm font-medium text-gray-700">Possuo Carteira de Motorista (CNH)</p>
-                <p class="text-xs text-gray-400 mt-0.5">
-                  {{ infoForm.has_license ? 'Habilitado para serviços que exigem CNH' : 'Não habilitado para serviços com CNH' }}
-                </p>
-              </div>
-              <button type="button" @click="infoForm.has_license = !infoForm.has_license"
-                class="shrink-0 w-12 h-6 rounded-full relative transition-colors duration-200 focus:outline-none mt-0.5"
-                :class="infoForm.has_license ? 'bg-orange-500' : 'bg-gray-200'">
-                <span class="absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform duration-200"
-                  :class="infoForm.has_license ? 'translate-x-6' : 'translate-x-0'" />
-              </button>
+            <div>
+              <p class="text-xs font-medium text-gray-400">CPF</p>
+              <p class="text-sm text-gray-700 font-mono tracking-wide">{{ formatCpf(provider.cpf) }}</p>
             </div>
-
-            <div v-if="removendoCnh" class="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-2">
-              Ao salvar sem CNH, os serviços que exigem habilitação serão removidos dos seus serviços.
+            <div v-if="provider.birth_date">
+              <p class="text-xs font-medium text-gray-400">Data de nascimento</p>
+              <p class="text-sm text-gray-700">{{ formatDate(provider.birth_date) }}</p>
             </div>
-
-            <button type="submit" :disabled="infoForm.processing"
-              class="w-full bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium py-2 rounded-lg transition disabled:opacity-60">
-              Salvar
-            </button>
-          </form>
+          </div>
         </div>
 
         <!-- Alterar senha -->
@@ -114,10 +89,182 @@
           </form>
         </div>
 
+        <!-- Configuração do Sistema -->
+        <div class="bg-white rounded-xl border border-gray-200 p-5">
+          <h3 class="font-semibold text-gray-800 text-sm mb-4">Configuração do Sistema</h3>
+
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-lg flex items-center justify-center"
+                :class="isDark ? 'bg-indigo-100 text-indigo-600' : 'bg-amber-100 text-amber-600'">
+                <svg v-if="!isDark" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707M17.657 17.657l-.707-.707M6.343 6.343l-.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z"/>
+                </svg>
+                <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+                </svg>
+              </div>
+              <div>
+                <p class="text-sm font-medium text-gray-700">Modo escuro</p>
+                <p class="text-xs text-gray-400 mt-0.5">
+                  {{ isDark ? 'Interface escura ativada' : 'Interface clara ativada' }}
+                </p>
+              </div>
+            </div>
+            <button type="button" @click="toggle"
+              class="shrink-0 w-12 h-6 rounded-full relative transition-colors duration-200 focus:outline-none"
+              :class="isDark ? 'bg-indigo-500' : 'bg-gray-200'">
+              <span class="absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform duration-200"
+                :class="isDark ? 'translate-x-6' : 'translate-x-0'" />
+            </button>
+          </div>
+        </div>
+
       </div>
 
-      <!-- Coluna direita: documentos + configuração -->
+      <!-- ── Coluna direita ── -->
       <div class="lg:col-span-2 space-y-4">
+
+        <!-- Informações editáveis -->
+        <div class="bg-white rounded-xl border border-gray-200 p-5">
+          <h3 class="font-semibold text-gray-800 text-sm mb-4">Informações</h3>
+          <form @submit.prevent="saveInfo" class="space-y-3">
+            <div>
+              <label class="text-xs font-medium text-gray-500">Telefone</label>
+              <input v-model="infoForm.phone" type="text"
+                class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                placeholder="(00) 00000-0000" />
+            </div>
+            <div>
+              <label class="text-xs font-medium text-gray-500">Bio</label>
+              <textarea v-model="infoForm.bio" rows="3"
+                class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none"
+                placeholder="Sobre você..." />
+            </div>
+
+            <!-- Toggle CNH -->
+            <div class="flex items-start justify-between gap-4 pt-1">
+              <div>
+                <p class="text-sm font-medium text-gray-700">Possuo Carteira de Motorista (CNH)</p>
+                <p class="text-xs text-gray-400 mt-0.5">
+                  {{ infoForm.has_license ? 'Habilitado para serviços que exigem CNH (Adicione o documento)' : 'Não habilitado para serviços com CNH' }}
+                </p>
+              </div>
+              <button type="button" @click="infoForm.has_license = !infoForm.has_license"
+                class="shrink-0 w-12 h-6 rounded-full relative transition-colors duration-200 focus:outline-none mt-0.5"
+                :class="infoForm.has_license ? 'bg-orange-500' : 'bg-gray-200'">
+                <span class="absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform duration-200"
+                  :class="infoForm.has_license ? 'translate-x-6' : 'translate-x-0'" />
+              </button>
+            </div>
+
+            <div v-if="removendoCnh" class="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-2">
+              Ao salvar sem CNH, os serviços que exigem habilitação serão removidos dos seus serviços.
+            </div>
+
+            <button type="submit" :disabled="infoForm.processing"
+              class="w-full bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium py-2 rounded-lg transition disabled:opacity-60">
+              Salvar informações
+            </button>
+          </form>
+        </div>
+
+        <!-- Endereço -->
+        <div class="bg-white rounded-xl border border-gray-200 p-5">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="font-semibold text-gray-800 text-sm">Endereço</h3>
+            <button v-if="!editingAddress" type="button" @click="editingAddress = true"
+              class="text-xs text-orange-500 font-medium hover:text-orange-600 transition">
+              Editar
+            </button>
+          </div>
+
+          <!-- Modo leitura -->
+          <div v-if="!editingAddress" class="space-y-2">
+            <div v-if="hasAddress">
+              <p class="text-xs font-medium text-gray-400">CEP</p>
+              <p class="text-sm text-gray-700">{{ provider.zip_code }}</p>
+            </div>
+            <div v-if="provider.street">
+              <p class="text-xs font-medium text-gray-400">Logradouro</p>
+              <p class="text-sm text-gray-700">
+                {{ provider.street }}{{ provider.number ? ', ' + provider.number : '' }}
+                <span v-if="provider.complement" class="text-gray-500"> · {{ provider.complement }}</span>
+              </p>
+            </div>
+            <div v-if="provider.neighborhood">
+              <p class="text-xs font-medium text-gray-400">Bairro</p>
+              <p class="text-sm text-gray-700">{{ provider.neighborhood }}</p>
+            </div>
+            <div v-if="provider.city || provider.state">
+              <p class="text-xs font-medium text-gray-400">Cidade / Estado</p>
+              <p class="text-sm text-gray-700">{{ [provider.city, provider.state].filter(Boolean).join(' – ') }}</p>
+            </div>
+            <p v-if="!hasAddress" class="text-sm text-gray-400 italic">Nenhum endereço cadastrado.</p>
+          </div>
+
+          <!-- Modo edição -->
+          <form v-else @submit.prevent="saveAddress" class="grid gap-3">
+            <div class="grid grid-cols-3  gap-3">
+              <div>
+                <label class="text-xs font-medium text-gray-500">CEP</label>
+                <input v-model="addressForm.zip_code" type="text"
+                class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                placeholder="00000-000" @blur="fetchAddress" maxlength="9" />
+              </div>
+              <div>
+                <label class="text-xs font-medium text-gray-500">Estado</label>
+                <select v-model="addressForm.state"
+                  class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white">
+                  <option value="">Selecione</option>
+                  <option v-for="uf in ufs" :key="uf" :value="uf">{{ uf }}</option>
+                </select>
+              </div>
+              <div>
+                <label class="text-xs font-medium text-gray-500">Número</label>
+                <input v-model="addressForm.number" type="text"
+                class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500" />
+              </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2  gap-3">
+              <div>
+                <label class="text-xs font-medium text-gray-500">Logradouro</label>
+                <input v-model="addressForm.street" type="text"
+                  class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500" />
+              </div>
+              <div>
+                <label class="text-xs font-medium text-gray-500">Complemento</label>
+                <input v-model="addressForm.complement" type="text"
+                  class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  placeholder="Apto, sala, etc." />
+              </div>
+              <div>
+                <label class="text-xs font-medium text-gray-500">Bairro</label>
+                <input v-model="addressForm.neighborhood" type="text"
+                  class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500" />
+              </div>
+              <div>
+                <label class="text-xs font-medium text-gray-500">Cidade</label>
+                <input v-model="addressForm.city" type="text"
+                  class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500" />
+              </div>
+            </div>
+            <div class="flex gap-2 pt-1">
+              <button type="submit" :disabled="addressForm.processing"
+                class="flex-1 bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium py-2 rounded-lg transition disabled:opacity-60">
+                Salvar endereço
+              </button>
+              <button type="button" @click="cancelAddress"
+                class="px-4 py-2 text-sm text-gray-500 border border-gray-300 rounded-lg hover:bg-gray-50 transition">
+                Cancelar
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Documentos -->
         <div class="bg-white rounded-xl border border-gray-200 p-5">
           <h3 class="font-semibold text-gray-800 text-sm mb-1">Documentos</h3>
           <p class="text-xs text-gray-400 mb-5">JPG, PNG ou PDF · máx. 5 MB por arquivo</p>
@@ -167,42 +314,7 @@
           </div>
         </div>
 
-        <!-- Configuração do Sistema -->
-        <div class="bg-white rounded-xl border border-gray-200 p-5">
-          <h3 class="font-semibold text-gray-800 text-sm mb-4">Configuração do Sistema</h3>
-
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-3">
-              <!-- Ícone sol/lua -->
-              <div class="w-9 h-9 rounded-lg flex items-center justify-center"
-                :class="isDark ? 'bg-indigo-100 text-indigo-600' : 'bg-amber-100 text-amber-600'">
-                <svg v-if="!isDark" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707M17.657 17.657l-.707-.707M6.343 6.343l-.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z"/>
-                </svg>
-                <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
-                </svg>
-              </div>
-              <div>
-                <p class="text-sm font-medium text-gray-700">Modo escuro</p>
-                <p class="text-xs text-gray-400 mt-0.5">
-                  {{ isDark ? 'Interface escura ativada' : 'Interface clara ativada' }}
-                </p>
-              </div>
-            </div>
-            <button type="button" @click="toggle"
-              class="shrink-0 w-12 h-6 rounded-full relative transition-colors duration-200 focus:outline-none"
-              :class="isDark ? 'bg-indigo-500' : 'bg-gray-200'">
-              <span class="absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform duration-200"
-                :class="isDark ? 'translate-x-6' : 'translate-x-0'" />
-            </button>
-          </div>
-        </div>
-
       </div>
-
     </div>
   </PrestadorLayout>
 </template>
@@ -216,6 +328,23 @@ import { useDarkMode } from '@/composables/useDarkMode.js'
 const { isDark, toggle } = useDarkMode()
 
 const props = defineProps({ provider: Object })
+
+// ── Formatação ──────────────────────────────────────────────────────────────
+
+function formatCpf(cpf) {
+  if (!cpf) return '—'
+  const d = cpf.replace(/\D/g, '')
+  if (d.length !== 11) return cpf
+  return `${d.slice(0,3)}.${d.slice(3,6)}.${d.slice(6,9)}-${d.slice(9)}`
+}
+
+function formatDate(d) {
+  if (!d) return '—'
+  const [y, m, day] = d.slice(0, 10).split('-')
+  return `${day}/${m}/${y}`
+}
+
+// ── Formulário: informações ──────────────────────────────────────────────────
 
 const infoForm = useForm({
   phone:       props.provider.phone       ?? '',
@@ -231,6 +360,54 @@ function saveInfo() {
   infoForm.put(route('prestador.perfil.update'))
 }
 
+// ── Formulário: endereço ─────────────────────────────────────────────────────
+
+const addressForm = useForm({
+  zip_code:     props.provider.zip_code     ?? '',
+  street:       props.provider.street       ?? '',
+  number:       props.provider.number       ?? '',
+  complement:   props.provider.complement   ?? '',
+  neighborhood: props.provider.neighborhood ?? '',
+  city:         props.provider.city         ?? '',
+  state:        props.provider.state        ?? '',
+})
+
+const editingAddress = ref(false)
+
+const hasAddress = computed(() =>
+  !!(props.provider.zip_code || props.provider.street || props.provider.city)
+)
+
+function saveAddress() {
+  addressForm.put(route('prestador.perfil.endereco'), {
+    onSuccess: () => { editingAddress.value = false },
+  })
+}
+
+function cancelAddress() {
+  addressForm.reset()
+  editingAddress.value = false
+}
+
+async function fetchAddress() {
+  const cep = addressForm.zip_code.replace(/\D/g, '')
+  if (cep.length !== 8) return
+  try {
+    const res = await fetch(`https://brasilapi.com.br/api/cep/v1/${cep}`)
+    if (res.ok) {
+      const data = await res.json()
+      addressForm.street       = data.street       || addressForm.street
+      addressForm.neighborhood = data.neighborhood || addressForm.neighborhood
+      addressForm.city         = data.city         || addressForm.city
+      addressForm.state        = data.state        || addressForm.state
+    }
+  } catch {}
+}
+
+const ufs = ['AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS','MG','PA','PB','PR','PE','PI','RJ','RN','RS','RO','RR','SC','SP','SE','TO']
+
+// ── Formulário: senha ────────────────────────────────────────────────────────
+
 const passForm = useForm({
   current_password:      '',
   password:              '',
@@ -242,6 +419,8 @@ function savePassword() {
     onSuccess: () => passForm.reset(),
   })
 }
+
+// ── Upload de documentos ─────────────────────────────────────────────────────
 
 const uploading = ref(null)
 

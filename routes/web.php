@@ -76,6 +76,7 @@ Route::prefix('prestador')->name('prestador.')->group(function () {
         Route::get('/perfil',              [Provider\PerfilController::class, 'index'])->name('perfil');
         Route::put('/perfil',              [Provider\PerfilController::class, 'updateInfo'])->name('perfil.update');
         Route::put('/perfil/senha',        [Provider\PerfilController::class, 'updatePassword'])->name('perfil.senha');
+        Route::put('/perfil/endereco',      [Provider\PerfilController::class, 'updateAddress'])->name('perfil.endereco');
         Route::post('/perfil/documento',   [Provider\PerfilController::class, 'uploadDocument'])->name('perfil.documento');
         Route::delete('/perfil/documento', [Provider\PerfilController::class, 'removeDocument'])->name('perfil.documento.remove');
     });

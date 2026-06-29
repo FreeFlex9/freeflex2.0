@@ -96,6 +96,25 @@ class PerfilController extends Controller
         return back()->with('success', 'Documento enviado com sucesso!');
     }
 
+    public function updateAddress(Request $request)
+    {
+        $provider = Auth::guard('provider')->user();
+
+        $data = $request->validate([
+            'zip_code'     => 'nullable|string|max:10',
+            'street'       => 'nullable|string|max:255',
+            'number'       => 'nullable|string|max:20',
+            'complement'   => 'nullable|string|max:100',
+            'neighborhood' => 'nullable|string|max:100',
+            'city'         => 'nullable|string|max:100',
+            'state'        => 'nullable|string|max:2',
+        ]);
+
+        $provider->update($data);
+
+        return back()->with('success', 'Endereço atualizado!');
+    }
+
     public function removeDocument(Request $request)
     {
         $provider = Auth::guard('provider')->user();
