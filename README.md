@@ -13,26 +13,19 @@ npm install
 ```
 php artisan key:generate
 ```
-- abra o servidor:
+- abra o servidor E EXECUTE:
 ```
 php artisan serve
 ```
+```
+npm run dev
 ```
 - REVERB para chat em tempo real
 ```
 php artisan reverb:start   
 ```
-```
-- deixe o npm em execução:
-```
-npm run dev
-```
 - execute as migrações: (seeder são opcionais)
 ```
-php artisan migrate --seed
+php artisan db:seed --class=AdminSeeder
 ```
-- e finalmente execute este comando:
-```
-php artisan storage:link
-```
-- acessar a URL: http://127.0.0.1:8000/
+- e finalmente acessar a URL: http://127.0.0.1:8000/
