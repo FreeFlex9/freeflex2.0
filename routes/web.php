@@ -38,7 +38,8 @@ Route::prefix('empresa')->name('empresa.')->group(function () {
         Route::get('/propostas/{proposal}/mensagens',   [Company\PropostasController::class, 'mensagens'])->name('propostas.mensagens');
         Route::post('/propostas/{proposal}/mensagens',  [Company\PropostasController::class, 'enviarMensagem'])->name('propostas.mensagens.enviar');
 
-        Route::get('/prestadores',         [Company\BuscaPrestadoresController::class, 'index'])->name('prestadores.index');
+        Route::get('/prestadores',                         [Company\BuscaPrestadoresController::class, 'index'])->name('prestadores.index');
+        Route::post('/prestadores/{provider}/contratar',  [Company\ContratarController::class, 'store'])->name('prestadores.contratar');
 
         Route::get('/avaliacoes',          [Company\AvaliacoesController::class, 'index'])->name('avaliacoes.index');
         Route::post('/avaliacoes',         [Company\AvaliacoesController::class, 'store'])->name('avaliacoes.store');
@@ -72,6 +73,8 @@ Route::prefix('prestador')->name('prestador.')->group(function () {
         Route::post('/demandas/proposta',  [Provider\DemandasController::class, 'enviarProposta'])->name('demandas.proposta');
 
         Route::get('/propostas',                             [Provider\PropostasController::class, 'index'])->name('propostas.index');
+        Route::post('/propostas/{proposal}/aceitar',         [Provider\PropostasController::class, 'aceitar'])->name('propostas.aceitar');
+        Route::post('/propostas/{proposal}/recusar',         [Provider\PropostasController::class, 'recusar'])->name('propostas.recusar');
         Route::delete('/propostas/{proposal}/cancelar',      [Provider\PropostasController::class, 'cancelar'])->name('propostas.cancelar');
         Route::get('/propostas/{proposal}/mensagens',        [Provider\PropostasController::class, 'mensagens'])->name('propostas.mensagens');
         Route::post('/propostas/{proposal}/mensagens',       [Provider\PropostasController::class, 'enviarMensagem'])->name('propostas.mensagens.enviar');
@@ -113,6 +116,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/demandas/propostas/{proposta}/rejeitar', [Admin\DemandasController::class, 'rejeitarProposta'])->name('demandas.propostas.rejeitar');
 
         Route::get('/servicos', [Admin\ServicosController::class, 'index'])->name('servicos.index');
+
+        Route::get('/exportacoes', [Admin\ExportController::class, 'page'])->name('exportacoes');
+        Route::get('/exportar/prestadores', [Admin\ExportController::class, 'prestadores'])->name('exportar.prestadores');
+        Route::get('/exportar/empresas',    [Admin\ExportController::class, 'empresas'])->name('exportar.empresas');
         Route::post('/servicos', [Admin\ServicosController::class, 'store'])->name('servicos.store');
         Route::put('/servicos/{servico}', [Admin\ServicosController::class, 'update'])->name('servicos.update');
         Route::delete('/servicos/{servico}', [Admin\ServicosController::class, 'destroy'])->name('servicos.destroy');

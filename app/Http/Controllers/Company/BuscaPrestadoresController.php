@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Company;
 
 use App\Http\Controllers\Controller;
+use App\Models\Demand;
 use App\Models\Provider;
 use App\Models\Service;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class BuscaPrestadoresController extends Controller
 {
@@ -37,10 +39,18 @@ class BuscaPrestadoresController extends Controller
             ->paginate(12)
             ->withQueryString();
 
+        $company = Auth::guard('company')->user();
+        $minhasDemandas = Demand::where('company_id', $company->id)
+            ->where('status', 'open')
+            ->with('service:id,name')
+            ->orderBy('date')
+            ->get(['id', 'title', 'service_id', 'date', 'start_time', 'end_time', 'slots_needed', 'slots_confirmed']);
+
         return inertia('Empresa/BuscarPrestadores', [
-            'providers' => $providers,
-            'services'  => Service::orderBy('name')->get(['id', 'name']),
-            'filters'   => $request->only(['service_id', 'city', 'state', 'has_license']),
+            'providers'      => $providers,
+            'services'       => Service::orderBy('name')->get(['id', 'name']),
+            'filters'        => $request->only(['service_id', 'city', 'state', 'has_license']),
+            'minhasDemandas' => $minhasDemandas,
         ]);
     }
 }

@@ -54,6 +54,7 @@
           <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Configurações</p>
         </div>
         <NavItem :href="route('admin.config-email.index')" icon="mail">Config E-mail</NavItem>
+        <NavItem :href="route('admin.exportacoes')" icon="download">Exportações</NavItem>
         <NavItem :href="route('admin.perfil.edit')" icon="user">Perfil</NavItem>
       </nav>
 

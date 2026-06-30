@@ -52,7 +52,7 @@
         </div>
       </div>
     </div>
-    
+
     <!-- Resultados -->
     <div v-if="providers.data.length" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
       <div v-for="p in providers.data" :key="p.id"
@@ -122,6 +122,12 @@
         </div>
         <p v-else class="text-xs text-gray-300 italic">Nenhum serviço cadastrado</p>
 
+        <!-- Botão Contratar -->
+        <button type="button" @click="abrirModal(p)"
+          class="mt-auto w-full py-2 bg-teal-600 hover:bg-teal-700 text-white text-sm font-medium rounded-lg transition">
+          Contratar
+        </button>
+
       </div>
     </div>
 
@@ -150,20 +156,200 @@
         v-html="p.label" />
     </div>
 
+    <!-- ── Modal Contratar ────────────────────────────────────────────────────── -->
+    <div v-if="modalAberto" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div class="bg-white rounded-xl w-full max-w-lg max-h-[90vh] flex flex-col">
+
+        <!-- Header -->
+        <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 shrink-0">
+          <div>
+            <h2 class="font-bold text-gray-800">Contratar prestador</h2>
+            <p class="text-sm text-gray-500">{{ selectedProvider?.name }}</p>
+          </div>
+          <button @click="fecharModal" class="text-gray-400 hover:text-gray-600">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Toggle modo -->
+        <div class="px-6 pt-4 shrink-0">
+          <div class="flex bg-gray-100 rounded-lg p-1 gap-1">
+            <button type="button" @click="modo = 'new'"
+              class="flex-1 py-1.5 text-sm font-medium rounded-md transition"
+              :class="modo === 'new' ? 'bg-white text-teal-700 shadow-sm' : 'text-gray-500 hover:text-gray-700'">
+              Nova demanda
+            </button>
+            <button type="button" @click="modo = 'existing'"
+              :disabled="!minhasDemandas.length"
+              class="flex-1 py-1.5 text-sm font-medium rounded-md transition disabled:opacity-40 disabled:cursor-not-allowed"
+              :class="modo === 'existing' ? 'bg-white text-teal-700 shadow-sm' : 'text-gray-500 hover:text-gray-700'">
+              Demanda existente
+            </button>
+          </div>
+        </div>
+
+        <!-- Corpo do formulário -->
+        <div class="overflow-y-auto flex-1 px-6 py-4">
+
+          <!-- Erros -->
+          <div v-if="Object.keys(contratarForm.errors).length"
+            class="mb-4 bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-sm text-red-700">
+            <p v-for="(err, k) in contratarForm.errors" :key="k">{{ err }}</p>
+          </div>
+
+          <!-- Modo: Nova Demanda -->
+          <div v-if="modo === 'new'" class="space-y-4">
+
+            <!-- Serviço -->
+            <div>
+              <label class="text-xs font-medium text-gray-600 block mb-1">Serviço *</label>
+              <select v-model="contratarForm.service_id"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white"
+                :class="contratarForm.errors.service_id ? 'border-red-400' : ''">
+                <option value="">Selecione o serviço</option>
+                <option v-for="s in services" :key="s.id" :value="s.id">{{ s.name }}</option>
+              </select>
+            </div>
+
+            <!-- Título -->
+            <div>
+              <label class="text-xs font-medium text-gray-600 block mb-1">Título da demanda *</label>
+              <input v-model="contratarForm.title" type="text" placeholder="Ex: Cozinheira para evento"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                :class="contratarForm.errors.title ? 'border-red-400' : ''" />
+            </div>
+
+            <!-- Data + horários -->
+            <div class="grid grid-cols-3 gap-3">
+              <div>
+                <label class="text-xs font-medium text-gray-600 block mb-1">Data *</label>
+                <input v-model="contratarForm.date" type="date"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  :class="contratarForm.errors.date ? 'border-red-400' : ''" />
+              </div>
+              <div>
+                <label class="text-xs font-medium text-gray-600 block mb-1">Início *</label>
+                <input v-model="contratarForm.start_time" type="time"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  :class="contratarForm.errors.start_time ? 'border-red-400' : ''" />
+              </div>
+              <div>
+                <label class="text-xs font-medium text-gray-600 block mb-1">Fim *</label>
+                <input v-model="contratarForm.end_time" type="time"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  :class="contratarForm.errors.end_time ? 'border-red-400' : ''" />
+              </div>
+            </div>
+
+            <!-- CEP + cidade + estado -->
+            <div class="grid grid-cols-3 gap-3">
+              <div>
+                <label class="text-xs font-medium text-gray-600 block mb-1">CEP</label>
+                <input v-model="contratarForm.cep" type="text" placeholder="00000-000" maxlength="9"
+                  @input="onCepInput"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500" />
+              </div>
+              <div>
+                <label class="text-xs font-medium text-gray-600 block mb-1">Cidade *</label>
+                <input v-model="contratarForm.city" type="text" placeholder="São Paulo"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  :class="contratarForm.errors.city ? 'border-red-400' : ''" />
+              </div>
+              <div>
+                <label class="text-xs font-medium text-gray-600 block mb-1">Estado *</label>
+                <select v-model="contratarForm.state"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white"
+                  :class="contratarForm.errors.state ? 'border-red-400' : ''">
+                  <option value="">UF</option>
+                  <option v-for="uf in ufs" :key="uf" :value="uf">{{ uf }}</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Descrição -->
+            <div>
+              <label class="text-xs font-medium text-gray-600 block mb-1">Descrição</label>
+              <textarea v-model="contratarForm.description" rows="2"
+                placeholder="Detalhes adicionais sobre o serviço..."
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none" />
+            </div>
+
+            <!-- Mensagem para prestador -->
+            <div>
+              <label class="text-xs font-medium text-gray-600 block mb-1">Mensagem para o prestador (opcional)</label>
+              <textarea v-model="contratarForm.message" rows="2"
+                placeholder="Ex: Preciso de alguém pontual e com experiência em eventos..."
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none" />
+            </div>
+
+          </div>
+
+          <!-- Modo: Demanda Existente -->
+          <div v-else class="space-y-4">
+
+            <p class="text-sm text-gray-500">Selecione uma demanda aberta para vincular este prestador.</p>
+
+            <div v-if="!minhasDemandas.length" class="text-sm text-gray-400 italic">
+              Você não tem demandas abertas no momento.
+            </div>
+
+            <div v-else>
+              <label class="text-xs font-medium text-gray-600 block mb-1">Demanda *</label>
+              <select v-model="contratarForm.demand_id"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white"
+                :class="contratarForm.errors.demand_id ? 'border-red-400' : ''">
+                <option value="">Selecione a demanda</option>
+                <option v-for="d in minhasDemandas" :key="d.id" :value="d.id">
+                  {{ d.title }} — {{ d.service?.name }} ({{ formatDateShort(d.date) }})
+                </option>
+              </select>
+            </div>
+
+            <!-- Mensagem para prestador -->
+            <div>
+              <label class="text-xs font-medium text-gray-600 block mb-1">Mensagem para o prestador (opcional)</label>
+              <textarea v-model="contratarForm.message" rows="2"
+                placeholder="Ex: Você está disponível nesta data?"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none" />
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="px-6 py-4 border-t border-gray-100 flex gap-3 justify-end shrink-0">
+          <button type="button" @click="fecharModal"
+            class="px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition">
+            Cancelar
+          </button>
+          <button type="button" @click="submitContratar"
+            :disabled="contratarForm.processing"
+            class="px-5 py-2 bg-teal-600 hover:bg-teal-700 text-white text-sm font-medium rounded-lg transition disabled:opacity-50">
+            {{ contratarForm.processing ? 'Enviando...' : 'Enviar convite' }}
+          </button>
+        </div>
+
+      </div>
+    </div>
+
   </EmpresaLayout>
 </template>
 
 <script setup>
-import { reactive } from 'vue'
-import { router } from '@inertiajs/vue3'
+import { reactive, ref } from 'vue'
+import { router, useForm } from '@inertiajs/vue3'
 import EmpresaLayout from '@/Layouts/EmpresaLayout.vue'
 
 const props = defineProps({
-  providers: Object,
-  services:  Array,
-  filters:   Object,
+  providers:      Object,
+  services:       Array,
+  filters:        Object,
+  minhasDemandas: Array,
 })
 
+// ── Filtros de busca ───────────────────────────────────────────────────────────
 const form = reactive({
   service_id:  props.filters?.service_id  ?? '',
   city:        props.filters?.city        ?? '',
@@ -186,6 +372,85 @@ function limpar() {
   form.state       = ''
   form.has_license = false
   router.get(route('empresa.prestadores.index'), {}, { replace: true })
+}
+
+// ── Modal Contratar ────────────────────────────────────────────────────────────
+const modalAberto      = ref(false)
+const selectedProvider = ref(null)
+const modo             = ref('new')
+
+const contratarForm = useForm({
+  mode:        'new',
+  // Nova demanda
+  service_id:  '',
+  title:       '',
+  date:        '',
+  start_time:  '',
+  end_time:    '',
+  cep:         '',
+  city:        '',
+  state:       '',
+  description: '',
+  // Demanda existente
+  demand_id:   '',
+  // Comum
+  message:     '',
+})
+
+function abrirModal(provider) {
+  selectedProvider.value = provider
+  modo.value = 'new'
+  contratarForm.reset()
+  contratarForm.clearErrors()
+  modalAberto.value = true
+}
+
+function fecharModal() {
+  modalAberto.value = false
+  selectedProvider.value = null
+}
+
+function submitContratar() {
+  contratarForm.mode = modo.value
+
+  contratarForm.post(route('empresa.prestadores.contratar', selectedProvider.value.id), {
+    preserveScroll: true,
+    onSuccess: () => { fecharModal() },
+  })
+}
+
+// ── CEP auto-fill ──────────────────────────────────────────────────────────────
+let cepTimer = null
+
+function onCepInput(e) {
+  let v = e.target.value.replace(/\D/g, '')
+  if (v.length > 5) v = v.slice(0, 5) + '-' + v.slice(5, 8)
+  contratarForm.cep = v
+
+  clearTimeout(cepTimer)
+  const digits = v.replace(/\D/g, '')
+  if (digits.length === 8) {
+    cepTimer = setTimeout(() => buscarCep(digits), 400)
+  }
+}
+
+async function buscarCep(cep) {
+  try {
+    const res = await fetch(`https://brasilapi.com.br/api/cep/v1/${cep}`)
+    if (!res.ok) return
+    const data = await res.json()
+    if (data.city)  contratarForm.city  = data.city
+    if (data.state) contratarForm.state = data.state
+  } catch {
+    // falha silenciosa
+  }
+}
+
+// ── Helpers ────────────────────────────────────────────────────────────────────
+function formatDateShort(d) {
+  if (!d) return ''
+  const [y, m, day] = d.slice(0, 10).split('-')
+  return `${day}/${m}/${y}`
 }
 
 const ufs = ['AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS','MG','PA','PB','PR','PE','PI','RJ','RN','RS','RO','RR','SC','SP','SE','TO']

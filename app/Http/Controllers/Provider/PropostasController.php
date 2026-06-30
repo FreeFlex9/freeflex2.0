@@ -30,6 +30,30 @@ class PropostasController extends Controller
         ]);
     }
 
+    public function aceitar(Proposal $proposal)
+    {
+        $provider = Auth::guard('provider')->user();
+
+        abort_if($proposal->provider_id !== $provider->id, 403);
+        abort_if($proposal->status !== 'direct_pending', 422, 'Este convite não pode ser aceito.');
+
+        $proposal->update(['status' => 'pending_admin_approval']);
+
+        return back()->with('success', 'Convite aceito! Aguardando aprovação do administrador.');
+    }
+
+    public function recusar(Proposal $proposal)
+    {
+        $provider = Auth::guard('provider')->user();
+
+        abort_if($proposal->provider_id !== $provider->id, 403);
+        abort_if($proposal->status !== 'direct_pending', 422, 'Este convite já foi processado.');
+
+        $proposal->update(['status' => 'rejected_provider']);
+
+        return back()->with('success', 'Convite recusado.');
+    }
+
     public function cancelar(Proposal $proposal)
     {
         $provider = Auth::guard('provider')->user();

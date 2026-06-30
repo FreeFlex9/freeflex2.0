@@ -6,7 +6,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class Proposal extends Model
 {
-    protected $fillable = ['demand_id', 'provider_id', 'message', 'status'];
+    protected $fillable = ['demand_id', 'provider_id', 'message', 'status', 'is_direct'];
+
+    protected function casts(): array
+    {
+        return ['is_direct' => 'boolean'];
+    }
 
     public function demand()
     {

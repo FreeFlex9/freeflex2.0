@@ -27,14 +27,18 @@
     <div v-else class="space-y-3">
       <div v-for="p in propostasFiltradas" :key="p.id"
         class="bg-white rounded-xl border p-5 transition-colors"
-        :class="p.status === 'accepted' ? 'border-green-200' : p.status.startsWith('rejected') ? 'border-red-100' : 'border-gray-200'">
+        :class="p.status === 'accepted' ? 'border-green-200' : p.status.startsWith('rejected') ? 'border-red-100' : p.status === 'direct_pending' ? 'border-blue-200' : 'border-gray-200'">
 
         <div class="flex flex-wrap items-start justify-between gap-3">
           <div class="flex-1 min-w-0">
 
-            <!-- Título + badge status -->
+            <!-- Título + badge status + badge convite -->
             <div class="flex items-center gap-2 flex-wrap">
               <h3 class="font-semibold text-gray-800">{{ p.demand?.title }}</h3>
+              <span v-if="p.is_direct"
+                class="text-xs px-2 py-0.5 rounded-full font-medium bg-blue-100 text-blue-700">
+                Convite direto
+              </span>
               <span :class="statusStyle(p.status).badge" class="text-xs px-2 py-0.5 rounded-full font-medium">
                 {{ statusStyle(p.status).label }}
               </span>
@@ -58,7 +62,22 @@
           <!-- Ações -->
           <div class="flex flex-col gap-2 items-end shrink-0">
 
-            <!-- Chat: aparece para propostas ativas -->
+            <!-- Convite direto: aceitar/recusar -->
+            <template v-if="p.status === 'direct_pending'">
+              <button @click="aceitarConvite(p)"
+                class="flex items-center gap-1.5 px-4 py-2 bg-green-500 text-white text-sm font-medium rounded-lg hover:bg-green-600 transition">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                </svg>
+                Aceitar
+              </button>
+              <button @click="recusarConvite(p)"
+                class="text-xs text-red-400 hover:text-red-600 transition">
+                Recusar convite
+              </button>
+            </template>
+
+            <!-- Chat: aparece para propostas ativas (exceto convite pendente) -->
             <button v-if="podeChat(p.status)"
               @click="abrirChat(p)"
               class="flex items-center gap-1.5 px-4 py-2 bg-teal-600 text-white text-sm font-medium rounded-lg hover:bg-teal-700 transition">
@@ -68,7 +87,7 @@
               Chat
             </button>
 
-            <!-- Cancelar: apenas para pendentes -->
+            <!-- Cancelar: apenas para propostas que o prestador enviou -->
             <button v-if="['pending', 'pending_company_accept'].includes(p.status)"
               @click="cancelar(p)"
               class="text-xs text-red-400 hover:text-red-600 transition">
@@ -136,6 +155,26 @@
       </div>
     </div>
 
+    <!-- Modal aceitar convite -->
+    <ConfirmModal
+      :show="!!confirmAceitar"
+      title="Aceitar convite"
+      :message="`Aceitar o convite para &quot;${confirmAceitar?.demand?.title}&quot; de ${confirmAceitar?.demand?.company?.trade_name}?`"
+      confirm-text="Aceitar convite"
+      variant="success"
+      @confirm="confirmarAceitar"
+      @cancel="confirmAceitar = null" />
+
+    <!-- Modal recusar convite -->
+    <ConfirmModal
+      :show="!!confirmRecusar"
+      title="Recusar convite"
+      message="Tem certeza que deseja recusar este convite de contratação direta?"
+      confirm-text="Recusar"
+      variant="danger"
+      @confirm="confirmarRecusar"
+      @cancel="confirmRecusar = null" />
+
     <!-- Modal confirmar cancelamento -->
     <ConfirmModal
       :show="!!confirmCancelar"
@@ -163,14 +202,15 @@ const props = defineProps({
 // ── Filtro por status ──────────────────────────────────────────────────────────
 const statusOpts = [
   { value: '',                      label: 'Todas' },
-  { value: 'pending',               label: 'Pendente' },
+  { value: 'direct_pending',        label: 'Convites' },
+  { value: 'pending',               label: 'Pendentes' },
   { value: 'pending_admin_approval',label: 'Aguardando aprovação' },
   { value: 'accepted',              label: 'Aceitas' },
   { value: 'rejected',              label: 'Recusadas' },
   { value: 'rejected_provider',     label: 'Canceladas' },
 ]
 
-const filtroAtivo = ref(props.filters?.status ?? 'pending')
+const filtroAtivo = ref(props.filters?.status ?? '')
 
 const propostasFiltradas = computed(() => {
   if (!filtroAtivo.value) return props.proposals
@@ -184,19 +224,40 @@ function setFiltro(v) {
 // ── Status styling ─────────────────────────────────────────────────────────────
 function statusStyle(status) {
   const map = {
-    pending:                { label: 'Aguardando empresa',   badge: 'bg-yellow-100 text-yellow-700' },
-    pending_company_accept: { label: 'Para você aceitar',    badge: 'bg-blue-100 text-blue-700' },
-    pending_admin_approval: { label: 'Aguardando aprovação', badge: 'bg-purple-100 text-purple-700' },
-    accepted:               { label: 'Aceita ✓',             badge: 'bg-green-100 text-green-700' },
-    rejected:               { label: 'Recusada',             badge: 'bg-red-100 text-red-600' },
-    rejected_admin:         { label: 'Rejeitada pelo admin', badge: 'bg-red-100 text-red-600' },
-    rejected_provider:      { label: 'Cancelada por você',   badge: 'bg-gray-100 text-gray-500' },
+    direct_pending:         { label: 'Aguardando sua resposta', badge: 'bg-blue-100 text-blue-700' },
+    pending:                { label: 'Aguardando empresa',      badge: 'bg-yellow-100 text-yellow-700' },
+    pending_company_accept: { label: 'Para você aceitar',       badge: 'bg-blue-100 text-blue-700' },
+    pending_admin_approval: { label: 'Aguardando aprovação',    badge: 'bg-purple-100 text-purple-700' },
+    accepted:               { label: 'Aceita ✓',                badge: 'bg-green-100 text-green-700' },
+    rejected:               { label: 'Recusada',                badge: 'bg-red-100 text-red-600' },
+    rejected_admin:         { label: 'Rejeitada pelo admin',    badge: 'bg-red-100 text-red-600' },
+    rejected_provider:      { label: 'Cancelada por você',      badge: 'bg-gray-100 text-gray-500' },
   }
   return map[status] ?? { label: status, badge: 'bg-gray-100 text-gray-500' }
 }
 
 function podeChat(status) {
   return ['pending', 'pending_company_accept', 'pending_admin_approval', 'accepted'].includes(status)
+}
+
+// ── Aceitar / Recusar convite direto ──────────────────────────────────────────
+const confirmAceitar = ref(null)
+const confirmRecusar = ref(null)
+
+function aceitarConvite(p) { confirmAceitar.value = p }
+
+function confirmarAceitar() {
+  useForm({}).post(route('prestador.propostas.aceitar', confirmAceitar.value.id), {
+    onFinish: () => { confirmAceitar.value = null },
+  })
+}
+
+function recusarConvite(p) { confirmRecusar.value = p }
+
+function confirmarRecusar() {
+  useForm({}).post(route('prestador.propostas.recusar', confirmRecusar.value.id), {
+    onFinish: () => { confirmRecusar.value = null },
+  })
 }
 
 // ── Cancelar proposta ──────────────────────────────────────────────────────────
