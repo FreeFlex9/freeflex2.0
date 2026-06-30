@@ -17,6 +17,12 @@ php artisan key:generate
 ```
 php artisan serve
 ```
+```
+- REVERB para chat em tempo real
+```
+php artisan reverb:start   
+```
+```
 - deixe o npm em execução:
 ```
 npm run dev
