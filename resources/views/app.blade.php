@@ -7,9 +7,9 @@
 
         <!-- Dark mode: aplica a classe antes do render para evitar flash -->
         <script>try{if(localStorage.getItem('freeflex-theme')==='dark')document.documentElement.classList.add('dark')}catch(e){}</script>
-
-        <title inertia>{{ config('app.name', 'Laravel') }}</title>
-
+        <title inertia>{{ config('app.name', 'Freeflex') }}</title>
+        <link rel="icon" type="image/png" href="/images/logoFreeFlex.png">
+        
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
