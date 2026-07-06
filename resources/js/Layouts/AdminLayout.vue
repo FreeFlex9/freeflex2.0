@@ -47,6 +47,7 @@
         <div class="pt-4 pb-1 px-3">
           <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Gestão</p>
         </div>
+        <NavItem :href="route('admin.usuarios.index')" icon="search">Gerenciar Usuários</NavItem>
         <NavItem :href="route('admin.demandas.index')" icon="list">Demandas</NavItem>
         <NavItem :href="route('admin.servicos.index')" icon="briefcase">Serviços</NavItem>
 
