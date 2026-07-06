@@ -76,6 +76,7 @@
               {{ provider.profile_photo_path ? 'Trocar foto' : 'Adicionar foto' }}
             </span>
           </label>
+          <p v-if="uploadErrors.profile_photo" class="text-xs text-red-500 text-center">{{ uploadErrors.profile_photo }}</p>
 
           <!-- Dados pessoais somente leitura -->
           <div class="w-full space-y-2 pt-1">
@@ -326,7 +327,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                   </svg>
                 </div>
-                <div>
+                <div class="min-w-0">
                   <p class="text-sm font-medium text-gray-700">
                     {{ doc.label }}
                     <span v-if="doc.obrigatorio" class="text-red-400 text-xs">*</span>
@@ -334,6 +335,7 @@
                   <p class="text-xs" :class="doc.path ? 'text-green-600' : 'text-gray-400'">
                     {{ doc.path ? 'Enviado ✓' : 'Não enviado' }}
                   </p>
+                  <p v-if="uploadErrors[doc.tipo]" class="text-xs text-red-500 mt-0.5">{{ uploadErrors[doc.tipo] }}</p>
                 </div>
               </div>
 
@@ -466,10 +468,30 @@ function savePassword() {
 // ── Upload de documentos ─────────────────────────────────────────────────────
 
 const uploading = ref(null)
+const uploadErrors = ref({})
+
+const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5 MB, mesmo limite do backend
+const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp', 'pdf']
 
 function upload(tipo, event) {
   const file = event.target?.files?.[0]
+  const input = event.target
   if (!file) return
+
+  delete uploadErrors.value[tipo]
+
+  const extensao = file.name.split('.').pop()?.toLowerCase()
+  if (!ALLOWED_EXTENSIONS.includes(extensao)) {
+    uploadErrors.value = { ...uploadErrors.value, [tipo]: 'Formato inválido. Envie um arquivo JPG, PNG, WebP ou PDF.' }
+    if (input) input.value = ''
+    return
+  }
+  if (file.size > MAX_FILE_SIZE) {
+    uploadErrors.value = { ...uploadErrors.value, [tipo]: 'Arquivo muito grande. Máximo 5 MB.' }
+    if (input) input.value = ''
+    return
+  }
+
   uploading.value = tipo
 
   const form = new FormData()
@@ -478,7 +500,17 @@ function upload(tipo, event) {
 
   router.post(route('prestador.perfil.documento'), form, {
     forceFormData: true,
-    onFinish: () => { uploading.value = null },
+    onSuccess: () => { delete uploadErrors.value[tipo] },
+    onError: (errors) => {
+      uploadErrors.value = {
+        ...uploadErrors.value,
+        [tipo]: errors.arquivo || errors.tipo || 'Falha ao enviar o arquivo. Tente novamente.',
+      }
+    },
+    onFinish: () => {
+      uploading.value = null
+      if (input) input.value = ''
+    },
   })
 }
 

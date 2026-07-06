@@ -101,12 +101,22 @@ class PerfilController extends Controller
     {
         $provider = Auth::guard('provider')->user();
 
+        // Quando o arquivo excede post_max_size, o PHP descarta o upload inteiro
+        // antes do Laravel processá-lo: $_FILES fica vazio e a regra "required"
+        // falharia com uma mensagem genérica, escondendo a causa real.
+        if (!$request->hasFile('arquivo') && (int) $request->server('CONTENT_LENGTH') > 0) {
+            return back()->withErrors([
+                'arquivo' => 'O arquivo enviado é muito grande para o servidor processar. Tente um arquivo menor (máx. 5 MB).',
+            ]);
+        }
+
         $request->validate([
             'tipo'    => 'required|in:profile_photo,rg_front,rg_back,license_front,license_back,ccmei',
             'arquivo' => 'required|file|mimes:jpg,jpeg,png,pdf,webp|max:5120',
         ], [
-            'arquivo.max'   => 'Arquivo muito grande. Máximo 5 MB.',
-            'arquivo.mimes' => 'Somente JPG, PNG, WebP ou PDF.',
+            'arquivo.required' => 'Nenhum arquivo foi recebido pelo servidor. Tente novamente.',
+            'arquivo.max'      => 'Arquivo muito grande. Máximo 5 MB.',
+            'arquivo.mimes'    => 'Somente JPG, PNG, WebP ou PDF.',
         ]);
 
         $campoMap = [

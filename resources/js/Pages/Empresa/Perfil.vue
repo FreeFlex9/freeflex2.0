@@ -151,6 +151,7 @@
                 </span>
               </label>
             </div>
+            <p v-if="uploadError" class="text-xs text-red-500 mt-2">{{ uploadError }}</p>
           </div>
         </div>
 
@@ -248,16 +249,42 @@ function savePassword() {
 }
 
 const uploading = ref(false)
+const uploadError = ref(null)
+
+const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5 MB, mesmo limite do backend
+const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp', 'pdf']
 
 function uploadCnpjCard(event) {
   const file = event.target?.files?.[0]
+  const input = event.target
   if (!file) return
+
+  uploadError.value = null
+
+  const extensao = file.name.split('.').pop()?.toLowerCase()
+  if (!ALLOWED_EXTENSIONS.includes(extensao)) {
+    uploadError.value = 'Formato inválido. Envie um arquivo JPG, PNG, WebP ou PDF.'
+    if (input) input.value = ''
+    return
+  }
+  if (file.size > MAX_FILE_SIZE) {
+    uploadError.value = 'Arquivo muito grande. Máximo 5 MB.'
+    if (input) input.value = ''
+    return
+  }
+
   uploading.value = true
   const form = new FormData()
   form.append('arquivo', file)
   router.post(route('empresa.perfil.documento'), form, {
     forceFormData: true,
-    onFinish: () => { uploading.value = false },
+    onError: (errors) => {
+      uploadError.value = errors.arquivo || 'Falha ao enviar o arquivo. Tente novamente.'
+    },
+    onFinish: () => {
+      uploading.value = false
+      if (input) input.value = ''
+    },
   })
 }
 
