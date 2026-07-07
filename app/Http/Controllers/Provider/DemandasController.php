@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Provider;
 use App\Http\Controllers\Controller;
 use App\Models\Demand;
 use App\Models\Proposal;
+use App\Support\Geo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -62,7 +63,7 @@ class DemandasController extends Controller
         if ($provider->latitude && $provider->longitude) {
             $demands = $demands->map(function ($d) use ($provider) {
                 if ($d->latitude && $d->longitude) {
-                    $d->distance_km = $this->haversine(
+                    $d->distance_km = Geo::distanceKm(
                         $provider->latitude, $provider->longitude,
                         $d->latitude, $d->longitude
                     );
@@ -141,14 +142,5 @@ class DemandasController extends Controller
         ]);
 
         return back()->with('success', 'Proposta enviada com sucesso!');
-    }
-
-    private function haversine(float $lat1, float $lon1, float $lat2, float $lon2): float
-    {
-        $R = 6371; // km
-        $dLat = deg2rad($lat2 - $lat1);
-        $dLon = deg2rad($lon2 - $lon1);
-        $a = sin($dLat / 2) ** 2 + cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * sin($dLon / 2) ** 2;
-        return round($R * 2 * atan2(sqrt($a), sqrt(1 - $a)), 1);
     }
 }
