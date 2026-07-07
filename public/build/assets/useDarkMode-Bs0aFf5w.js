@@ -1,1 +1,0 @@
-import{L as e}from"./app-pWkBywdV.js";var t=e(typeof window<`u`?localStorage.getItem(`freeflex-theme`)===`dark`:!1);function n(){function e(){t.value=!t.value,r(t.value)}function n(e){t.value=e,r(e)}function r(e){localStorage.setItem(`freeflex-theme`,e?`dark`:`light`),document.documentElement.classList.toggle(`dark`,e)}return{isDark:t,toggle:e,setDark:n}}export{n as t};
