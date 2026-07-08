@@ -94,7 +94,7 @@
                 <span v-if="d.slots_needed > 1"> · {{ d.slots_needed }} vagas</span>
               </p>
             </div>
-            <Link :href="route('prestador.demandas.index')"
+            <Link :href="route('prestador.demandas.show', d.id)"
               class="ml-4 shrink-0 bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors">
               Ver demanda
             </Link>

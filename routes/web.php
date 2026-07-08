@@ -74,6 +74,7 @@ Route::prefix('prestador')->name('prestador.')->group(function () {
         Route::get('/servicos',            [Provider\MeusServicosController::class, 'index'])->name('servicos.index');
         Route::post('/servicos/toggle',    [Provider\MeusServicosController::class, 'toggle'])->name('servicos.toggle');
         Route::get('/demandas',            [Provider\DemandasController::class, 'index'])->name('demandas.index');
+        Route::get('/demandas/{demand}',   [Provider\DemandasController::class, 'show'])->name('demandas.show');
         Route::post('/demandas/proposta',  [Provider\DemandasController::class, 'enviarProposta'])->name('demandas.proposta');
 
         Route::get('/propostas',                             [Provider\PropostasController::class, 'index'])->name('propostas.index');
