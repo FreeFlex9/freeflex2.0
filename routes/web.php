@@ -39,6 +39,7 @@ Route::prefix('empresa')->name('empresa.')->group(function () {
         Route::post('/propostas/{proposal}/mensagens',  [Company\PropostasController::class, 'enviarMensagem'])->name('propostas.mensagens.enviar');
 
         Route::get('/prestadores',                         [Company\BuscaPrestadoresController::class, 'index'])->name('prestadores.index');
+        Route::get('/pontos',                              [Company\PontosController::class, 'index'])->name('pontos.index');
         Route::post('/prestadores/{provider}/contratar',  [Company\ContratarController::class, 'store'])->name('prestadores.contratar');
 
         Route::get('/avaliacoes',          [Company\AvaliacoesController::class, 'index'])->name('avaliacoes.index');
@@ -66,10 +67,14 @@ Route::prefix('prestador')->name('prestador.')->group(function () {
     Route::middleware('is_provider')->group(function () {
         Route::get('/dashboard',           [Provider\DashboardController::class, 'index'])->name('dashboard');
         Route::get('/agenda',              [Provider\AgendaController::class, 'index'])->name('agenda.index');
+        Route::get('/ponto',               [Provider\PontoController::class, 'index'])->name('ponto.index');
+        Route::post('/ponto/{schedule}/checkin',  [Provider\PontoController::class, 'checkin'])->name('ponto.checkin');
+        Route::post('/ponto/{schedule}/checkout', [Provider\PontoController::class, 'checkout'])->name('ponto.checkout');
         Route::get('/avaliacoes',          [Provider\AvaliacoesController::class, 'index'])->name('avaliacoes.index');
         Route::get('/servicos',            [Provider\MeusServicosController::class, 'index'])->name('servicos.index');
         Route::post('/servicos/toggle',    [Provider\MeusServicosController::class, 'toggle'])->name('servicos.toggle');
         Route::get('/demandas',            [Provider\DemandasController::class, 'index'])->name('demandas.index');
+        Route::get('/demandas/{demand}',   [Provider\DemandasController::class, 'show'])->name('demandas.show');
         Route::post('/demandas/proposta',  [Provider\DemandasController::class, 'enviarProposta'])->name('demandas.proposta');
 
         Route::get('/propostas',                             [Provider\PropostasController::class, 'index'])->name('propostas.index');
@@ -109,6 +114,13 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/prestadores/{prestador}/rejeitar', [Admin\PrestadoresController::class, 'rejeitar'])->name('prestadores.rejeitar');
         Route::post('/prestadores/{prestador}/aprovar-cnh', [Admin\PrestadoresController::class, 'aprovarCnh'])->name('prestadores.aprovarCnh');
         Route::post('/prestadores/{prestador}/rejeitar-cnh', [Admin\PrestadoresController::class, 'rejeitarCnh'])->name('prestadores.rejeitarCnh');
+
+        Route::get('/usuarios', [Admin\UsuariosController::class, 'index'])->name('usuarios.index');
+        Route::delete('/usuarios/{tipo}/{id}', [Admin\UsuariosController::class, 'destroy'])
+            ->where('tipo', 'prestador|empresa')
+            ->where('id', '[0-9]+')
+            ->name('usuarios.destroy');
+        Route::get('/pontos', [Admin\PontosController::class, 'index'])->name('pontos.index');
 
         Route::get('/demandas', [Admin\DemandasController::class, 'index'])->name('demandas.index');
         Route::get('/demandas/{demanda}/propostas', [Admin\DemandasController::class, 'propostas'])->name('demandas.propostas');

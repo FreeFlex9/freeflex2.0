@@ -48,6 +48,7 @@ class DashboardController extends Controller
         // Demandas disponíveis (mesma lógica do BuscarDemandas — sem filtro por serviços do prestador)
         $availableDemands = Demand::with(['service:id,name,requires_license,provider_rate', 'company:id,trade_name'])
             ->whereIn('status', ['open', 'partially_scheduled'])
+            ->whereDate('date', '>=', now()->toDateString())
             ->when(!$provider->has_license, fn ($q) =>
                 $q->whereHas('service', fn ($s) => $s->where('requires_license', false))
             )
