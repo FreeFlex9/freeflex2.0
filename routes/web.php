@@ -49,6 +49,7 @@ Route::prefix('empresa')->name('empresa.')->group(function () {
         Route::put('/perfil',            [Company\PerfilController::class, 'updateInfo'])->name('perfil.update');
         Route::put('/perfil/senha',      [Company\PerfilController::class, 'updatePassword'])->name('perfil.senha');
         Route::post('/perfil/documento', [Company\PerfilController::class, 'uploadDocument'])->name('perfil.documento');
+        Route::delete('/perfil/documento', [Company\PerfilController::class, 'removeDocument'])->name('perfil.documento.remove');
     });
 });
 

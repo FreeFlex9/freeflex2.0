@@ -491,8 +491,9 @@ function remove(tipo) {
 const documentos = computed(() => {
   const p = props.provider
   const list = [
-    { tipo: 'rg_front',  label: 'RG (frente)', obrigatorio: true,  path: p.rg_front_path },
-    { tipo: 'rg_back',   label: 'RG (verso)',  obrigatorio: true,  path: p.rg_back_path },
+    { tipo: 'rg_front',      label: 'RG (frente)',                obrigatorio: true, path: p.rg_front_path },
+    { tipo: 'rg_back',       label: 'RG (verso)',                 obrigatorio: true, path: p.rg_back_path },
+    { tipo: 'address_proof', label: 'Comprovante de Residência',  obrigatorio: true, path: p.address_proof_path },
   ]
   const showCnh = p.has_license || ['pending', 'rejected'].includes(p.cnh_status)
   if (showCnh) {
