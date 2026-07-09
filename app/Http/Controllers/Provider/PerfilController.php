@@ -28,14 +28,19 @@ class PerfilController extends Controller
             'phone'       => 'nullable|string|max:20',
             'bio'         => 'nullable|string|max:1000',
             'has_license' => 'boolean',
+            'is_pcd'      => 'boolean',
+            'pcd_type'    => 'nullable|string|max:255',
         ]);
 
         $wantsCnh   = (bool) $data['has_license'];
         $isApproved = $provider->status === 'approved';
+        $isPcd      = (bool) ($data['is_pcd'] ?? false);
 
         $update = [
-            'phone' => $data['phone'] ?? null,
-            'bio'   => $data['bio']   ?? null,
+            'phone'    => $data['phone'] ?? null,
+            'bio'      => $data['bio']   ?? null,
+            'is_pcd'   => $isPcd,
+            'pcd_type' => $isPcd ? ($data['pcd_type'] ?? null) : null,
         ];
 
         if ($isApproved) {

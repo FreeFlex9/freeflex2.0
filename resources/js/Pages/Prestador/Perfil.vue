@@ -206,6 +206,29 @@
               Ao salvar sem CNH, os serviços que exigem habilitação serão removidos dos seus serviços.
             </div>
 
+            <!-- Toggle PCD -->
+            <div class="flex items-start justify-between gap-4 pt-1">
+              <div>
+                <p class="text-sm font-medium text-gray-700">Sou Pessoa com Deficiência (PCD)</p>
+                <p class="text-xs text-gray-400 mt-0.5">
+                  Essa informação pode ser vista pelas empresas ao analisar sua candidatura.
+                </p>
+              </div>
+              <button type="button" @click="infoForm.is_pcd = !infoForm.is_pcd"
+                class="shrink-0 w-12 h-6 rounded-full relative transition-colors duration-200 focus:outline-none mt-0.5"
+                :class="infoForm.is_pcd ? 'bg-orange-500' : 'bg-gray-200'">
+                <span class="absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform duration-200"
+                  :class="infoForm.is_pcd ? 'translate-x-6' : 'translate-x-0'" />
+              </button>
+            </div>
+
+            <div v-if="infoForm.is_pcd">
+              <label class="text-xs font-medium text-gray-500">Tipo de deficiência (opcional)</label>
+              <input v-model="infoForm.pcd_type" type="text"
+                class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                placeholder="Ex: física, visual, auditiva..." />
+            </div>
+
             <button type="submit" :disabled="infoForm.processing"
               class="w-full bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium py-2 rounded-lg transition disabled:opacity-60">
               Salvar informações
@@ -393,6 +416,8 @@ const infoForm = useForm({
   bio:         props.provider.bio         ?? '',
   // Toggle ON se CNH aprovada, pendente ou rejeitada (usuário expressou intenção)
   has_license: props.provider.has_license || ['pending', 'rejected'].includes(props.provider.cnh_status),
+  is_pcd:      props.provider.is_pcd      ?? false,
+  pcd_type:    props.provider.pcd_type    ?? '',
 })
 
 const removendoCnh = computed(() =>

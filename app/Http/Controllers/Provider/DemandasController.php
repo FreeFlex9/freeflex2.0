@@ -130,9 +130,16 @@ class DemandasController extends Controller
         }
 
         $data = $request->validate([
-            'demand_id' => 'required|exists:demands,id',
-            'message'   => 'nullable|string|max:1000',
+            'demand_id'            => 'required|exists:demands,id',
+            'message'              => 'nullable|string|max:1000',
+            'had_recent_surgery'   => 'required|boolean',
+            'surgery_description'  => 'nullable|string|max:1000',
+            'health_consent'       => 'required_if:had_recent_surgery,true|boolean',
         ]);
+
+        if ($data['had_recent_surgery'] && !($data['health_consent'] ?? false)) {
+            return back()->withErrors(['health_consent' => 'É necessário autorizar o compartilhamento dessa informação com a empresa para prosseguir.']);
+        }
 
         $demand = Demand::with('service')->findOrFail($data['demand_id']);
 
@@ -162,10 +169,13 @@ class DemandasController extends Controller
         }
 
         Proposal::create([
-            'demand_id'   => $demand->id,
-            'provider_id' => $provider->id,
-            'message'     => $data['message'] ?? null,
-            'status'      => 'pending',
+            'demand_id'            => $demand->id,
+            'provider_id'          => $provider->id,
+            'message'              => $data['message'] ?? null,
+            'status'               => 'pending',
+            'had_recent_surgery'   => $data['had_recent_surgery'],
+            'surgery_description'  => $data['had_recent_surgery'] ? ($data['surgery_description'] ?? null) : null,
+            'health_consent'       => $data['had_recent_surgery'] ? true : false,
         ]);
 
         return back()->with('success', 'Proposta enviada com sucesso!');
