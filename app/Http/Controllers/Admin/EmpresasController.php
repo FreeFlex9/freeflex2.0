@@ -23,6 +23,7 @@ class EmpresasController extends Controller
     public function aprovar(Request $request, Company $empresa)
     {
         abort_if($empresa->status !== 'pending', 422, 'Status inválido.');
+        abort_if(empty($empresa->cnpj_card_path), 422, 'Cartão CNPJ não enviado.');
         abort_if(empty($empresa->address_proof_path), 422, 'Comprovante de residência não enviado.');
 
         $empresa->update(['status' => 'approved', 'approved_at' => now(), 'rejection_reason' => null]);

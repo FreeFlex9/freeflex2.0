@@ -132,6 +132,15 @@
             </div>
           </div>
 
+          <!-- Documentação obrigatória -->
+          <div>
+            <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Documentação</p>
+            <p class="text-xs text-gray-500 mb-3">
+              Envie uma foto ou PDF (máx. 5 MB) do Cartão CNPJ para que o cadastro possa ser analisado.
+            </p>
+            <FileField label="Cartão CNPJ" required v-model="form.cnpj_card" :error="form.errors.cnpj_card" />
+          </div>
+
           <!-- Acesso -->
           <div>
             <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Acesso</p>
@@ -177,11 +186,12 @@
 import { ref } from 'vue'
 import { useForm, Link } from '@inertiajs/vue3'
 import { validateCnpj, validatePhone } from '@/utils/validators'
+import FileField from '@/Components/FileField.vue'
 
 const form = useForm({
   trade_name: '', legal_name: '', cnpj: '', email: '', phone: '',
   zip_code: '', street: '', number: '', complement: '', neighborhood: '', city: '', state: '',
-  password: '', password_confirmation: '',
+  password: '', password_confirmation: '', cnpj_card: null,
 })
 
 const loadingCep = ref(false)
@@ -270,6 +280,10 @@ function submit() {
   }
   if (!validatePhone(form.phone)) {
     form.setError('phone', 'Celular inválido. Use DDD + 9 dígitos.')
+    return
+  }
+  if (!form.cnpj_card) {
+    form.setError('cnpj_card', 'Envie o Cartão CNPJ.')
     return
   }
   form.post(route('empresa.register.submit'))
