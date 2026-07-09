@@ -57,6 +57,7 @@
             <th class="px-4 py-3">Cidade/UF</th>
             <th class="px-4 py-3">Status</th>
             <th class="px-4 py-3">Cadastro</th>
+            <th class="px-4 py-3"></th>
           </tr>
         </thead>
         <tbody>
@@ -68,6 +69,12 @@
             <td class="px-4 py-3 text-gray-600">{{ u.city ? `${u.city}/${u.state ?? ''}` : '—' }}</td>
             <td class="px-4 py-3"><StatusBadge :status="u.status" /></td>
             <td class="px-4 py-3 text-gray-500">{{ formatDate(u.created_at) }}</td>
+            <td class="px-4 py-3 text-right">
+              <button @click="abrirExclusao(u)"
+                class="text-xs px-2.5 py-1 rounded-lg text-red-600 hover:bg-red-50 transition-colors">
+                Excluir
+              </button>
+            </td>
           </tr>
         </tbody>
       </table>
@@ -79,11 +86,37 @@
         :class="['px-3 py-1 text-sm rounded border', link.active ? 'bg-green-500 text-white border-green-500' : 'border-gray-300 text-gray-600 hover:bg-gray-50']"
         v-html="link.label" />
     </div>
+
+    <!-- Modal de exclusão permanente -->
+    <div v-if="modalExcluir" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div class="bg-white rounded-xl w-full max-w-md p-6">
+        <h3 class="text-lg font-semibold text-gray-800 mb-1">Excluir permanentemente</h3>
+        <p class="text-sm text-gray-500 mb-4">
+          Isso remove <strong>{{ nomeExcluir }}</strong> e todos os dados vinculados (documentos, propostas,
+          agendamentos, avaliações) de forma <strong>irreversível</strong>. O e-mail/CPF/CNPJ ficará livre para um
+          novo cadastro.
+        </p>
+        <label class="block text-xs font-medium text-gray-500 mb-1">
+          Digite <strong>{{ nomeExcluir }}</strong> para confirmar
+        </label>
+        <input v-model="confirmacaoTexto" type="text"
+          class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-400" />
+        <div class="flex gap-2 mt-4">
+          <button @click="fecharExclusao" class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg text-sm">
+            Cancelar
+          </button>
+          <button @click="confirmarExclusao" :disabled="!confirmacaoValida || excluindo"
+            class="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 disabled:opacity-40 disabled:cursor-not-allowed">
+            Excluir permanentemente
+          </button>
+        </div>
+      </div>
+    </div>
   </AdminLayout>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { Link, router } from '@inertiajs/vue3'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 
@@ -148,5 +181,33 @@ function setTipo(tipo) {
 function limpar() {
   filtros.value = { tipo: filtros.value.tipo, status: '', search: '' }
   filtrar()
+}
+
+const modalExcluir     = ref(null)
+const confirmacaoTexto = ref('')
+const excluindo        = ref(false)
+
+const nomeExcluir = computed(() => modalExcluir.value ? (modalExcluir.value.trade_name ?? modalExcluir.value.name) : '')
+const confirmacaoValida = computed(() =>
+  confirmacaoTexto.value.trim().toLowerCase() === nomeExcluir.value.trim().toLowerCase()
+)
+
+function abrirExclusao(u) {
+  modalExcluir.value = u
+  confirmacaoTexto.value = ''
+}
+
+function fecharExclusao() {
+  modalExcluir.value = null
+  confirmacaoTexto.value = ''
+}
+
+function confirmarExclusao() {
+  if (!confirmacaoValida.value) return
+  excluindo.value = true
+  router.delete(route('admin.usuarios.destroy', [filtros.value.tipo, modalExcluir.value.id]), {
+    preserveScroll: true,
+    onFinish: () => { excluindo.value = false; fecharExclusao() },
+  })
 }
 </script>

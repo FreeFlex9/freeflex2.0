@@ -116,6 +116,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/prestadores/{prestador}/rejeitar-cnh', [Admin\PrestadoresController::class, 'rejeitarCnh'])->name('prestadores.rejeitarCnh');
 
         Route::get('/usuarios', [Admin\UsuariosController::class, 'index'])->name('usuarios.index');
+        Route::delete('/usuarios/{tipo}/{id}', [Admin\UsuariosController::class, 'destroy'])
+            ->where('tipo', 'prestador|empresa')
+            ->where('id', '[0-9]+')
+            ->name('usuarios.destroy');
         Route::get('/pontos', [Admin\PontosController::class, 'index'])->name('pontos.index');
 
         Route::get('/demandas', [Admin\DemandasController::class, 'index'])->name('demandas.index');
