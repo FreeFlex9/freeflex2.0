@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Company;
 
+use App\Http\Controllers\Concerns\StoresOptimizedUploads;
 use App\Http\Controllers\Controller;
 use App\Models\Company;
 use App\Rules\Cnpj;
@@ -15,6 +16,8 @@ use Inertia\Inertia;
 
 class AuthController extends Controller
 {
+    use StoresOptimizedUploads;
+
     public function showLogin()
     {
         if (Auth::guard('company')->check()) {
@@ -63,6 +66,11 @@ class AuthController extends Controller
             'city'         => 'nullable|string|max:100',
             'state'        => 'nullable|string|max:2',
             'password'     => ['required', 'confirmed', Password::min(8)],
+            'cnpj_card'    => 'required|file|mimes:jpg,jpeg,png,pdf,webp|max:5120',
+        ], [
+            'cnpj_card.required' => 'Envie o Cartão CNPJ.',
+            'cnpj_card.mimes'    => 'Somente JPG, PNG, WebP ou PDF.',
+            'cnpj_card.max'      => 'Arquivo muito grande. Máximo 5 MB.',
         ]);
 
         $cnpj = preg_replace('/\D/', '', $data['cnpj']);
@@ -111,10 +119,14 @@ class AuthController extends Controller
             'active'       => true,
         ]);
 
+        $company->cnpj_card_path = $this->storeOptimized($request->file('cnpj_card'), "companies/{$company->id}");
+        $company->save();
+
         Auth::guard('company')->login($company);
         $request->session()->regenerate();
 
-        return redirect()->route('empresa.dashboard');
+        return redirect()->route('empresa.dashboard')
+            ->with('success', 'Cadastro realizado e documento enviado com sucesso! Seu perfil está em análise.');
     }
 
     public function logout(Request $request)

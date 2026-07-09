@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Provider;
 
+use App\Http\Controllers\Concerns\StoresOptimizedUploads;
 use App\Http\Controllers\Controller;
 use App\Models\Provider;
 use App\Rules\Cpf;
@@ -10,11 +11,14 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 use Inertia\Inertia;
 
 class AuthController extends Controller
 {
+    use StoresOptimizedUploads;
+
     public function showLogin()
     {
         if (Auth::guard('provider')->check()) {
@@ -50,6 +54,10 @@ class AuthController extends Controller
 
     public function register(Request $request)
     {
+        $hasLicense = $request->boolean('has_license');
+        $isDigital  = $request->boolean('is_digital_license');
+        $docRules   = ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf,webp', 'max:5120'];
+
         $data = $request->validate([
             'name'               => 'required|string|max:255',
             'cpf'                => ['required', 'string', new Cpf],
@@ -61,6 +69,23 @@ class AuthController extends Controller
             'license_number'     => 'nullable|string|max:20',
             'bio'                => 'nullable|string|max:1000',
             'password'           => ['required', 'confirmed', Password::min(8)],
+            'rg_front'           => [Rule::requiredIf(!$hasLicense), ...$docRules],
+            'rg_back'            => [Rule::requiredIf(!$hasLicense), ...$docRules],
+            'license_front'      => [Rule::requiredIf($hasLicense), ...$docRules],
+            'license_back'       => [Rule::requiredIf($hasLicense && !$isDigital), ...$docRules],
+        ], [
+            'rg_front.required'      => 'Envie a foto da frente do RG.',
+            'rg_back.required'       => 'Envie a foto do verso do RG.',
+            'license_front.required' => 'Envie a foto da CNH.',
+            'license_back.required'  => 'Envie a foto do verso da CNH.',
+            'rg_front.mimes'         => 'Somente JPG, PNG, WebP ou PDF.',
+            'rg_back.mimes'          => 'Somente JPG, PNG, WebP ou PDF.',
+            'license_front.mimes'    => 'Somente JPG, PNG, WebP ou PDF.',
+            'license_back.mimes'     => 'Somente JPG, PNG, WebP ou PDF.',
+            'rg_front.max'           => 'Arquivo muito grande. Máximo 5 MB.',
+            'rg_back.max'            => 'Arquivo muito grande. Máximo 5 MB.',
+            'license_front.max'      => 'Arquivo muito grande. Máximo 5 MB.',
+            'license_back.max'       => 'Arquivo muito grande. Máximo 5 MB.',
         ]);
 
         $cpf = preg_replace('/\D/', '', $data['cpf']);
@@ -96,8 +121,8 @@ class AuthController extends Controller
             'email'              => $data['email'],
             'phone'              => preg_replace('/\D/', '', $data['phone']),
             'birth_date'         => $data['birth_date'] ?? null,
-            'has_license'        => $data['has_license'] ?? false,
-            'is_digital_license' => $data['is_digital_license'] ?? false,
+            'has_license'        => $hasLicense,
+            'is_digital_license' => $isDigital,
             'license_number'     => $data['license_number'] ?? null,
             'bio'                => $data['bio'] ?? null,
             'password'           => Hash::make($data['password']),
@@ -105,10 +130,23 @@ class AuthController extends Controller
             'active'             => true,
         ]);
 
+        $dir = "providers/{$provider->id}";
+        if ($hasLicense) {
+            $provider->license_front_path = $this->storeOptimized($request->file('license_front'), $dir);
+            if (!$isDigital) {
+                $provider->license_back_path = $this->storeOptimized($request->file('license_back'), $dir);
+            }
+        } else {
+            $provider->rg_front_path = $this->storeOptimized($request->file('rg_front'), $dir);
+            $provider->rg_back_path  = $this->storeOptimized($request->file('rg_back'), $dir);
+        }
+        $provider->save();
+
         Auth::guard('provider')->login($provider);
         $request->session()->regenerate();
 
-        return redirect()->route('prestador.dashboard');
+        return redirect()->route('prestador.dashboard')
+            ->with('success', 'Cadastro realizado e documentos enviados com sucesso! Seu perfil está em análise.');
     }
 
     public function logout(Request $request)
