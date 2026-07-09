@@ -67,20 +67,48 @@ class PerfilController extends Controller
         $company = Auth::guard('company')->user();
 
         $request->validate([
+            'tipo'    => 'required|in:cnpj_card,address_proof',
             'arquivo' => 'required|file|mimes:jpg,jpeg,png,pdf,webp|max:5120',
         ], [
             'arquivo.max'   => 'Arquivo muito grande. Máximo 5 MB.',
             'arquivo.mimes' => 'Somente JPG, PNG, WebP ou PDF.',
         ]);
 
-        if ($company->cnpj_card_path) {
-            Storage::disk('public')->delete($company->cnpj_card_path);
+        $campoMap = [
+            'cnpj_card'     => 'cnpj_card_path',
+            'address_proof' => 'address_proof_path',
+        ];
+
+        $campo = $campoMap[$request->tipo];
+
+        if ($company->$campo) {
+            Storage::disk('public')->delete($company->$campo);
         }
 
         $path = $this->storeOptimized($request->file('arquivo'), "companies/{$company->id}");
-        $company->update(['cnpj_card_path' => $path]);
+        $company->update([$campo => $path]);
 
-        return back()->with('success', 'Cartão CNPJ enviado com sucesso!');
+        $labels = ['cnpj_card' => 'Cartão CNPJ', 'address_proof' => 'Comprovante de residência'];
+        return back()->with('success', "{$labels[$request->tipo]} enviado com sucesso!");
+    }
+
+    public function removeDocument(Request $request)
+    {
+        $company = Auth::guard('company')->user();
+        $request->validate(['tipo' => 'required|in:cnpj_card,address_proof']);
+
+        $campoMap = [
+            'cnpj_card'     => 'cnpj_card_path',
+            'address_proof' => 'address_proof_path',
+        ];
+
+        $campo = $campoMap[$request->tipo];
+        if ($company->$campo) {
+            Storage::disk('public')->delete($company->$campo);
+            $company->update([$campo => null]);
+        }
+
+        return back()->with('success', 'Documento removido.');
     }
 
     private function storeOptimized(UploadedFile $file, string $directory): string

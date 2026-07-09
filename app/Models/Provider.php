@@ -14,7 +14,7 @@ class Provider extends Authenticatable
         'has_license', 'is_digital_license', 'license_number',
         'license_front_path', 'license_back_path',
         'rg_front_path', 'rg_back_path',
-        'mei_cnpj', 'ccmei_path', 'profile_photo_path', 'bio',
+        'mei_cnpj', 'ccmei_path', 'address_proof_path', 'profile_photo_path', 'bio',
         'status', 'approved_at', 'rejection_reason', 'active',
         'cnh_status', 'cnh_rejection_reason',
         'zip_code', 'street', 'number', 'complement', 'neighborhood', 'city', 'state',

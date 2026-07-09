@@ -102,7 +102,7 @@ class PerfilController extends Controller
         $provider = Auth::guard('provider')->user();
 
         $request->validate([
-            'tipo'    => 'required|in:profile_photo,rg_front,rg_back,license_front,license_back,ccmei',
+            'tipo'    => 'required|in:profile_photo,rg_front,rg_back,license_front,license_back,ccmei,address_proof',
             'arquivo' => 'required|file|mimes:jpg,jpeg,png,pdf,webp|max:5120',
         ], [
             'arquivo.max'   => 'Arquivo muito grande. Máximo 5 MB.',
@@ -110,12 +110,13 @@ class PerfilController extends Controller
         ]);
 
         $campoMap = [
-            'profile_photo' => 'profile_photo_path',
-            'rg_front'      => 'rg_front_path',
-            'rg_back'       => 'rg_back_path',
-            'license_front' => 'license_front_path',
-            'license_back'  => 'license_back_path',
-            'ccmei'         => 'ccmei_path',
+            'profile_photo'  => 'profile_photo_path',
+            'rg_front'       => 'rg_front_path',
+            'rg_back'        => 'rg_back_path',
+            'license_front'  => 'license_front_path',
+            'license_back'   => 'license_back_path',
+            'ccmei'          => 'ccmei_path',
+            'address_proof'  => 'address_proof_path',
         ];
 
         $campo = $campoMap[$request->tipo];
@@ -152,15 +153,16 @@ class PerfilController extends Controller
     public function removeDocument(Request $request)
     {
         $provider = Auth::guard('provider')->user();
-        $request->validate(['tipo' => 'required|in:profile_photo,rg_front,rg_back,license_front,license_back,ccmei']);
+        $request->validate(['tipo' => 'required|in:profile_photo,rg_front,rg_back,license_front,license_back,ccmei,address_proof']);
 
         $campoMap = [
-            'profile_photo' => 'profile_photo_path',
-            'rg_front'      => 'rg_front_path',
-            'rg_back'       => 'rg_back_path',
-            'license_front' => 'license_front_path',
-            'license_back'  => 'license_back_path',
-            'ccmei'         => 'ccmei_path',
+            'profile_photo'  => 'profile_photo_path',
+            'rg_front'       => 'rg_front_path',
+            'rg_back'        => 'rg_back_path',
+            'license_front'  => 'license_front_path',
+            'license_back'   => 'license_back_path',
+            'ccmei'          => 'ccmei_path',
+            'address_proof'  => 'address_proof_path',
         ];
 
         $campo = $campoMap[$request->tipo];
