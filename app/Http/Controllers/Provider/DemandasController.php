@@ -94,6 +94,33 @@ class DemandasController extends Controller
         ]);
     }
 
+    public function show(Demand $demand)
+    {
+        $provider = Auth::guard('provider')->user();
+
+        $demand->load(['company:id,trade_name', 'service:id,name,requires_license,provider_rate']);
+
+        if ($provider->latitude && $provider->longitude && $demand->latitude && $demand->longitude) {
+            $demand->distance_km = Geo::distanceKm(
+                $provider->latitude, $provider->longitude,
+                $demand->latitude, $demand->longitude
+            );
+        }
+
+        $proposal = Proposal::where('demand_id', $demand->id)
+            ->where('provider_id', $provider->id)
+            ->whereNotIn('status', ['rejected_provider'])
+            ->latest()
+            ->first();
+
+        return inertia('Prestador/VerDemanda', [
+            'demand'           => $demand,
+            'proposal'         => $proposal,
+            'providerApproved' => $provider->status === 'approved',
+            'providerHasLicense' => (bool) $provider->has_license,
+        ]);
+    }
+
     public function enviarProposta(Request $request)
     {
         $provider = Auth::guard('provider')->user();
