@@ -110,6 +110,11 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/empresas/{empresa}/aprovar', [Admin\EmpresasController::class, 'aprovar'])->name('empresas.aprovar');
         Route::post('/empresas/{empresa}/rejeitar', [Admin\EmpresasController::class, 'rejeitar'])->name('empresas.rejeitar');
 
+        Route::get('/documentos/{tipo}/{id}/{campo}', [Admin\DocumentosController::class, 'show'])
+            ->where('tipo', 'prestador|empresa')
+            ->where('id', '[0-9]+')
+            ->name('documentos.show');
+
         Route::get('/prestadores', [Admin\PrestadoresController::class, 'index'])->name('prestadores.index');
         Route::post('/prestadores/{prestador}/aprovar', [Admin\PrestadoresController::class, 'aprovar'])->name('prestadores.aprovar');
         Route::post('/prestadores/{prestador}/rejeitar', [Admin\PrestadoresController::class, 'rejeitar'])->name('prestadores.rejeitar');

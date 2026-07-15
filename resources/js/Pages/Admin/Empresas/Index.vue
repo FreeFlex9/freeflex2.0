@@ -19,7 +19,7 @@
             </div>
 
             <div class="flex flex-col gap-2 items-end">
-              <a v-if="emp.cnpj_card_path" :href="'/storage/' + emp.cnpj_card_path" target="_blank"
+              <a v-if="emp.cnpj_card_path" :href="route('admin.documentos.show', ['empresa', emp.id, 'cnpj_card_path'])" target="_blank"
                 class="text-xs px-3 py-1 bg-blue-100 text-blue-700 rounded-full hover:bg-blue-200 transition-colors">
                 Ver Cartão CNPJ
               </a>
@@ -27,7 +27,7 @@
                 Cartão CNPJ não enviado
               </span>
 
-              <a v-if="emp.address_proof_path" :href="'/storage/' + emp.address_proof_path" target="_blank"
+              <a v-if="emp.address_proof_path" :href="route('admin.documentos.show', ['empresa', emp.id, 'address_proof_path'])" target="_blank"
                 class="text-xs px-3 py-1 bg-blue-100 text-blue-700 rounded-full hover:bg-blue-200 transition-colors">
                 Ver Comprovante de Residência
               </a>

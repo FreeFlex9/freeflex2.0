@@ -68,19 +68,19 @@
               <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Documentos</p>
               <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                 <template v-if="pres.has_license">
-                  <DocCard :path="pres.license_front_path"
+                  <DocCard :path="pres.license_front_path" :prestador-id="pres.id" campo="license_front_path"
                     :label="pres.is_digital_license ? 'CNH (arquivo)' : 'CNH (frente)'"
                     obrigatorio />
                   <DocCard v-if="!pres.is_digital_license"
-                    :path="pres.license_back_path" label="CNH (verso)" />
+                    :path="pres.license_back_path" :prestador-id="pres.id" campo="license_back_path" label="CNH (verso)" />
                 </template>
                 <template v-else>
-                  <DocCard :path="pres.rg_front_path" label="RG (frente)" obrigatorio />
-                  <DocCard :path="pres.rg_back_path"  label="RG (verso)"  obrigatorio />
+                  <DocCard :path="pres.rg_front_path" :prestador-id="pres.id" campo="rg_front_path" label="RG (frente)" obrigatorio />
+                  <DocCard :path="pres.rg_back_path" :prestador-id="pres.id" campo="rg_back_path" label="RG (verso)"  obrigatorio />
                 </template>
-                <DocCard v-if="pres.mei_cnpj" :path="pres.ccmei_path" label="CCMEI (MEI)" obrigatorio />
-                <DocCard :path="pres.address_proof_path" label="Comprovante de Residência" obrigatorio />
-                <DocCard :path="pres.profile_photo_path" label="Foto de perfil" :obrigatorio="false" />
+                <DocCard v-if="pres.mei_cnpj" :path="pres.ccmei_path" :prestador-id="pres.id" campo="ccmei_path" label="CCMEI (MEI)" obrigatorio />
+                <DocCard :path="pres.address_proof_path" :prestador-id="pres.id" campo="address_proof_path" label="Comprovante de Residência" obrigatorio />
+                <DocCard :path="pres.profile_photo_path" :prestador-id="pres.id" campo="profile_photo_path" label="Foto de perfil" :obrigatorio="false" />
               </div>
             </div>
 
@@ -131,11 +131,11 @@
             <div class="border-t border-gray-100 pt-4">
               <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Documentos de CNH</p>
               <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                <DocCard :path="pres.license_front_path"
+                <DocCard :path="pres.license_front_path" :prestador-id="pres.id" campo="license_front_path"
                   :label="pres.is_digital_license ? 'CNH (arquivo)' : 'CNH (frente)'"
                   obrigatorio />
                 <DocCard v-if="!pres.is_digital_license"
-                  :path="pres.license_back_path" label="CNH (verso)" obrigatorio />
+                  :path="pres.license_back_path" :prestador-id="pres.id" campo="license_back_path" label="CNH (verso)" obrigatorio />
               </div>
             </div>
 
@@ -210,12 +210,15 @@ const DocCard = {
     path:       { type: String, default: null },
     label:      { type: String, required: true },
     obrigatorio:{ type: Boolean, default: false },
+    prestadorId:{ type: Number, required: true },
+    campo:      { type: String, required: true },
   },
   setup(props) {
     const isPdf = (p) => p && p.toLowerCase().endsWith('.pdf')
     return () => {
-      const { path, label, obrigatorio } = props
+      const { path, label, obrigatorio, prestadorId, campo } = props
       const hasdoc = !!path
+      const url = hasdoc ? route('admin.documentos.show', ['prestador', prestadorId, campo]) : null
       return h('div', {
         class: [
           'rounded-lg border overflow-hidden flex flex-col',
@@ -234,7 +237,7 @@ const DocCard = {
                       h('path', { 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'stroke-width': '1.5', d: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' })),
                     h('span', { class: 'text-xs text-red-400 font-medium' }, 'PDF'),
                   ])]
-              : [h('img', { src: '/storage/' + path, class: 'w-full h-full object-cover', alt: label })])
+              : [h('img', { src: url, class: 'w-full h-full object-cover', alt: label })])
           : [h('div', { class: 'flex flex-col items-center gap-1' }, [
                 h('svg', { class: 'w-8 h-8 text-gray-300', fill: 'none', stroke: 'currentColor', viewBox: '0 0 24 24' },
                   h('path', { 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'stroke-width': '1.5', d: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' })),
@@ -247,7 +250,7 @@ const DocCard = {
             obrigatorio ? h('span', { class: 'text-red-400 ml-0.5' }, '*') : null,
           ]),
           hasdoc
-            ? h('a', { href: '/storage/' + path, target: '_blank', class: 'text-xs text-blue-500 hover:underline shrink-0 ml-1' }, 'Ver')
+            ? h('a', { href: url, target: '_blank', class: 'text-xs text-blue-500 hover:underline shrink-0 ml-1' }, 'Ver')
             : h('span', { class: 'text-xs text-gray-300' }, '—'),
         ]),
       ])
