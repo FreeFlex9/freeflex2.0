@@ -140,6 +140,7 @@
               <p class="text-xs mb-3" :class="doc.path ? 'text-green-600' : 'text-amber-600'">
                 {{ doc.path ? 'Enviado ✓' : 'Obrigatório para aprovação' }}
               </p>
+              <p v-if="uploadErrors[doc.tipo]" class="text-xs text-red-500 mb-2">{{ uploadErrors[doc.tipo] }}</p>
               <div class="flex items-center gap-2">
                 <a v-if="doc.path" :href="`/storage/${doc.path}`" target="_blank"
                   class="text-xs text-blue-500 hover:underline">Ver arquivo</a>
@@ -252,10 +253,30 @@ function savePassword() {
 }
 
 const uploading = ref(null)
+const uploadErrors = ref({})
+
+const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5 MB, mesmo limite do backend
+const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp', 'pdf']
 
 function upload(tipo, event) {
   const file = event.target?.files?.[0]
+  const input = event.target
   if (!file) return
+
+  delete uploadErrors.value[tipo]
+
+  const extensao = file.name.split('.').pop()?.toLowerCase()
+  if (!ALLOWED_EXTENSIONS.includes(extensao)) {
+    uploadErrors.value = { ...uploadErrors.value, [tipo]: 'Formato inválido. Envie um arquivo JPG, PNG, WebP ou PDF.' }
+    if (input) input.value = ''
+    return
+  }
+  if (file.size > MAX_FILE_SIZE) {
+    uploadErrors.value = { ...uploadErrors.value, [tipo]: 'Arquivo muito grande. Máximo 5 MB.' }
+    if (input) input.value = ''
+    return
+  }
+
   uploading.value = tipo
 
   const form = new FormData()
@@ -264,7 +285,17 @@ function upload(tipo, event) {
 
   router.post(route('empresa.perfil.documento'), form, {
     forceFormData: true,
-    onFinish: () => { uploading.value = null },
+    onSuccess: () => { delete uploadErrors.value[tipo] },
+    onError: (errors) => {
+      uploadErrors.value = {
+        ...uploadErrors.value,
+        [tipo]: errors.arquivo || errors.tipo || 'Falha ao enviar o arquivo. Tente novamente.',
+      }
+    },
+    onFinish: () => {
+      uploading.value = null
+      if (input) input.value = ''
+    },
   })
 }
 
