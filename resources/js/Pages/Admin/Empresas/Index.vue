@@ -27,8 +27,16 @@
                 Cartão CNPJ não enviado
               </span>
 
+              <a v-if="emp.address_proof_path" :href="'/storage/' + emp.address_proof_path" target="_blank"
+                class="text-xs px-3 py-1 bg-blue-100 text-blue-700 rounded-full hover:bg-blue-200 transition-colors">
+                Ver Comprovante de Residência
+              </a>
+              <span v-else class="text-xs px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full">
+                Comprovante de residência não enviado
+              </span>
+
               <div class="flex gap-2 mt-2">
-                <button @click="aprovar(emp)" :disabled="!emp.cnpj_card_path || loading === emp.id"
+                <button @click="aprovar(emp)" :disabled="!emp.cnpj_card_path || !emp.address_proof_path || loading === emp.id"
                   class="px-4 py-2 bg-green-500 text-white text-sm font-medium rounded-lg hover:bg-green-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
                   Aprovar
                 </button>

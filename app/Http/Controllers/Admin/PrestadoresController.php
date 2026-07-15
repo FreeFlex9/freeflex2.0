@@ -18,7 +18,7 @@ class PrestadoresController extends Controller
                 'id', 'name', 'cpf', 'email', 'phone',
                 'has_license', 'is_digital_license', 'license_number', 'mei_cnpj',
                 'license_front_path', 'license_back_path',
-                'rg_front_path', 'rg_back_path', 'ccmei_path',
+                'rg_front_path', 'rg_back_path', 'ccmei_path', 'address_proof_path',
                 'profile_photo_path', 'created_at',
             ]);
 
@@ -59,6 +59,8 @@ class PrestadoresController extends Controller
         if (!empty($prestador->mei_cnpj) && empty($prestador->ccmei_path)) {
             abort(422, 'CCMEI não enviado para MEI.');
         }
+
+        abort_if(empty($prestador->address_proof_path), 422, 'Comprovante de residência não enviado.');
 
         $prestador->update(['status' => 'approved', 'approved_at' => now(), 'rejection_reason' => null]);
 

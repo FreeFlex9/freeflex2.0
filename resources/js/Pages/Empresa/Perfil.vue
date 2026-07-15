@@ -2,14 +2,14 @@
   <EmpresaLayout title="Meu Perfil">
 
     <!-- Aviso -->
-    <div v-if="!company.cnpj_card_path && company.status === 'pending'"
+    <div v-if="missingRequired.length && company.status === 'pending'"
       class="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-xl text-sm text-amber-800 flex items-start gap-3">
       <svg class="w-5 h-5 shrink-0 mt-0.5 text-amber-500" fill="currentColor" viewBox="0 0 20 20">
         <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
       </svg>
       <div>
-        <strong>Envie o Cartão CNPJ para ser aprovada.</strong>
-        O administrador precisa verificar o documento antes de liberar sua conta.
+        <strong>Complete seu cadastro para ser aprovada.</strong>
+        Envie: {{ missingRequired.map(d => d.label).join(', ') }}.
       </div>
     </div>
 
@@ -125,33 +125,37 @@
           <h3 class="font-semibold text-gray-800 text-sm mb-1">Documentos</h3>
           <p class="text-xs text-gray-400 mb-4">JPG, PNG ou PDF · máx. 5 MB</p>
 
-          <!-- Cartão CNPJ -->
-          <div class="p-3 rounded-lg border"
-            :class="company.cnpj_card_path ? 'border-green-200 bg-green-50' : 'border-amber-200 bg-amber-50'">
-            <div class="flex items-center gap-2 mb-2">
-              <svg v-if="company.cnpj_card_path" class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-              </svg>
-              <svg v-else class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-              </svg>
-              <span class="text-sm font-medium text-gray-700">Cartão CNPJ <span class="text-red-400 text-xs">*</span></span>
+          <div class="space-y-3">
+            <div v-for="doc in documentos" :key="doc.tipo" class="p-3 rounded-lg border"
+              :class="doc.path ? 'border-green-200 bg-green-50' : 'border-amber-200 bg-amber-50'">
+              <div class="flex items-center gap-2 mb-2">
+                <svg v-if="doc.path" class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                </svg>
+                <svg v-else class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+                <span class="text-sm font-medium text-gray-700">{{ doc.label }} <span v-if="doc.obrigatorio" class="text-red-400 text-xs">*</span></span>
+              </div>
+              <p class="text-xs mb-3" :class="doc.path ? 'text-green-600' : 'text-amber-600'">
+                {{ doc.path ? 'Enviado ✓' : 'Obrigatório para aprovação' }}
+              </p>
+              <p v-if="uploadErrors[doc.tipo]" class="text-xs text-red-500 mb-2">{{ uploadErrors[doc.tipo] }}</p>
+              <div class="flex items-center gap-2">
+                <a v-if="doc.path" :href="`/storage/${doc.path}`" target="_blank"
+                  class="text-xs text-blue-500 hover:underline">Ver arquivo</a>
+                <label class="cursor-pointer flex-1">
+                  <input type="file" class="hidden" accept=".jpg,.jpeg,.png,.pdf"
+                    @change="upload(doc.tipo, $event)" :disabled="uploading === doc.tipo" />
+                  <span class="block text-center text-xs font-medium text-teal-600 border border-teal-400 rounded px-2 py-1.5 hover:bg-teal-50 transition"
+                    :class="uploading === doc.tipo ? 'opacity-50 cursor-not-allowed' : ''">
+                    {{ uploading === doc.tipo ? 'Enviando...' : doc.path ? 'Substituir' : 'Enviar' }}
+                  </span>
+                </label>
+                <button v-if="doc.path" type="button" @click="remove(doc.tipo)"
+                  class="text-xs text-red-400 hover:text-red-600">✕</button>
+              </div>
             </div>
-            <p class="text-xs mb-3" :class="company.cnpj_card_path ? 'text-green-600' : 'text-amber-600'">
-              {{ company.cnpj_card_path ? 'Enviado ✓' : 'Obrigatório para aprovação' }}
-            </p>
-            <div class="flex gap-2">
-              <a v-if="company.cnpj_card_path" :href="`/storage/${company.cnpj_card_path}`" target="_blank"
-                class="text-xs text-blue-500 hover:underline">Ver arquivo</a>
-              <label class="cursor-pointer flex-1">
-                <input type="file" class="hidden" accept=".jpg,.jpeg,.png,.pdf" @change="uploadCnpjCard" :disabled="uploading" />
-                <span class="block text-center text-xs font-medium text-teal-600 border border-teal-400 rounded px-2 py-1.5 hover:bg-teal-50 transition"
-                  :class="uploading ? 'opacity-50 cursor-not-allowed' : ''">
-                  {{ uploading ? 'Enviando...' : company.cnpj_card_path ? 'Substituir' : 'Enviar' }}
-                </span>
-              </label>
-            </div>
-            <p v-if="uploadError" class="text-xs text-red-500 mt-2">{{ uploadError }}</p>
           </div>
         </div>
 
@@ -195,7 +199,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useForm, router } from '@inertiajs/vue3'
 import EmpresaLayout from '@/Layouts/EmpresaLayout.vue'
 import { useDarkMode } from '@/composables/useDarkMode.js'
@@ -248,45 +252,67 @@ function savePassword() {
   })
 }
 
-const uploading = ref(false)
-const uploadError = ref(null)
+const uploading = ref(null)
+const uploadErrors = ref({})
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5 MB, mesmo limite do backend
 const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp', 'pdf']
 
-function uploadCnpjCard(event) {
+function upload(tipo, event) {
   const file = event.target?.files?.[0]
   const input = event.target
   if (!file) return
 
-  uploadError.value = null
+  delete uploadErrors.value[tipo]
 
   const extensao = file.name.split('.').pop()?.toLowerCase()
   if (!ALLOWED_EXTENSIONS.includes(extensao)) {
-    uploadError.value = 'Formato inválido. Envie um arquivo JPG, PNG, WebP ou PDF.'
+    uploadErrors.value = { ...uploadErrors.value, [tipo]: 'Formato inválido. Envie um arquivo JPG, PNG, WebP ou PDF.' }
     if (input) input.value = ''
     return
   }
   if (file.size > MAX_FILE_SIZE) {
-    uploadError.value = 'Arquivo muito grande. Máximo 5 MB.'
+    uploadErrors.value = { ...uploadErrors.value, [tipo]: 'Arquivo muito grande. Máximo 5 MB.' }
     if (input) input.value = ''
     return
   }
 
-  uploading.value = true
+  uploading.value = tipo
+
   const form = new FormData()
+  form.append('tipo', tipo)
   form.append('arquivo', file)
+
   router.post(route('empresa.perfil.documento'), form, {
     forceFormData: true,
+    onSuccess: () => { delete uploadErrors.value[tipo] },
     onError: (errors) => {
-      uploadError.value = errors.arquivo || 'Falha ao enviar o arquivo. Tente novamente.'
+      uploadErrors.value = {
+        ...uploadErrors.value,
+        [tipo]: errors.arquivo || errors.tipo || 'Falha ao enviar o arquivo. Tente novamente.',
+      }
     },
     onFinish: () => {
-      uploading.value = false
+      uploading.value = null
       if (input) input.value = ''
     },
   })
 }
+
+function remove(tipo) {
+  router.delete(route('empresa.perfil.documento.remove'), {
+    data: { tipo },
+  })
+}
+
+const documentos = computed(() => [
+  { tipo: 'cnpj_card',     label: 'Cartão CNPJ',                obrigatorio: true, path: props.company.cnpj_card_path },
+  { tipo: 'address_proof', label: 'Comprovante de Residência',  obrigatorio: true, path: props.company.address_proof_path },
+])
+
+const missingRequired = computed(() =>
+  documentos.value.filter(d => d.obrigatorio && !d.path)
+)
 
 const ufs = ['AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS','MG','PA','PB','PR','PE','PI','RJ','RN','RS','RO','RR','SC','SP','SE','TO']
 </script>

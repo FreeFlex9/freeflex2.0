@@ -2,17 +2,18 @@
 
 namespace App\Http\Controllers\Provider;
 
+use App\Http\Controllers\Concerns\StoresOptimizedUploads;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
 
 class PerfilController extends Controller
 {
+    use StoresOptimizedUploads;
+
     public function index()
     {
         return inertia('Prestador/Perfil', [
@@ -28,14 +29,19 @@ class PerfilController extends Controller
             'phone'       => 'nullable|string|max:20',
             'bio'         => 'nullable|string|max:1000',
             'has_license' => 'boolean',
+            'is_pcd'      => 'boolean',
+            'pcd_type'    => 'nullable|string|max:255',
         ]);
 
         $wantsCnh   = (bool) $data['has_license'];
         $isApproved = $provider->status === 'approved';
+        $isPcd      = (bool) ($data['is_pcd'] ?? false);
 
         $update = [
-            'phone' => $data['phone'] ?? null,
-            'bio'   => $data['bio']   ?? null,
+            'phone'    => $data['phone'] ?? null,
+            'bio'      => $data['bio']   ?? null,
+            'is_pcd'   => $isPcd,
+            'pcd_type' => $isPcd ? ($data['pcd_type'] ?? null) : null,
         ];
 
         if ($isApproved) {
@@ -111,7 +117,7 @@ class PerfilController extends Controller
         }
 
         $request->validate([
-            'tipo'    => 'required|in:profile_photo,rg_front,rg_back,license_front,license_back,ccmei',
+            'tipo'    => 'required|in:profile_photo,rg_front,rg_back,license_front,license_back,ccmei,address_proof',
             'arquivo' => 'required|file|mimes:jpg,jpeg,png,pdf,webp|max:5120',
         ], [
             'arquivo.required' => 'Nenhum arquivo foi recebido pelo servidor. Tente novamente.',
@@ -120,12 +126,13 @@ class PerfilController extends Controller
         ]);
 
         $campoMap = [
-            'profile_photo' => 'profile_photo_path',
-            'rg_front'      => 'rg_front_path',
-            'rg_back'       => 'rg_back_path',
-            'license_front' => 'license_front_path',
-            'license_back'  => 'license_back_path',
-            'ccmei'         => 'ccmei_path',
+            'profile_photo'  => 'profile_photo_path',
+            'rg_front'       => 'rg_front_path',
+            'rg_back'        => 'rg_back_path',
+            'license_front'  => 'license_front_path',
+            'license_back'   => 'license_back_path',
+            'ccmei'          => 'ccmei_path',
+            'address_proof'  => 'address_proof_path',
         ];
 
         $campo = $campoMap[$request->tipo];
@@ -162,15 +169,16 @@ class PerfilController extends Controller
     public function removeDocument(Request $request)
     {
         $provider = Auth::guard('provider')->user();
-        $request->validate(['tipo' => 'required|in:profile_photo,rg_front,rg_back,license_front,license_back,ccmei']);
+        $request->validate(['tipo' => 'required|in:profile_photo,rg_front,rg_back,license_front,license_back,ccmei,address_proof']);
 
         $campoMap = [
-            'profile_photo' => 'profile_photo_path',
-            'rg_front'      => 'rg_front_path',
-            'rg_back'       => 'rg_back_path',
-            'license_front' => 'license_front_path',
-            'license_back'  => 'license_back_path',
-            'ccmei'         => 'ccmei_path',
+            'profile_photo'  => 'profile_photo_path',
+            'rg_front'       => 'rg_front_path',
+            'rg_back'        => 'rg_back_path',
+            'license_front'  => 'license_front_path',
+            'license_back'   => 'license_back_path',
+            'ccmei'          => 'ccmei_path',
+            'address_proof'  => 'address_proof_path',
         ];
 
         $campo = $campoMap[$request->tipo];
@@ -180,44 +188,5 @@ class PerfilController extends Controller
         }
 
         return back()->with('success', 'Documento removido.');
-    }
-
-    private function storeOptimized(UploadedFile $file, string $directory): string
-    {
-        $mime = $file->getMimeType();
-
-        // PDFs não são imagens — armazena diretamente
-        if ($mime === 'application/pdf') {
-            return $file->store($directory, 'public');
-        }
-
-        $source = match ($mime) {
-            'image/jpeg' => imagecreatefromjpeg($file->getRealPath()),
-            'image/png'  => imagecreatefrompng($file->getRealPath()),
-            'image/webp' => imagecreatefromwebp($file->getRealPath()),
-            default      => null,
-        };
-
-        // Fallback se GD não conseguir criar a imagem
-        if (!$source) {
-            return $file->store($directory, 'public');
-        }
-
-        // Preservar transparência de PNG
-        if ($mime === 'image/png') {
-            imagealphablending($source, false);
-            imagesavealpha($source, true);
-        }
-
-        $filename = Str::uuid() . '.webp';
-        $path     = $directory . '/' . $filename;
-
-        Storage::disk('public')->makeDirectory($directory);
-        $fullPath = Storage::disk('public')->path($path);
-
-        imagewebp($source, $fullPath, 82);
-        imagedestroy($source);
-
-        return $path;
     }
 }

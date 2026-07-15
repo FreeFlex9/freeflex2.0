@@ -2,17 +2,18 @@
 
 namespace App\Http\Controllers\Company;
 
+use App\Http\Controllers\Concerns\StoresOptimizedUploads;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
 
 class PerfilController extends Controller
 {
+    use StoresOptimizedUploads;
+
     public function index()
     {
         return inertia('Empresa/Perfil', [
@@ -76,6 +77,7 @@ class PerfilController extends Controller
         }
 
         $request->validate([
+            'tipo'    => 'required|in:cnpj_card,address_proof',
             'arquivo' => 'required|file|mimes:jpg,jpeg,png,pdf,webp|max:5120',
         ], [
             'arquivo.required' => 'Nenhum arquivo foi recebido pelo servidor. Tente novamente.',
@@ -83,49 +85,40 @@ class PerfilController extends Controller
             'arquivo.mimes'    => 'Somente JPG, PNG, WebP ou PDF.',
         ]);
 
-        if ($company->cnpj_card_path) {
-            Storage::disk('public')->delete($company->cnpj_card_path);
+        $campoMap = [
+            'cnpj_card'     => 'cnpj_card_path',
+            'address_proof' => 'address_proof_path',
+        ];
+
+        $campo = $campoMap[$request->tipo];
+
+        if ($company->$campo) {
+            Storage::disk('public')->delete($company->$campo);
         }
 
         $path = $this->storeOptimized($request->file('arquivo'), "companies/{$company->id}");
-        $company->update(['cnpj_card_path' => $path]);
+        $company->update([$campo => $path]);
 
-        return back()->with('success', 'Cartão CNPJ enviado com sucesso!');
+        $labels = ['cnpj_card' => 'Cartão CNPJ', 'address_proof' => 'Comprovante de residência'];
+        return back()->with('success', "{$labels[$request->tipo]} enviado com sucesso!");
     }
 
-    private function storeOptimized(UploadedFile $file, string $directory): string
+    public function removeDocument(Request $request)
     {
-        $mime = $file->getMimeType();
+        $company = Auth::guard('company')->user();
+        $request->validate(['tipo' => 'required|in:cnpj_card,address_proof']);
 
-        if ($mime === 'application/pdf') {
-            return $file->store($directory, 'public');
+        $campoMap = [
+            'cnpj_card'     => 'cnpj_card_path',
+            'address_proof' => 'address_proof_path',
+        ];
+
+        $campo = $campoMap[$request->tipo];
+        if ($company->$campo) {
+            Storage::disk('public')->delete($company->$campo);
+            $company->update([$campo => null]);
         }
 
-        $source = match ($mime) {
-            'image/jpeg' => imagecreatefromjpeg($file->getRealPath()),
-            'image/png'  => imagecreatefrompng($file->getRealPath()),
-            'image/webp' => imagecreatefromwebp($file->getRealPath()),
-            default      => null,
-        };
-
-        if (!$source) {
-            return $file->store($directory, 'public');
-        }
-
-        if ($mime === 'image/png') {
-            imagealphablending($source, false);
-            imagesavealpha($source, true);
-        }
-
-        $filename = Str::uuid() . '.webp';
-        $path     = $directory . '/' . $filename;
-
-        Storage::disk('public')->makeDirectory($directory);
-        $fullPath = Storage::disk('public')->path($path);
-
-        imagewebp($source, $fullPath, 82);
-        imagedestroy($source);
-
-        return $path;
+        return back()->with('success', 'Documento removido.');
     }
 }

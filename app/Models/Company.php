@@ -12,7 +12,7 @@ class Company extends Authenticatable
     protected $fillable = [
         'trade_name', 'legal_name', 'cnpj', 'email', 'password', 'phone',
         'zip_code', 'street', 'number', 'complement', 'neighborhood', 'city', 'state',
-        'cnpj_card_path', 'status', 'approved_at', 'rejection_reason', 'active',
+        'cnpj_card_path', 'address_proof_path', 'status', 'approved_at', 'rejection_reason', 'active',
     ];
 
     protected $hidden = ['password', 'remember_token'];

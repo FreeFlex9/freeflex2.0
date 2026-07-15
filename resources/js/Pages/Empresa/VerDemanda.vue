@@ -69,12 +69,21 @@
                 <div class="flex flex-wrap items-center gap-2">
                   <span class="font-semibold text-gray-800 text-sm">{{ p.provider?.name }}</span>
                   <span v-if="p.provider?.has_license" class="text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">CNH</span>
+                  <span v-if="p.provider?.is_pcd" class="text-xs bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded"
+                    :title="p.provider?.pcd_type || ''">
+                    PCD
+                  </span>
                   <span :class="propostaStatusClass(p.status)" class="text-xs font-medium px-2 py-0.5 rounded-full">
                     {{ propostaStatusLabel(p.status) }}
                   </span>
                 </div>
                 <p class="text-xs text-gray-400">{{ p.provider?.email }}</p>
                 <p v-if="p.message" class="text-sm text-gray-600 mt-1 italic">"{{ p.message }}"</p>
+                <div v-if="p.had_recent_surgery && p.health_consent"
+                  class="mt-2 p-2 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-800">
+                  <strong>Atenção:</strong> prestador informou cirurgia recente ou condição que pode impactar o serviço.
+                  <span v-if="p.surgery_description"> {{ p.surgery_description }}</span>
+                </div>
                 <p class="text-xs text-gray-400 mt-1">Proposta enviada {{ formatDatetime(p.created_at) }}</p>
               </div>
 

@@ -82,7 +82,7 @@ class DemandasController extends Controller
 
         $demand->load(['service:id,name,requires_license']);
 
-        $proposals = Proposal::with(['provider:id,name,cpf,email,phone,bio,profile_photo_path,has_license'])
+        $proposals = Proposal::with(['provider:id,name,cpf,email,phone,bio,profile_photo_path,has_license,is_pcd,pcd_type'])
             ->where('demand_id', $demand->id)
             ->whereNotIn('status', ['rejected_provider'])
             ->orderBy('created_at')

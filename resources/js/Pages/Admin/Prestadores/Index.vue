@@ -79,6 +79,7 @@
                   <DocCard :path="pres.rg_back_path"  label="RG (verso)"  obrigatorio />
                 </template>
                 <DocCard v-if="pres.mei_cnpj" :path="pres.ccmei_path" label="CCMEI (MEI)" obrigatorio />
+                <DocCard :path="pres.address_proof_path" label="Comprovante de Residência" obrigatorio />
                 <DocCard :path="pres.profile_photo_path" label="Foto de perfil" :obrigatorio="false" />
               </div>
             </div>
@@ -278,6 +279,7 @@ const erroMotivoCnh   = ref('')
 function formatDate(d) { return d ? new Date(d).toLocaleDateString('pt-BR') : '-' }
 
 function docsOk(pres) {
+  if (!pres.address_proof_path) return false
   if (pres.has_license) {
     if (pres.is_digital_license) return !!pres.license_front_path
     return !!(pres.license_front_path && pres.license_back_path)

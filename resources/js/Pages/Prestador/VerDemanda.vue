@@ -90,6 +90,31 @@
         <textarea v-model="propForm.message" rows="3" placeholder="Apresente-se, tire dúvidas sobre a demanda..."
           class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none mb-4" />
 
+        <div class="mb-4 p-3 bg-gray-50 border border-gray-200 rounded-lg">
+          <p class="text-xs font-medium text-gray-600 mb-2">Realizou alguma cirurgia recentemente ou possui alguma condição que possa impactar a execução do serviço?</p>
+          <div class="flex gap-4">
+            <label class="flex items-center gap-1.5 cursor-pointer text-sm text-gray-700">
+              <input type="radio" :value="true" v-model="propForm.had_recent_surgery" class="text-orange-500 focus:ring-orange-500" />
+              Sim
+            </label>
+            <label class="flex items-center gap-1.5 cursor-pointer text-sm text-gray-700">
+              <input type="radio" :value="false" v-model="propForm.had_recent_surgery" class="text-orange-500 focus:ring-orange-500" />
+              Não
+            </label>
+          </div>
+
+          <div v-if="propForm.had_recent_surgery" class="mt-3 space-y-2">
+            <textarea v-model="propForm.surgery_description" rows="2" placeholder="Descreva (opcional)..."
+              class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none" />
+
+            <label class="flex items-start gap-2 cursor-pointer text-xs text-gray-600">
+              <input type="checkbox" v-model="propForm.health_consent" class="mt-0.5 text-orange-500 focus:ring-orange-500 rounded" />
+              Autorizo o compartilhamento dessa informação com a empresa contratante para fins de análise da candidatura.
+            </label>
+            <p v-if="propForm.errors.health_consent" class="text-xs text-red-600">{{ propForm.errors.health_consent }}</p>
+          </div>
+        </div>
+
         <div class="flex gap-2">
           <button @click="modalAberto = false"
             class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg text-sm hover:bg-gray-50">
@@ -161,14 +186,25 @@ function calcValor(rate, ini, fim) {
 
 // Modal proposta
 const modalAberto = ref(false)
-const propForm = useForm({ demand_id: props.demand.id, message: '' })
+const propForm = useForm({
+  demand_id:            props.demand.id,
+  message:              '',
+  had_recent_surgery:   false,
+  surgery_description:  '',
+  health_consent:       false,
+})
 
 function abrirModal() {
-  propForm.message = ''
+  propForm.reset()
+  propForm.demand_id = props.demand.id
   modalAberto.value = true
 }
 
 function enviarProposta() {
+  if (propForm.had_recent_surgery && !propForm.health_consent) {
+    propForm.setError('health_consent', 'É necessário autorizar o compartilhamento dessa informação para prosseguir.')
+    return
+  }
   propForm.post(route('prestador.demandas.proposta'), {
     onSuccess: () => { modalAberto.value = false },
   })
