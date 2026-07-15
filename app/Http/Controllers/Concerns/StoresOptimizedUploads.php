@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Concerns;
 
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -17,16 +18,36 @@ trait StoresOptimizedUploads
             return $file->store($directory, 'public');
         }
 
+        // Qualquer falha na otimização (GD ausente/sem suporte a webp, disco sem
+        // permissão, etc.) não pode derrubar o upload — cai para o arquivo original.
+        try {
+            $path = $this->convertToWebp($file, $mime, $directory);
+            if ($path !== null) {
+                return $path;
+            }
+        } catch (\Throwable $e) {
+            Log::warning('Falha ao otimizar imagem, salvando arquivo original: ' . $e->getMessage());
+        }
+
+        return $file->store($directory, 'public');
+    }
+
+    private function convertToWebp(UploadedFile $file, string $mime, string $directory): ?string
+    {
+        if (!extension_loaded('gd')) {
+            return null;
+        }
+
         $source = match ($mime) {
             'image/jpeg' => imagecreatefromjpeg($file->getRealPath()),
             'image/png'  => imagecreatefrompng($file->getRealPath()),
-            'image/webp' => imagecreatefromwebp($file->getRealPath()),
-            default      => null,
+            'image/webp' => function_exists('imagecreatefromwebp') ? imagecreatefromwebp($file->getRealPath()) : false,
+            default      => false,
         };
 
         // Fallback se GD não conseguir criar a imagem
         if (!$source) {
-            return $file->store($directory, 'public');
+            return null;
         }
 
         // Preservar transparência de PNG
@@ -41,8 +62,13 @@ trait StoresOptimizedUploads
         Storage::disk('public')->makeDirectory($directory);
         $fullPath = Storage::disk('public')->path($path);
 
-        imagewebp($source, $fullPath, 82);
-        imagedestroy($source);
+        try {
+            if (!function_exists('imagewebp') || !imagewebp($source, $fullPath, 82)) {
+                return null;
+            }
+        } finally {
+            imagedestroy($source);
+        }
 
         return $path;
     }
