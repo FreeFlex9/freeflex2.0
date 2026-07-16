@@ -94,6 +94,7 @@
           </svg>
         </button>
         <h1 class="text-gray-700 font-semibold text-lg flex-1">{{ title }}</h1>
+        <NotificationBell />
       </header>
 
       <!-- Flash messages -->
@@ -124,6 +125,7 @@
 import { computed, ref } from 'vue'
 import { Link, usePage } from '@inertiajs/vue3'
 import NavItem from '@/Components/Admin/NavItem.vue'
+import NotificationBell from '@/Components/Admin/NotificationBell.vue'
 
 defineProps({
   title: { type: String, default: 'Painel Admin' },
