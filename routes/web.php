@@ -140,6 +140,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/perfil', [Admin\PerfilController::class, 'edit'])->name('perfil.edit');
         Route::put('/perfil', [Admin\PerfilController::class, 'update'])->name('perfil.update');
 
+        Route::post('/notificacoes/{id}/marcar-lida', [Admin\NotificacoesController::class, 'marcarLida'])->name('notificacoes.marcar-lida');
+        Route::post('/notificacoes/marcar-todas-lidas', [Admin\NotificacoesController::class, 'marcarTodasLidas'])->name('notificacoes.marcar-todas-lidas');
+
         Route::get('/config-email', [Admin\ConfigEmailController::class, 'index'])->name('config-email.index');
         Route::put('/config-email', [Admin\ConfigEmailController::class, 'salvar'])->name('config-email.update');
     });

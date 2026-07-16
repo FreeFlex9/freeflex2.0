@@ -59,6 +59,30 @@ class HandleInertiaRequests extends Middleware
                 'error'      => $request->session()->get('error'),
                 'cnh_notice' => $request->session()->get('cnh_notice'),
             ],
+            'notifications' => fn () => $this->adminNotifications($request),
+        ];
+    }
+
+    private function adminNotifications(Request $request): ?array
+    {
+        $admin = $request->user('admin');
+
+        if (! $admin) {
+            return null;
+        }
+
+        return [
+            'unread_count' => $admin->unreadNotifications()->count(),
+            'items' => $admin->notifications()
+                ->latest()
+                ->take(10)
+                ->get()
+                ->map(fn ($n) => [
+                    'id'         => $n->id,
+                    'data'       => $n->data,
+                    'read_at'    => $n->read_at?->toISOString(),
+                    'created_at' => $n->created_at->toISOString(),
+                ]),
         ];
     }
 }
