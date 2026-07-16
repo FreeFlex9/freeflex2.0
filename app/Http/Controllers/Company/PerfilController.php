@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Company;
 
 use App\Http\Controllers\Concerns\StoresOptimizedUploads;
+use App\Http\Controllers\Concerns\ValidatesDocumentType;
+use App\Services\DocumentTypeClassifier;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -12,7 +14,7 @@ use Illuminate\Validation\Rules\Password;
 
 class PerfilController extends Controller
 {
-    use StoresOptimizedUploads;
+    use StoresOptimizedUploads, ValidatesDocumentType;
 
     public function index()
     {
@@ -92,12 +94,25 @@ class PerfilController extends Controller
 
         $campo = $campoMap[$request->tipo];
 
+        if ($request->tipo === 'cnpj_card') {
+            $resultado = $this->validarTipoDocumento($request->file('arquivo'), DocumentTypeClassifier::CNPJ_CARD);
+            if (!$resultado['ok']) {
+                return back()->withErrors(['arquivo' => $resultado['message']]);
+            }
+
+            $company->document_validation = $this->registrarValidacaoDocumento(
+                $company->document_validation ?? [],
+                'cnpj_card',
+                $resultado
+            );
+        }
+
         if ($company->$campo) {
             Storage::disk('public')->delete($company->$campo);
         }
 
         $path = $this->storeOptimized($request->file('arquivo'), "companies/{$company->id}");
-        $company->update([$campo => $path]);
+        $company->update([$campo => $path, 'document_validation' => $company->document_validation]);
 
         $labels = ['cnpj_card' => 'Cartão CNPJ', 'address_proof' => 'Comprovante de residência'];
         return back()->with('success', "{$labels[$request->tipo]} enviado com sucesso!");

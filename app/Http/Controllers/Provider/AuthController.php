@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Provider;
 
 use App\Http\Controllers\Concerns\StoresOptimizedUploads;
+use App\Http\Controllers\Concerns\ValidatesDocumentType;
 use App\Http\Controllers\Controller;
 use App\Models\Provider;
 use App\Rules\Cpf;
+use App\Services\DocumentTypeClassifier;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -17,7 +19,7 @@ use Inertia\Inertia;
 
 class AuthController extends Controller
 {
-    use StoresOptimizedUploads;
+    use StoresOptimizedUploads, ValidatesDocumentType;
 
     public function showLogin()
     {
@@ -115,6 +117,22 @@ class AuthController extends Controller
             Log::warning('API CPF Saude.gov indisponível no registro: ' . $e->getMessage());
         }
 
+        $expectedTypes = $hasLicense
+            ? ['license_front' => DocumentTypeClassifier::CNH, 'license_back' => DocumentTypeClassifier::CNH]
+            : ['rg_front' => DocumentTypeClassifier::RG, 'rg_back' => DocumentTypeClassifier::RG];
+
+        $validacoes = [];
+        foreach ($expectedTypes as $campo => $tipoEsperado) {
+            if (!$request->hasFile($campo)) {
+                continue;
+            }
+            $resultado = $this->validarTipoDocumento($request->file($campo), $tipoEsperado);
+            if (!$resultado['ok']) {
+                return back()->withErrors([$campo => $resultado['message']])->withInput();
+            }
+            $validacoes = $this->registrarValidacaoDocumento($validacoes, $campo, $resultado);
+        }
+
         $provider = Provider::create([
             'name'               => $data['name'],
             'cpf'                => $cpf,
@@ -128,6 +146,7 @@ class AuthController extends Controller
             'password'           => Hash::make($data['password']),
             'status'             => 'pending',
             'active'             => true,
+            'document_validation' => $validacoes,
         ]);
 
         $dir = "providers/{$provider->id}";

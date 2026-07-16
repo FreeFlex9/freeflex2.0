@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Company;
 
 use App\Http\Controllers\Concerns\StoresOptimizedUploads;
+use App\Http\Controllers\Concerns\ValidatesDocumentType;
 use App\Http\Controllers\Controller;
 use App\Models\Company;
 use App\Rules\Cnpj;
+use App\Services\DocumentTypeClassifier;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -16,7 +18,7 @@ use Inertia\Inertia;
 
 class AuthController extends Controller
 {
-    use StoresOptimizedUploads;
+    use StoresOptimizedUploads, ValidatesDocumentType;
 
     public function showLogin()
     {
@@ -101,6 +103,13 @@ class AuthController extends Controller
             // API fora do ar — permite continuar, admin vai verificar manualmente
         }
 
+        $validacoes = [];
+        $resultado  = $this->validarTipoDocumento($request->file('cnpj_card'), DocumentTypeClassifier::CNPJ_CARD);
+        if (!$resultado['ok']) {
+            return back()->withErrors(['cnpj_card' => $resultado['message']])->withInput();
+        }
+        $validacoes = $this->registrarValidacaoDocumento($validacoes, 'cnpj_card', $resultado);
+
         $company = Company::create([
             'trade_name'   => $data['trade_name'],
             'legal_name'   => $data['legal_name'] ?? null,
@@ -117,6 +126,7 @@ class AuthController extends Controller
             'password'     => Hash::make($data['password']),
             'status'       => 'pending',
             'active'       => true,
+            'document_validation' => $validacoes,
         ]);
 
         $company->cnpj_card_path = $this->storeOptimized($request->file('cnpj_card'), "companies/{$company->id}");

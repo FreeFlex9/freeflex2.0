@@ -19,7 +19,7 @@ class PrestadoresController extends Controller
                 'has_license', 'is_digital_license', 'license_number', 'mei_cnpj',
                 'license_front_path', 'license_back_path',
                 'rg_front_path', 'rg_back_path', 'ccmei_path', 'address_proof_path',
-                'profile_photo_path', 'created_at',
+                'profile_photo_path', 'document_validation', 'created_at',
             ]);
 
         $cnhPendentes = Provider::where('status', 'approved')
@@ -27,7 +27,7 @@ class PrestadoresController extends Controller
             ->orderBy('updated_at')
             ->get([
                 'id', 'name', 'email', 'phone',
-                'is_digital_license', 'license_front_path', 'license_back_path',
+                'is_digital_license', 'license_front_path', 'license_back_path', 'document_validation',
             ]);
 
         return Inertia::render('Admin/Prestadores/Index', [

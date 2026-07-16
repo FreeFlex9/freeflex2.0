@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Provider;
 
 use App\Http\Controllers\Concerns\StoresOptimizedUploads;
+use App\Http\Controllers\Concerns\ValidatesDocumentType;
+use App\Services\DocumentTypeClassifier;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -12,7 +14,14 @@ use Illuminate\Validation\Rules\Password;
 
 class PerfilController extends Controller
 {
-    use StoresOptimizedUploads;
+    use StoresOptimizedUploads, ValidatesDocumentType;
+
+    private const EXPECTED_TYPES = [
+        'rg_front'      => DocumentTypeClassifier::RG,
+        'rg_back'       => DocumentTypeClassifier::RG,
+        'license_front' => DocumentTypeClassifier::CNH,
+        'license_back'  => DocumentTypeClassifier::CNH,
+    ];
 
     public function index()
     {
@@ -137,12 +146,26 @@ class PerfilController extends Controller
 
         $campo = $campoMap[$request->tipo];
 
+        if (isset(self::EXPECTED_TYPES[$request->tipo])) {
+            $resultado = $this->validarTipoDocumento($request->file('arquivo'), self::EXPECTED_TYPES[$request->tipo]);
+            if (!$resultado['ok']) {
+                return back()->withErrors(['arquivo' => $resultado['message']]);
+            }
+
+            $validacoes = $this->registrarValidacaoDocumento(
+                $provider->document_validation ?? [],
+                $request->tipo,
+                $resultado
+            );
+            $provider->document_validation = $validacoes;
+        }
+
         if ($provider->$campo) {
             Storage::disk('public')->delete($provider->$campo);
         }
 
         $path = $this->storeOptimized($request->file('arquivo'), "providers/{$provider->id}");
-        $provider->update([$campo => $path]);
+        $provider->update([$campo => $path, 'document_validation' => $provider->document_validation]);
 
         return back()->with('success', 'Documento enviado com sucesso!');
     }

@@ -13,7 +13,7 @@ class EmpresasController extends Controller
     {
         $companies = Company::where('status', 'pending')
             ->orderBy('created_at')
-            ->get(['id', 'trade_name', 'cnpj', 'email', 'phone', 'cnpj_card_path', 'address_proof_path', 'created_at']);
+            ->get(['id', 'trade_name', 'cnpj', 'email', 'phone', 'cnpj_card_path', 'address_proof_path', 'document_validation', 'created_at']);
 
         return Inertia::render('Admin/Empresas/Index', [
             'empresas' => $companies,

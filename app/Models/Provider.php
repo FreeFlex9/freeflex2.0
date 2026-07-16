@@ -17,7 +17,7 @@ class Provider extends Authenticatable
         'mei_cnpj', 'ccmei_path', 'address_proof_path', 'profile_photo_path', 'bio',
         'is_pcd', 'pcd_type',
         'status', 'approved_at', 'rejection_reason', 'active',
-        'cnh_status', 'cnh_rejection_reason',
+        'cnh_status', 'cnh_rejection_reason', 'document_validation',
         'zip_code', 'street', 'number', 'complement', 'neighborhood', 'city', 'state',
         'latitude', 'longitude', 'start_hour', 'end_hour',
     ];
@@ -35,6 +35,7 @@ class Provider extends Authenticatable
             'email_verified_at' => 'datetime',
             'approved_at'       => 'datetime',
             'birth_date'        => 'date',
+            'document_validation' => 'array',
         ];
     }
 

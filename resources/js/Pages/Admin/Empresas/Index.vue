@@ -19,10 +19,16 @@
             </div>
 
             <div class="flex flex-col gap-2 items-end">
-              <a v-if="emp.cnpj_card_path" :href="route('admin.documentos.show', ['empresa', emp.id, 'cnpj_card_path'])" target="_blank"
-                class="text-xs px-3 py-1 bg-blue-100 text-blue-700 rounded-full hover:bg-blue-200 transition-colors">
-                Ver Cartão CNPJ
-              </a>
+              <div v-if="emp.cnpj_card_path" class="flex items-center gap-1.5">
+                <a :href="route('admin.documentos.show', ['empresa', emp.id, 'cnpj_card_path'])" target="_blank"
+                  class="text-xs px-3 py-1 bg-blue-100 text-blue-700 rounded-full hover:bg-blue-200 transition-colors">
+                  Ver Cartão CNPJ
+                </a>
+                <span v-if="emp.document_validation?.cnpj_card?.status === 'valid'"
+                  class="text-[10px] bg-green-500 text-white font-medium px-1.5 py-0.5 rounded-full leading-none">
+                  OCR ✓
+                </span>
+              </div>
               <span v-else class="text-xs px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full">
                 Cartão CNPJ não enviado
               </span>
