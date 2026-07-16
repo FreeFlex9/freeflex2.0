@@ -2,6 +2,13 @@
   <AdminLayout title="Gerenciar Usuários" :pendentes="pendentes">
     <!-- Abas de tipo -->
     <div class="flex gap-1 border-b border-gray-200 mb-4">
+      <button @click="setTipo('todos')"
+        class="px-4 py-2 text-sm font-medium border-b-2 transition-colors"
+        :class="filtros.tipo === 'todos'
+          ? 'border-green-500 text-green-600'
+          : 'border-transparent text-gray-500 hover:text-gray-700'">
+        Todos
+      </button>
       <button @click="setTipo('prestador')"
         class="px-4 py-2 text-sm font-medium border-b-2 transition-colors"
         :class="filtros.tipo === 'prestador'
@@ -23,9 +30,7 @@
       <div class="flex-1 min-w-[240px]">
         <label class="block text-xs font-medium text-gray-500 mb-1">Pesquisar</label>
         <input v-model="filtros.search" @input="filtrarComDebounce" type="text"
-          :placeholder="filtros.tipo === 'empresa'
-            ? 'Nome, e-mail, CNPJ ou telefone...'
-            : 'Nome, e-mail, CPF ou telefone...'"
+          :placeholder="placeholderBusca"
           class="w-full text-sm border border-gray-300 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-green-400" />
       </div>
       <div>
@@ -50,8 +55,9 @@
       <table class="w-full text-sm">
         <thead>
           <tr class="text-left text-xs font-semibold text-gray-400 uppercase tracking-wider border-b border-gray-100">
+            <th v-if="filtros.tipo === 'todos'" class="px-4 py-3">Tipo</th>
             <th class="px-4 py-3">{{ filtros.tipo === 'empresa' ? 'Razão Social' : 'Nome' }}</th>
-            <th class="px-4 py-3">{{ filtros.tipo === 'empresa' ? 'CNPJ' : 'CPF' }}</th>
+            <th class="px-4 py-3">{{ filtros.tipo === 'empresa' ? 'CNPJ' : filtros.tipo === 'prestador' ? 'CPF' : 'CPF/CNPJ' }}</th>
             <th class="px-4 py-3">E-mail</th>
             <th class="px-4 py-3">Telefone</th>
             <th class="px-4 py-3">Cidade/UF</th>
@@ -61,9 +67,12 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="u in usuarios.data" :key="u.id" class="border-b border-gray-50 last:border-0 hover:bg-gray-50">
-            <td class="px-4 py-3 font-medium text-gray-800">{{ u.trade_name ?? u.name }}</td>
-            <td class="px-4 py-3 text-gray-600">{{ formatDoc(u.cnpj ?? u.cpf) }}</td>
+          <tr v-for="u in usuarios.data" :key="`${u.tipo}-${u.id}`" class="border-b border-gray-50 last:border-0 hover:bg-gray-50">
+            <td v-if="filtros.tipo === 'todos'" class="px-4 py-3 text-gray-600">
+              {{ u.tipo === 'empresa' ? 'Empresa' : 'Prestador' }}
+            </td>
+            <td class="px-4 py-3 font-medium text-gray-800">{{ u.nome }}</td>
+            <td class="px-4 py-3 text-gray-600">{{ formatDoc(u.documento) }}</td>
             <td class="px-4 py-3 text-gray-600">{{ u.email }}</td>
             <td class="px-4 py-3 text-gray-600">{{ u.phone ?? '—' }}</td>
             <td class="px-4 py-3 text-gray-600">{{ u.city ? `${u.city}/${u.state ?? ''}` : '—' }}</td>
@@ -148,9 +157,15 @@ const props = defineProps({
 })
 
 const filtros = ref({
-  tipo:   props.filtros?.tipo ?? 'prestador',
+  tipo:   props.filtros?.tipo ?? 'todos',
   status: props.filtros?.status ?? '',
   search: props.filtros?.search ?? '',
+})
+
+const placeholderBusca = computed(() => {
+  if (filtros.value.tipo === 'empresa') return 'Nome, e-mail, CNPJ ou telefone...'
+  if (filtros.value.tipo === 'prestador') return 'Nome, e-mail, CPF ou telefone...'
+  return 'Nome, e-mail, CPF/CNPJ ou telefone...'
 })
 
 function formatDate(d) { return d ? new Date(d).toLocaleDateString('pt-BR') : '-' }
@@ -187,7 +202,7 @@ const modalExcluir     = ref(null)
 const confirmacaoTexto = ref('')
 const excluindo        = ref(false)
 
-const nomeExcluir = computed(() => modalExcluir.value ? (modalExcluir.value.trade_name ?? modalExcluir.value.name) : '')
+const nomeExcluir = computed(() => modalExcluir.value ? modalExcluir.value.nome : '')
 const confirmacaoValida = computed(() =>
   confirmacaoTexto.value.trim().toLowerCase() === nomeExcluir.value.trim().toLowerCase()
 )
@@ -205,7 +220,7 @@ function fecharExclusao() {
 function confirmarExclusao() {
   if (!confirmacaoValida.value) return
   excluindo.value = true
-  router.delete(route('admin.usuarios.destroy', [filtros.value.tipo, modalExcluir.value.id]), {
+  router.delete(route('admin.usuarios.destroy', [modalExcluir.value.tipo, modalExcluir.value.id]), {
     preserveScroll: true,
     onFinish: () => { excluindo.value = false; fecharExclusao() },
   })

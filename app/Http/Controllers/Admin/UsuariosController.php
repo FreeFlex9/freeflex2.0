@@ -17,43 +17,23 @@ class UsuariosController extends Controller
 {
     public function index(Request $request)
     {
-        $tipo   = $request->input('tipo') === 'empresa' ? 'empresa' : 'prestador';
+        $tipo = in_array($request->input('tipo'), ['prestador', 'empresa', 'todos'], true)
+            ? $request->input('tipo')
+            : 'todos';
         $status = in_array($request->input('status'), ['pending', 'approved', 'rejected'], true)
             ? $request->input('status')
             : '';
         $search = trim((string) $request->input('search', ''));
 
-        $modelClass = $tipo === 'empresa' ? Company::class : Provider::class;
-        $nameColumn = $tipo === 'empresa' ? 'trade_name' : 'name';
-        $docColumn  = $tipo === 'empresa' ? 'cnpj' : 'cpf';
+        $query = match ($tipo) {
+            'prestador' => $this->queryPrestadores($status, $search),
+            'empresa'   => $this->queryEmpresas($status, $search),
+            default     => $this->queryPrestadores($status, $search)
+                ->unionAll($this->queryEmpresas($status, $search)),
+        };
 
-        $query = $modelClass::query();
-
-        if ($status !== '') {
-            $query->where('status', $status);
-        }
-
-        if ($search !== '') {
-            $looksLikeDocOrPhone = (bool) preg_match('/^[\d.\-\/\s()]+$/', $search);
-            $digits = $looksLikeDocOrPhone ? preg_replace('/\D/', '', $search) : '';
-
-            $query->where(function ($q) use ($search, $digits, $nameColumn, $docColumn) {
-                $q->where($nameColumn, 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%");
-
-                if ($digits !== '') {
-                    $q->orWhere($docColumn, 'like', "%{$digits}%")
-                        ->orWhere('phone', 'like', "%{$digits}%");
-                }
-            });
-        }
-
-        $columns = $tipo === 'empresa'
-            ? ['id', 'trade_name', 'cnpj', 'email', 'phone', 'status', 'city', 'state', 'created_at']
-            : ['id', 'name', 'cpf', 'email', 'phone', 'status', 'city', 'state', 'created_at'];
-
-        $usuarios = $query->orderBy($nameColumn)
-            ->paginate(15, $columns)
+        $usuarios = $query->orderBy('nome')
+            ->paginate(15)
             ->withQueryString();
 
         return Inertia::render('Admin/Usuarios/Index', [
@@ -65,6 +45,74 @@ class UsuariosController extends Controller
                 'propostas'   => Proposal::where('status', 'pending_admin_approval')->count(),
             ],
         ]);
+    }
+
+    private function queryPrestadores(string $status, string $search)
+    {
+        $query = DB::table('providers')->select([
+            'id',
+            'name as nome',
+            'cpf as documento',
+            'email',
+            'phone',
+            'city',
+            'state',
+            'status',
+            'created_at',
+            DB::raw("'prestador' as tipo"),
+        ]);
+
+        if ($status !== '') {
+            $query->where('status', $status);
+        }
+
+        if ($search !== '') {
+            $this->aplicarBusca($query, $search, 'name', 'cpf');
+        }
+
+        return $query;
+    }
+
+    private function queryEmpresas(string $status, string $search)
+    {
+        $query = DB::table('companies')->select([
+            'id',
+            'trade_name as nome',
+            'cnpj as documento',
+            'email',
+            'phone',
+            'city',
+            'state',
+            'status',
+            'created_at',
+            DB::raw("'empresa' as tipo"),
+        ]);
+
+        if ($status !== '') {
+            $query->where('status', $status);
+        }
+
+        if ($search !== '') {
+            $this->aplicarBusca($query, $search, 'trade_name', 'cnpj');
+        }
+
+        return $query;
+    }
+
+    private function aplicarBusca($query, string $search, string $nameColumn, string $docColumn): void
+    {
+        $looksLikeDocOrPhone = (bool) preg_match('/^[\d.\-\/\s()]+$/', $search);
+        $digits = $looksLikeDocOrPhone ? preg_replace('/\D/', '', $search) : '';
+
+        $query->where(function ($q) use ($search, $digits, $nameColumn, $docColumn) {
+            $q->where($nameColumn, 'like', "%{$search}%")
+                ->orWhere('email', 'like', "%{$search}%");
+
+            if ($digits !== '') {
+                $q->orWhere($docColumn, 'like', "%{$digits}%")
+                    ->orWhere('phone', 'like', "%{$digits}%");
+            }
+        });
     }
 
     public function destroy(string $tipo, int $id)
