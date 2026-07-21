@@ -20,10 +20,12 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->alias([
-            'is_admin'    => \App\Http\Middleware\IsAdmin::class,
-            'is_company'  => \App\Http\Middleware\IsCompany::class,
-            'is_provider' => \App\Http\Middleware\IsProvider::class,
-            'guest'       => \App\Http\Middleware\RedirectIfAuthenticated::class,
+            'is_admin'     => \App\Http\Middleware\IsAdmin::class,
+            'is_company'   => \App\Http\Middleware\IsCompany::class,
+            'is_provider'  => \App\Http\Middleware\IsProvider::class,
+            'guest'        => \App\Http\Middleware\RedirectIfAuthenticated::class,
+            'api.provider' => \App\Http\Middleware\EnsureApiProvider::class,
+            'api.company'  => \App\Http\Middleware\EnsureApiCompany::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
