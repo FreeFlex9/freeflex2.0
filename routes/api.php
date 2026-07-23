@@ -4,7 +4,9 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\Empresa\DashboardController as EmpresaDashboardController;
 use App\Http\Controllers\Api\Empresa\PropostasController as EmpresaPropostasController;
 use App\Http\Controllers\Api\PasswordResetController;
+use App\Http\Controllers\Api\Prestador\AgendaController as PrestadorAgendaController;
 use App\Http\Controllers\Api\Prestador\DashboardController as PrestadorDashboardController;
+use App\Http\Controllers\Api\Prestador\DemandasController as PrestadorDemandasController;
 use App\Http\Controllers\Api\Prestador\PropostasController as PrestadorPropostasController;
 use App\Http\Controllers\Api\RegisterController;
 use App\Http\Controllers\Api\ServicoController;
@@ -33,8 +35,17 @@ Route::post('/password/reset', [PasswordResetController::class, 'reset'])->middl
 
 Route::middleware(['auth:sanctum', 'api.provider'])->prefix('prestador')->group(function () {
     Route::get('/dashboard', [PrestadorDashboardController::class, 'index']);
+
+    Route::get('/demandas', [PrestadorDemandasController::class, 'index']);
+    Route::get('/demandas/{demand}', [PrestadorDemandasController::class, 'show']);
+    Route::post('/demandas/proposta', [PrestadorDemandasController::class, 'enviarProposta']);
+
+    Route::get('/propostas', [PrestadorPropostasController::class, 'index']);
     Route::post('/propostas/{proposal}/aceitar', [PrestadorPropostasController::class, 'aceitar']);
     Route::post('/propostas/{proposal}/recusar', [PrestadorPropostasController::class, 'recusar']);
+    Route::delete('/propostas/{proposal}/cancelar', [PrestadorPropostasController::class, 'cancelar']);
+
+    Route::get('/agenda', [PrestadorAgendaController::class, 'index']);
 });
 
 Route::middleware(['auth:sanctum', 'api.company'])->prefix('empresa')->group(function () {
