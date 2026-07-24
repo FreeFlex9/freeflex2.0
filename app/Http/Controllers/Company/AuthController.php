@@ -6,6 +6,7 @@ use App\Http\Controllers\Concerns\StoresOptimizedUploads;
 use App\Http\Controllers\Controller;
 use App\Models\Company;
 use App\Rules\Cnpj;
+use App\Support\AccountBlockingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -38,6 +39,14 @@ class AuthController extends Controller
         $credentials = [$field => $request->email, 'password' => $request->password];
 
         if (Auth::guard('company')->attempt($credentials, $request->boolean('remember'))) {
+            $company = Auth::guard('company')->user();
+            AccountBlockingService::liftIfExpired($company);
+
+            if (!$company->active) {
+                Auth::guard('company')->logout();
+                return back()->withErrors(['email' => AccountBlockingService::mensagemBloqueio($company)])->onlyInput('email');
+            }
+
             $request->session()->regenerate();
             return redirect()->intended(route('empresa.dashboard'));
         }

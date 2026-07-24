@@ -6,6 +6,7 @@ use App\Http\Controllers\Concerns\StoresOptimizedUploads;
 use App\Http\Controllers\Controller;
 use App\Models\Provider;
 use App\Rules\Cpf;
+use App\Support\AccountBlockingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -40,6 +41,14 @@ class AuthController extends Controller
         $value  = $isCpf ? preg_replace('/\D/', '', $request->email) : $request->email;
 
         if (Auth::guard('provider')->attempt([$field => $value, 'password' => $request->password], $request->boolean('remember'))) {
+            $provider = Auth::guard('provider')->user();
+            AccountBlockingService::liftIfExpired($provider);
+
+            if (!$provider->active) {
+                Auth::guard('provider')->logout();
+                return back()->withErrors(['email' => AccountBlockingService::mensagemBloqueio($provider)])->onlyInput('email');
+            }
+
             $request->session()->regenerate();
             return redirect()->intended(route('prestador.dashboard'));
         }

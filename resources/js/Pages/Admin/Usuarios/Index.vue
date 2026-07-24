@@ -62,6 +62,7 @@
             <th class="px-4 py-3">Telefone</th>
             <th class="px-4 py-3">Cidade/UF</th>
             <th class="px-4 py-3">Status</th>
+            <th class="px-4 py-3">Situação da conta</th>
             <th class="px-4 py-3">Cadastro</th>
             <th class="px-4 py-3"></th>
           </tr>
@@ -77,8 +78,19 @@
             <td class="px-4 py-3 text-gray-600">{{ u.phone ?? '—' }}</td>
             <td class="px-4 py-3 text-gray-600">{{ u.city ? `${u.city}/${u.state ?? ''}` : '—' }}</td>
             <td class="px-4 py-3"><StatusBadge :status="u.status" /></td>
+            <td class="px-4 py-3">
+              <BloqueioBadge :usuario="u" />
+            </td>
             <td class="px-4 py-3 text-gray-500">{{ formatDate(u.created_at) }}</td>
-            <td class="px-4 py-3 text-right">
+            <td class="px-4 py-3 text-right whitespace-nowrap">
+              <button v-if="contaBloqueada(u)" @click="desbloquear(u)"
+                class="text-xs px-2.5 py-1 rounded-lg text-green-700 hover:bg-green-50 transition-colors">
+                Desbloquear
+              </button>
+              <button v-else @click="abrirBloqueio(u)"
+                class="text-xs px-2.5 py-1 rounded-lg text-amber-700 hover:bg-amber-50 transition-colors">
+                Bloquear
+              </button>
               <button @click="abrirExclusao(u)"
                 class="text-xs px-2.5 py-1 rounded-lg text-red-600 hover:bg-red-50 transition-colors">
                 Excluir
@@ -121,6 +133,59 @@
         </div>
       </div>
     </div>
+
+    <!-- Modal de bloqueio -->
+    <div v-if="modalBloqueio" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div class="bg-white rounded-xl w-full max-w-md p-6">
+        <h3 class="text-lg font-semibold text-gray-800 mb-1">Bloquear usuário</h3>
+        <p class="text-sm text-gray-500 mb-4">
+          Bloquear <strong>{{ modalBloqueio.nome }}</strong>. Enquanto bloqueado, o acesso à plataforma
+          (login, candidaturas, criação de demandas etc.) fica impedido.
+        </p>
+
+        <div class="flex gap-1 mb-4 border border-gray-200 rounded-lg p-1">
+          <button @click="bloqueioForm.tipo = 'temporario'"
+            class="flex-1 text-sm py-1.5 rounded-md transition-colors"
+            :class="bloqueioForm.tipo === 'temporario' ? 'bg-amber-500 text-white' : 'text-gray-600'">
+            Temporário
+          </button>
+          <button @click="bloqueioForm.tipo = 'definitivo'"
+            class="flex-1 text-sm py-1.5 rounded-md transition-colors"
+            :class="bloqueioForm.tipo === 'definitivo' ? 'bg-red-600 text-white' : 'text-gray-600'">
+            Definitivo
+          </button>
+        </div>
+
+        <div v-if="bloqueioForm.tipo === 'temporario'" class="mb-4">
+          <label class="block text-xs font-medium text-gray-500 mb-1">Período do bloqueio</label>
+          <div class="flex gap-2 mb-2">
+            <button v-for="dias in [7, 15, 30, 90]" :key="dias" @click="definirDias(dias)"
+              class="text-xs px-2.5 py-1 rounded-lg border"
+              :class="diasSelecionados === dias ? 'border-amber-500 bg-amber-50 text-amber-700' : 'border-gray-300 text-gray-600'">
+              {{ dias }} dias
+            </button>
+          </div>
+          <input v-model="bloqueioForm.bloqueado_ate" type="datetime-local"
+            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400" />
+        </div>
+
+        <label class="block text-xs font-medium text-gray-500 mb-1">Motivo do bloqueio</label>
+        <textarea v-model="bloqueioForm.motivo" rows="3"
+          placeholder="Descreva o motivo (descumprimento das regras, infração, comportamento inadequado...)"
+          class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"></textarea>
+        <p v-if="erroBloqueio" class="text-xs text-red-600 mt-1">{{ erroBloqueio }}</p>
+
+        <div class="flex gap-2 mt-4">
+          <button @click="fecharBloqueio" class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg text-sm">
+            Cancelar
+          </button>
+          <button @click="confirmarBloqueio" :disabled="!bloqueioValido || bloqueando"
+            class="flex-1 px-4 py-2 bg-amber-600 text-white rounded-lg text-sm font-medium hover:bg-amber-700 disabled:opacity-40 disabled:cursor-not-allowed">
+            Bloquear
+          </button>
+        </div>
+      </div>
+    </div>
   </AdminLayout>
 </template>
 
@@ -148,6 +213,31 @@ const StatusBadge = {
     },
   },
   template: `<span class="text-xs px-2 py-0.5 rounded-full font-medium" :class="cls">{{ label }}</span>`,
+}
+
+const BloqueioBadge = {
+  props: { usuario: Object },
+  computed: {
+    bloqueado() { return !this.usuario.active },
+    definitivo() { return this.bloqueado && !this.usuario.blocked_until },
+    cls() {
+      if (!this.bloqueado) return 'bg-green-100 text-green-700'
+      return this.definitivo ? 'bg-red-100 text-red-600' : 'bg-orange-100 text-orange-700'
+    },
+    label() {
+      if (!this.bloqueado) return 'Ativo'
+      if (this.definitivo) return 'Bloqueado definitivamente'
+      return `Bloqueado até ${new Date(this.usuario.blocked_until).toLocaleString('pt-BR')}`
+    },
+  },
+  template: `
+    <div>
+      <span class="text-xs px-2 py-0.5 rounded-full font-medium" :class="cls">{{ label }}</span>
+      <p v-if="bloqueado && usuario.block_reason" class="text-xs text-gray-400 mt-1 max-w-[220px] truncate" :title="usuario.block_reason">
+        {{ usuario.block_reason }}
+      </p>
+    </div>
+  `,
 }
 
 const props = defineProps({
@@ -224,5 +314,62 @@ function confirmarExclusao() {
     preserveScroll: true,
     onFinish: () => { excluindo.value = false; fecharExclusao() },
   })
+}
+
+function contaBloqueada(u) {
+  return !u.active
+}
+
+const modalBloqueio = ref(null)
+const bloqueioForm  = ref({ tipo: 'temporario', bloqueado_ate: '', motivo: '' })
+const diasSelecionados = ref(null)
+const erroBloqueio = ref('')
+const bloqueando   = ref(false)
+
+const bloqueioValido = computed(() => {
+  if (!bloqueioForm.value.motivo.trim()) return false
+  if (bloqueioForm.value.tipo === 'temporario' && !bloqueioForm.value.bloqueado_ate) return false
+  return true
+})
+
+function definirDias(dias) {
+  diasSelecionados.value = dias
+  const data = new Date(Date.now() + dias * 24 * 60 * 60 * 1000)
+  data.setSeconds(0, 0)
+  bloqueioForm.value.bloqueado_ate = new Date(data.getTime() - data.getTimezoneOffset() * 60000)
+    .toISOString().slice(0, 16)
+}
+
+function abrirBloqueio(u) {
+  modalBloqueio.value = u
+  bloqueioForm.value = { tipo: 'temporario', bloqueado_ate: '', motivo: '' }
+  diasSelecionados.value = null
+  erroBloqueio.value = ''
+}
+
+function fecharBloqueio() {
+  modalBloqueio.value = null
+  erroBloqueio.value = ''
+}
+
+function confirmarBloqueio() {
+  if (!bloqueioValido.value) return
+  bloqueando.value = true
+  erroBloqueio.value = ''
+  router.post(route('admin.usuarios.bloquear', [modalBloqueio.value.tipo, modalBloqueio.value.id]), {
+    tipo_bloqueio: bloqueioForm.value.tipo,
+    motivo: bloqueioForm.value.motivo,
+    bloqueado_ate: bloqueioForm.value.tipo === 'temporario' ? bloqueioForm.value.bloqueado_ate : null,
+  }, {
+    preserveScroll: true,
+    onError: (errors) => { erroBloqueio.value = Object.values(errors)[0] ?? 'Erro ao bloquear usuário.' },
+    onSuccess: () => fecharBloqueio(),
+    onFinish: () => { bloqueando.value = false },
+  })
+}
+
+function desbloquear(u) {
+  if (!confirm(`Desbloquear "${u.nome}"? O acesso à plataforma será restabelecido imediatamente.`)) return
+  router.post(route('admin.usuarios.desbloquear', [u.tipo, u.id]), {}, { preserveScroll: true })
 }
 </script>

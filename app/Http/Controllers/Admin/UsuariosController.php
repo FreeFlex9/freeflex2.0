@@ -9,6 +9,7 @@ use App\Models\Company;
 use App\Models\Demand;
 use App\Models\Proposal;
 use App\Models\Provider;
+use App\Models\UserBlockLog;
 use App\Notifications\AccountDeletedNotification;
 use Illuminate\Http\Request;
 use Illuminate\Notifications\DatabaseNotification;
@@ -63,6 +64,9 @@ class UsuariosController extends Controller
             'city',
             'state',
             'status',
+            'active',
+            'blocked_until',
+            'block_reason',
             'created_at',
             DB::raw("'prestador' as tipo"),
         ]);
@@ -89,6 +93,9 @@ class UsuariosController extends Controller
             'city',
             'state',
             'status',
+            'active',
+            'blocked_until',
+            'block_reason',
             'created_at',
             DB::raw("'empresa' as tipo"),
         ]);
@@ -158,6 +165,82 @@ class UsuariosController extends Controller
         );
 
         return back()->with('success', "Usuário \"{$nome}\" excluído permanentemente.");
+    }
+
+    public function bloquear(string $tipo, int $id, Request $request)
+    {
+        abort_unless(in_array($tipo, ['prestador', 'empresa'], true), 404);
+
+        $data = $request->validate([
+            'tipo_bloqueio'  => 'required|in:temporario,definitivo',
+            'motivo'         => 'required|string|max:1000',
+            'bloqueado_ate'  => 'required_if:tipo_bloqueio,temporario|nullable|date|after:now',
+        ]);
+
+        $modelClass = $tipo === 'empresa' ? Company::class : Provider::class;
+        $usuario    = $modelClass::findOrFail($id);
+        $nome       = $tipo === 'empresa' ? $usuario->trade_name : $usuario->name;
+        $admin      = Auth::guard('admin')->user();
+        $definitivo = $data['tipo_bloqueio'] === 'definitivo';
+        $ate        = $definitivo ? null : $data['bloqueado_ate'];
+
+        DB::transaction(function () use ($usuario, $tipo, $nome, $admin, $definitivo, $ate, $data) {
+            $usuario->update([
+                'active'              => false,
+                'blocked_at'          => now(),
+                'blocked_until'       => $ate,
+                'block_reason'        => $data['motivo'],
+                'blocked_by_admin_id' => $admin?->id,
+            ]);
+
+            UserBlockLog::create([
+                'tipo'          => $tipo,
+                'usuario_id'    => $usuario->id,
+                'nome'          => $nome,
+                'email'         => $usuario->email,
+                'acao'          => $definitivo ? 'bloqueio_definitivo' : 'bloqueio_temporario',
+                'motivo'        => $data['motivo'],
+                'blocked_until' => $ate,
+                'admin_id'      => $admin?->id,
+                'created_at'    => now(),
+            ]);
+        });
+
+        return back()->with('success', "Usuário \"{$nome}\" bloqueado " . ($definitivo ? 'permanentemente.' : 'temporariamente.'));
+    }
+
+    public function desbloquear(string $tipo, int $id)
+    {
+        abort_unless(in_array($tipo, ['prestador', 'empresa'], true), 404);
+
+        $modelClass = $tipo === 'empresa' ? Company::class : Provider::class;
+        $usuario    = $modelClass::findOrFail($id);
+        $nome       = $tipo === 'empresa' ? $usuario->trade_name : $usuario->name;
+        $admin      = Auth::guard('admin')->user();
+
+        DB::transaction(function () use ($usuario, $tipo, $nome, $admin) {
+            $usuario->update([
+                'active'              => true,
+                'blocked_at'          => null,
+                'blocked_until'       => null,
+                'block_reason'        => null,
+                'blocked_by_admin_id' => null,
+            ]);
+
+            UserBlockLog::create([
+                'tipo'          => $tipo,
+                'usuario_id'    => $usuario->id,
+                'nome'          => $nome,
+                'email'         => $usuario->email,
+                'acao'          => 'desbloqueio',
+                'motivo'        => null,
+                'blocked_until' => null,
+                'admin_id'      => $admin?->id,
+                'created_at'    => now(),
+            ]);
+        });
+
+        return back()->with('success', "Usuário \"{$nome}\" desbloqueado.");
     }
 
     /**

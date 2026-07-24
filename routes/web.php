@@ -126,6 +126,14 @@ Route::prefix('admin')->name('admin.')->group(function () {
             ->where('tipo', 'prestador|empresa')
             ->where('id', '[0-9]+')
             ->name('usuarios.destroy');
+        Route::post('/usuarios/{tipo}/{id}/bloquear', [Admin\UsuariosController::class, 'bloquear'])
+            ->where('tipo', 'prestador|empresa')
+            ->where('id', '[0-9]+')
+            ->name('usuarios.bloquear');
+        Route::post('/usuarios/{tipo}/{id}/desbloquear', [Admin\UsuariosController::class, 'desbloquear'])
+            ->where('tipo', 'prestador|empresa')
+            ->where('id', '[0-9]+')
+            ->name('usuarios.desbloquear');
         Route::get('/pontos', [Admin\PontosController::class, 'index'])->name('pontos.index');
 
         Route::get('/demandas', [Admin\DemandasController::class, 'index'])->name('demandas.index');
