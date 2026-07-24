@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Support\AccountBlockingService;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -15,10 +16,11 @@ class IsProvider
         }
 
         $provider = Auth::guard('provider')->user();
+        AccountBlockingService::liftIfExpired($provider);
 
         if (!$provider->active) {
             Auth::guard('provider')->logout();
-            return redirect()->route('prestador.login')->withErrors(['email' => 'Conta desativada.']);
+            return redirect()->route('prestador.login')->withErrors(['email' => AccountBlockingService::mensagemBloqueio($provider)]);
         }
 
         return $next($request);
