@@ -105,7 +105,7 @@
         <!-- Header chat -->
         <div class="flex items-center justify-between px-4 py-3 border-b border-gray-100 shrink-0">
           <div>
-            <p class="font-semibold text-gray-800 text-sm">{{ chatProposta?.demand?.company?.trade_name }}</p>
+            <p class="font-semibold text-gray-800 text-sm">Suporte FreeFlex</p>
             <p class="text-xs text-gray-400">{{ chatProposta?.demand?.title }}</p>
           </div>
           <button @click="fecharChat" class="text-gray-400 hover:text-gray-600">
@@ -128,7 +128,7 @@
               : 'bg-gray-100 text-gray-800'"
               class="max-w-xs rounded-2xl px-4 py-2 text-sm break-words">
               <p v-if="m.sender_type !== 'provider'" class="text-xs font-medium mb-0.5 text-gray-500">
-                {{ m.sender_name ?? 'Empresa' }}
+                {{ m.sender_name ?? 'Suporte' }}
               </p>
               {{ m.body }}
               <p class="text-xs mt-1 opacity-60 text-right">{{ formatTime(m.created_at) }}</p>
@@ -306,7 +306,7 @@ async function abrirChat(proposta) {
 
   // Assina canal Reverb
   echoChannel = window.Echo
-    .private(`proposal.${proposta.id}`)
+    .private(`proposal.${proposta.id}.provider`)
     .listen('.message.sent', (e) => {
       // Evita duplicata (a própria mensagem enviada já foi adicionada localmente)
       if (!mensagens.value.find(m => m.id === e.id)) {
@@ -319,7 +319,7 @@ async function abrirChat(proposta) {
 function fecharChat() {
   chatAberto.value = false
   if (echoChannel) {
-    window.Echo.leave(`proposal.${chatProposta.value?.id}`)
+    window.Echo.leave(`proposal.${chatProposta.value?.id}.provider`)
     echoChannel = null
   }
 }
@@ -359,7 +359,7 @@ async function scrollBottom() {
 }
 
 onUnmounted(() => {
-  if (echoChannel) window.Echo.leave(`proposal.${chatProposta.value?.id}`)
+  if (echoChannel) window.Echo.leave(`proposal.${chatProposta.value?.id}.provider`)
 })
 
 // ── Helpers de data ────────────────────────────────────────────────────────────

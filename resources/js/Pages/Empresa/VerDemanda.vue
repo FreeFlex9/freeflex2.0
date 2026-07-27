@@ -133,14 +133,11 @@
 
         <!-- Header chat -->
         <div class="flex items-center gap-3 p-4 border-b border-gray-100">
-          <img v-if="chatProposta.provider?.profile_photo_path"
-            :src="'/storage/' + chatProposta.provider.profile_photo_path"
-            class="w-9 h-9 rounded-full object-cover" />
-          <div v-else class="w-9 h-9 rounded-full bg-orange-100 flex items-center justify-center">
-            <span class="text-orange-500 font-bold">{{ chatProposta.provider?.name?.[0] }}</span>
+          <div class="w-9 h-9 rounded-full bg-teal-100 flex items-center justify-center">
+            <span class="text-teal-600 font-bold">S</span>
           </div>
           <div class="flex-1 min-w-0">
-            <p class="font-semibold text-gray-800 text-sm truncate">{{ chatProposta.provider?.name }}</p>
+            <p class="font-semibold text-gray-800 text-sm truncate">Suporte FreeFlex</p>
             <p class="text-xs text-gray-400 truncate">{{ demand.title }}</p>
           </div>
           <button @click="fecharChat" class="text-gray-400 hover:text-gray-600">
@@ -162,6 +159,9 @@
             class="flex" :class="m.sender_type === 'company' ? 'justify-end' : 'justify-start'">
             <div :class="m.sender_type === 'company' ? 'bg-teal-600 text-white' : 'bg-gray-100 text-gray-800'"
               class="max-w-xs px-3 py-2 rounded-xl text-sm">
+              <p v-if="m.sender_type !== 'company'" class="text-xs font-medium mb-0.5 text-gray-500">
+                {{ m.sender_name ?? 'Suporte' }}
+              </p>
               {{ m.body }}
             </div>
           </div>
@@ -263,7 +263,7 @@ async function abrirChat(proposta) {
   scrollBaixo()
 
   if (window.Echo) {
-    echoChannel = window.Echo.private(`proposal.${proposta.id}`)
+    echoChannel = window.Echo.private(`proposal.${proposta.id}.company`)
       .listen('.message.sent', (e) => {
         if (!mensagens.value.find(m => m.id === e.id)) {
           mensagens.value.push(e)
@@ -275,7 +275,7 @@ async function abrirChat(proposta) {
 
 function fecharChat() {
   if (echoChannel && chatProposta.value) {
-    window.Echo?.leave(`proposal.${chatProposta.value.id}`)
+    window.Echo?.leave(`proposal.${chatProposta.value.id}.company`)
   }
   echoChannel = null
   chatProposta.value = null
@@ -312,7 +312,7 @@ function scrollBaixo() {
 
 onUnmounted(() => {
   if (echoChannel && chatProposta.value) {
-    window.Echo?.leave(`proposal.${chatProposta.value.id}`)
+    window.Echo?.leave(`proposal.${chatProposta.value.id}.company`)
   }
 })
 </script>

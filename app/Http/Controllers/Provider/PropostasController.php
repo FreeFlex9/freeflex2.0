@@ -100,13 +100,15 @@ class PropostasController extends Controller
         $request->validate(['body' => 'required|string|max:2000']);
 
         $message = Message::create([
-            'demand_id'   => $proposal->demand_id,
-            'sender_type' => 'provider',
-            'sender_id'   => $provider->id,
-            'body'        => $request->body,
+            'demand_id'          => $proposal->demand_id,
+            'sender_type'        => 'provider',
+            'sender_id'          => $provider->id,
+            'thread_party_type'  => 'provider',
+            'thread_party_id'    => $provider->id,
+            'body'               => $request->body,
         ]);
 
-        broadcast(new MessageSent($message, $proposal->id, $provider->name));
+        broadcast(new MessageSent($message, $proposal->id, $provider->name, 'provider'));
 
         return response()->json([
             'id'          => $message->id,
@@ -120,12 +122,9 @@ class PropostasController extends Controller
 
     private function scopedMessages(Proposal $proposal)
     {
-        $proposal->loadMissing('demand');
         return Message::where('demand_id', $proposal->demand_id)
-            ->where(function ($q) use ($proposal) {
-                $q->where(fn ($q2) => $q2->where('sender_type', 'provider')->where('sender_id', $proposal->provider_id))
-                  ->orWhere(fn ($q2) => $q2->where('sender_type', 'company')->where('sender_id', $proposal->demand->company_id));
-            })
+            ->where('thread_party_type', 'provider')
+            ->where('thread_party_id', $proposal->provider_id)
             ->orderBy('created_at');
     }
 }
