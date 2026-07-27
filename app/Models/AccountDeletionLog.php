@@ -8,7 +8,7 @@ class AccountDeletionLog extends Model
 {
     public $timestamps = false;
 
-    protected $fillable = ['tipo', 'usuario_id', 'nome', 'email', 'admin_id', 'deleted_at'];
+    protected $fillable = ['tipo', 'usuario_id', 'nome', 'email', 'admin_id', 'motivo', 'motivo_detalhes', 'deleted_at'];
 
     protected function casts(): array
     {

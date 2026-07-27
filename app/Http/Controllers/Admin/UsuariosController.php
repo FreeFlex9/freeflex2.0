@@ -3,20 +3,14 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Admin;
-use App\Models\AccountDeletionLog;
 use App\Models\Company;
-use App\Models\Demand;
 use App\Models\Proposal;
 use App\Models\Provider;
 use App\Models\UserBlockLog;
-use App\Notifications\AccountDeletedNotification;
+use App\Support\AccountDeletionService;
 use Illuminate\Http\Request;
-use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Notification;
-use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
 class UsuariosController extends Controller
@@ -134,35 +128,9 @@ class UsuariosController extends Controller
         $modelClass = $tipo === 'empresa' ? Company::class : Provider::class;
         $usuario    = $modelClass::findOrFail($id);
         $nome       = $tipo === 'empresa' ? $usuario->trade_name : $usuario->name;
-        $email      = $usuario->email;
         $admin      = Auth::guard('admin')->user();
 
-        DB::transaction(function () use ($usuario, $modelClass, $tipo, $nome, $email, $admin) {
-            if ($tipo === 'prestador') {
-                $this->liberarVagasDoPrestador($usuario);
-            }
-
-            DatabaseNotification::where('notifiable_type', $modelClass)
-                ->where('notifiable_id', $usuario->id)
-                ->delete();
-
-            $usuario->delete();
-
-            AccountDeletionLog::create([
-                'tipo'       => $tipo,
-                'usuario_id' => $usuario->id,
-                'nome'       => $nome,
-                'email'      => $email,
-                'admin_id'   => $admin?->id,
-                'deleted_at' => now(),
-            ]);
-
-            Notification::send(Admin::all(), new AccountDeletedNotification($tipo, $nome, $email, $admin?->email));
-        });
-
-        Storage::disk('public')->deleteDirectory(
-            $tipo === 'empresa' ? "companies/{$id}" : "providers/{$id}"
-        );
+        AccountDeletionService::excluir($usuario, $tipo, adminId: $admin?->id, adminEmail: $admin?->email);
 
         return back()->with('success', "Usuário \"{$nome}\" excluído permanentemente.");
     }
@@ -241,27 +209,5 @@ class UsuariosController extends Controller
         });
 
         return back()->with('success', "Usuário \"{$nome}\" desbloqueado.");
-    }
-
-    /**
-     * Ao excluir um prestador com propostas aceitas/agendadas, o cascade de FK
-     * remove proposals/schedules, mas demands.slots_confirmed e status ficam
-     * desatualizados — reabre a vaga para a empresa encontrar outro prestador.
-     */
-    private function liberarVagasDoPrestador(Provider $provider): void
-    {
-        $demandIds = $provider->schedules()->pluck('demand_id')->unique();
-
-        $demands = Demand::whereIn('id', $demandIds)
-            ->whereNotIn('status', ['completed', 'cancelled'])
-            ->get();
-
-        foreach ($demands as $demand) {
-            $demand->slots_confirmed = max(0, $demand->slots_confirmed - 1);
-            if ($demand->status !== 'open') {
-                $demand->status = 'open';
-            }
-            $demand->save();
-        }
     }
 }

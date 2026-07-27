@@ -50,6 +50,7 @@ Route::prefix('empresa')->name('empresa.')->group(function () {
         Route::put('/perfil/senha',      [Company\PerfilController::class, 'updatePassword'])->name('perfil.senha');
         Route::post('/perfil/documento', [Company\PerfilController::class, 'uploadDocument'])->name('perfil.documento');
         Route::delete('/perfil/documento', [Company\PerfilController::class, 'removeDocument'])->name('perfil.documento.remove');
+        Route::delete('/perfil', [Company\PerfilController::class, 'destroyAccount'])->name('perfil.destroy');
     });
 });
 
@@ -90,6 +91,7 @@ Route::prefix('prestador')->name('prestador.')->group(function () {
         Route::put('/perfil/endereco',      [Provider\PerfilController::class, 'updateAddress'])->name('perfil.endereco');
         Route::post('/perfil/documento',   [Provider\PerfilController::class, 'uploadDocument'])->name('perfil.documento');
         Route::delete('/perfil/documento', [Provider\PerfilController::class, 'removeDocument'])->name('perfil.documento.remove');
+        Route::delete('/perfil', [Provider\PerfilController::class, 'destroyAccount'])->name('perfil.destroy');
     });
 });
 

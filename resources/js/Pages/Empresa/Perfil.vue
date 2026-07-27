@@ -192,8 +192,62 @@
           </div>
         </div>
 
+        <!-- Zona de risco -->
+        <div class="bg-white rounded-xl border border-red-200 p-5">
+          <h3 class="font-semibold text-red-600 text-sm mb-1">Excluir conta</h3>
+          <p class="text-xs text-gray-500 mb-4">
+            Remove permanentemente sua conta e todos os seus dados. Essa ação não pode ser desfeita.
+          </p>
+          <button type="button" @click="abrirExclusao"
+            class="w-full text-sm font-medium text-red-600 border border-red-300 rounded-lg py-2 hover:bg-red-50 transition">
+            Excluir minha conta
+          </button>
+        </div>
+
       </div>
 
+    </div>
+
+    <!-- Modal de exclusão de conta -->
+    <div v-if="modalExcluir" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div class="bg-white rounded-xl w-full max-w-md p-6">
+        <h3 class="text-lg font-semibold text-gray-800 mb-1">Excluir minha conta</h3>
+        <p class="text-sm text-gray-500 mb-4">
+          Isso remove permanentemente sua conta e todos os seus dados (documentos, demandas, propostas,
+          avaliações). Essa ação é <strong>irreversível</strong>.
+        </p>
+
+        <label class="block text-xs font-medium text-gray-500 mb-2">
+          Por que você está saindo? <span class="text-red-400">*</span>
+        </label>
+        <div class="space-y-2 mb-3">
+          <label v-for="(label, valor) in motivosExclusao" :key="valor"
+            class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+            <input type="radio" v-model="excluirForm.motivo" :value="valor" class="accent-red-600" />
+            {{ label }}
+          </label>
+        </div>
+
+        <div v-if="excluirForm.motivo === 'outro'" class="mb-3">
+          <textarea v-model="excluirForm.motivo_detalhes" rows="3"
+            placeholder="Conte um pouco mais sobre o motivo..."
+            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-400"></textarea>
+        </div>
+
+        <p v-if="excluirForm.errors.motivo" class="text-xs text-red-600 mb-2">{{ excluirForm.errors.motivo }}</p>
+        <p v-if="excluirForm.errors.motivo_detalhes" class="text-xs text-red-600 mb-2">{{ excluirForm.errors.motivo_detalhes }}</p>
+
+        <div class="flex gap-2 mt-4">
+          <button @click="fecharExclusao" type="button"
+            class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg text-sm">
+            Cancelar
+          </button>
+          <button @click="confirmarExclusao" type="button" :disabled="!exclusaoValida || excluirForm.processing"
+            class="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 disabled:opacity-40 disabled:cursor-not-allowed">
+            Excluir permanentemente
+          </button>
+        </div>
+      </div>
     </div>
   </EmpresaLayout>
 </template>
@@ -206,7 +260,7 @@ import { useDarkMode } from '@/composables/useDarkMode.js'
 
 const { isDark, toggle } = useDarkMode()
 
-const props = defineProps({ company: Object })
+const props = defineProps({ company: Object, motivosExclusao: Object })
 
 const infoForm = useForm({
   trade_name:   props.company.trade_name   ?? '',
@@ -315,4 +369,30 @@ const missingRequired = computed(() =>
 )
 
 const ufs = ['AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS','MG','PA','PB','PR','PE','PI','RJ','RN','RS','RO','RR','SC','SP','SE','TO']
+
+// ── Exclusão de conta ────────────────────────────────────────────────────────
+
+const modalExcluir = ref(false)
+
+const excluirForm = useForm({
+  motivo: '',
+  motivo_detalhes: '',
+})
+
+const exclusaoValida = computed(() =>
+  excluirForm.motivo !== '' && (excluirForm.motivo !== 'outro' || excluirForm.motivo_detalhes.trim() !== '')
+)
+
+function abrirExclusao() {
+  modalExcluir.value = true
+}
+
+function fecharExclusao() {
+  modalExcluir.value = false
+  excluirForm.reset()
+}
+
+function confirmarExclusao() {
+  excluirForm.delete(route('empresa.perfil.destroy'))
+}
 </script>

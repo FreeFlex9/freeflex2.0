@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Company;
 
 use App\Http\Controllers\Concerns\StoresOptimizedUploads;
 use App\Http\Controllers\Controller;
+use App\Support\AccountDeletionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -17,7 +18,8 @@ class PerfilController extends Controller
     public function index()
     {
         return inertia('Empresa/Perfil', [
-            'company' => Auth::guard('company')->user(),
+            'company'         => Auth::guard('company')->user(),
+            'motivosExclusao' => AccountDeletionService::MOTIVOS,
         ]);
     }
 
@@ -120,5 +122,32 @@ class PerfilController extends Controller
         }
 
         return back()->with('success', 'Documento removido.');
+    }
+
+    public function destroyAccount(Request $request)
+    {
+        $company = Auth::guard('company')->user();
+
+        $data = $request->validate([
+            'motivo'          => 'required|in:' . implode(',', array_keys(AccountDeletionService::MOTIVOS)),
+            'motivo_detalhes' => 'required_if:motivo,outro|nullable|string|max:1000',
+        ], [
+            'motivo.required'             => 'Selecione o motivo da exclusão.',
+            'motivo.in'                   => 'Selecione um motivo válido.',
+            'motivo_detalhes.required_if' => 'Conte um pouco mais sobre o motivo.',
+        ]);
+
+        AccountDeletionService::excluir(
+            $company,
+            'empresa',
+            motivo: $data['motivo'],
+            motivoDetalhes: $data['motivo_detalhes'] ?? null,
+        );
+
+        Auth::guard('company')->logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect()->route('empresa.login')->with('success', 'Sua conta foi excluída permanentemente.');
     }
 }
