@@ -31,4 +31,4 @@ Broadcast::channel('proposal.{proposalId}.{threadType}', function ($user, $propo
     }
 
     return false;
-});
+}, ['guards' => ['provider', 'company', 'admin']]);
