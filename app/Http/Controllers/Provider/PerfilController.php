@@ -119,7 +119,7 @@ class PerfilController extends Controller
         }
 
         $request->validate([
-            'tipo'    => 'required|in:profile_photo,rg_front,rg_back,license_front,license_back,ccmei,address_proof',
+            'tipo'    => 'required|in:profile_photo,rg_front,rg_back,license_front,license_back,ccmei,address_proof,ctps',
             'arquivo' => 'required|file|mimes:jpg,jpeg,png,pdf,webp|max:5120',
         ], [
             'arquivo.required' => 'Nenhum arquivo foi recebido pelo servidor. Tente novamente.',
@@ -135,6 +135,7 @@ class PerfilController extends Controller
             'license_back'   => 'license_back_path',
             'ccmei'          => 'ccmei_path',
             'address_proof'  => 'address_proof_path',
+            'ctps'           => 'ctps_path',
         ];
 
         $campo = $campoMap[$request->tipo];
@@ -171,7 +172,7 @@ class PerfilController extends Controller
     public function removeDocument(Request $request)
     {
         $provider = Auth::guard('provider')->user();
-        $request->validate(['tipo' => 'required|in:profile_photo,rg_front,rg_back,license_front,license_back,ccmei,address_proof']);
+        $request->validate(['tipo' => 'required|in:profile_photo,rg_front,rg_back,license_front,license_back,ccmei,address_proof,ctps']);
 
         $campoMap = [
             'profile_photo'  => 'profile_photo_path',
@@ -181,6 +182,7 @@ class PerfilController extends Controller
             'license_back'   => 'license_back_path',
             'ccmei'          => 'ccmei_path',
             'address_proof'  => 'address_proof_path',
+            'ctps'           => 'ctps_path',
         ];
 
         $campo = $campoMap[$request->tipo];

@@ -110,6 +110,14 @@
               <FileField v-if="!form.is_digital_license" label="CNH - Verso" required
                 v-model="form.license_back" :error="form.errors.license_back" />
             </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+              <FileField label="Carteira de Trabalho (CTPS)" required
+                v-model="form.ctps" :error="form.errors.ctps" />
+            </div>
+            <p class="text-xs text-gray-500 mt-1">
+              Envie a CTPS física (foto) ou digital (captura de tela ou PDF).
+            </p>
           </div>
 
           <!-- Bio -->
@@ -180,7 +188,7 @@ const form = useForm({
   name: '', cpf: '', email: '', phone: '', birth_date: '',
   has_license: false, is_digital_license: false, license_number: '',
   bio: '', password: '', password_confirmation: '',
-  rg_front: null, rg_back: null, license_front: null, license_back: null,
+  rg_front: null, rg_back: null, license_front: null, license_back: null, ctps: null,
 })
 
 const loadingCpf = ref(false)
@@ -243,6 +251,7 @@ function submit() {
     if (!form.rg_front) return form.setError('rg_front', 'Envie a foto da frente do RG.')
     if (!form.rg_back) return form.setError('rg_back', 'Envie a foto do verso do RG.')
   }
+  if (!form.ctps) return form.setError('ctps', 'Envie a Carteira de Trabalho (CTPS).')
   form.post(route('prestador.register.submit'))
 }
 </script>
