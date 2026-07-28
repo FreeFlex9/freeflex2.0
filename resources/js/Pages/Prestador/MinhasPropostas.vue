@@ -93,6 +93,13 @@
               class="text-xs text-red-400 hover:text-red-600 transition">
               Cancelar proposta
             </button>
+
+            <!-- Excluir: propostas sem vínculo ativo (aceita/agendada não pode) -->
+            <button v-if="p.status !== 'accepted'"
+              @click="excluir(p)"
+              class="text-xs text-gray-400 hover:text-red-600 transition">
+              Excluir
+            </button>
           </div>
         </div>
       </div>
@@ -185,6 +192,16 @@
       @confirm="confirmarCancelar"
       @cancel="confirmCancelar = null" />
 
+    <!-- Modal confirmar exclusão -->
+    <ConfirmModal
+      :show="!!confirmExcluir"
+      title="Excluir proposta"
+      message="Tem certeza que deseja excluir esta proposta permanentemente? Esta ação não pode ser desfeita."
+      confirm-text="Excluir proposta"
+      variant="danger"
+      @confirm="confirmarExcluir"
+      @cancel="confirmExcluir = null" />
+
   </PrestadorLayout>
 </template>
 
@@ -270,6 +287,19 @@ function cancelar(proposta) {
 function confirmarCancelar() {
   router.delete(route('prestador.propostas.cancelar', confirmCancelar.value.id), {
     onFinish: () => { confirmCancelar.value = null },
+  })
+}
+
+// ── Excluir proposta ────────────────────────────────────────────────────────────
+const confirmExcluir = ref(null)
+
+function excluir(proposta) {
+  confirmExcluir.value = proposta
+}
+
+function confirmarExcluir() {
+  router.delete(route('prestador.propostas.destroy', confirmExcluir.value.id), {
+    onFinish: () => { confirmExcluir.value = null },
   })
 }
 
