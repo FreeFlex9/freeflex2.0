@@ -31,10 +31,14 @@ class DemandasController extends Controller
 
     public function create()
     {
+        $company  = Auth::guard('company')->user();
         $services = Service::orderBy('name')->get(['id', 'name', 'requires_license']);
 
         return inertia('Empresa/NovaDemanda', [
-            'services' => $services,
+            'services'       => $services,
+            'companyAddress' => $company->only([
+                'zip_code', 'street', 'number', 'complement', 'neighborhood', 'city', 'state',
+            ]),
         ]);
     }
 

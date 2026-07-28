@@ -93,6 +93,13 @@
           <!-- LOCAL -->
           <div>
             <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Local do serviço</p>
+
+            <label class="flex items-center gap-2 mb-4 text-sm text-gray-600">
+              <input type="checkbox" v-model="useCompanyAddress"
+                class="rounded border-gray-300 text-teal-600 focus:ring-teal-500" />
+              Utilizar endereço da empresa
+            </label>
+
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
               <div class="flex flex-col gap-1">
@@ -174,11 +181,11 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useForm, Link } from '@inertiajs/vue3'
 import EmpresaLayout from '@/Layouts/EmpresaLayout.vue'
 
-const props = defineProps({ services: Array })
+const props = defineProps({ services: Array, companyAddress: Object })
 
 const hoje = new Date().toISOString().slice(0, 10)
 
@@ -198,6 +205,28 @@ const form = useForm({
   city:         '',
   state:        '',
   description:  '',
+})
+
+const useCompanyAddress = ref(false)
+
+watch(useCompanyAddress, (checked) => {
+  if (checked) {
+    form.zip_code     = props.companyAddress?.zip_code     || ''
+    form.street       = props.companyAddress?.street       || ''
+    form.number       = props.companyAddress?.number       || ''
+    form.complement   = props.companyAddress?.complement   || ''
+    form.neighborhood = props.companyAddress?.neighborhood || ''
+    form.city         = props.companyAddress?.city         || ''
+    form.state        = props.companyAddress?.state        || ''
+  } else {
+    form.zip_code     = ''
+    form.street       = ''
+    form.number       = ''
+    form.complement   = ''
+    form.neighborhood = ''
+    form.city         = ''
+    form.state        = ''
+  }
 })
 
 const serviceSelecionado = computed(() =>
