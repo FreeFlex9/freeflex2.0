@@ -17,11 +17,12 @@ class MessageSent implements ShouldBroadcastNow
         public Message $message,
         public int     $proposalId,
         public string  $senderName,
+        public string  $threadType,
     ) {}
 
     public function broadcastOn(): array
     {
-        return [new PrivateChannel("proposal.{$this->proposalId}")];
+        return [new PrivateChannel("proposal.{$this->proposalId}.{$this->threadType}")];
     }
 
     public function broadcastWith(): array

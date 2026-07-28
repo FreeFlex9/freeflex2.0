@@ -70,13 +70,15 @@ class PropostasController extends Controller
         $request->validate(['body' => 'required|string|max:2000']);
 
         $message = Message::create([
-            'demand_id'   => $proposal->demand_id,
-            'sender_type' => 'company',
-            'sender_id'   => $company->id,
-            'body'        => $request->body,
+            'demand_id'          => $proposal->demand_id,
+            'sender_type'        => 'company',
+            'sender_id'          => $company->id,
+            'thread_party_type'  => 'company',
+            'thread_party_id'    => $company->id,
+            'body'               => $request->body,
         ]);
 
-        broadcast(new MessageSent($message, $proposal->id, $company->trade_name));
+        broadcast(new MessageSent($message, $proposal->id, $company->trade_name, 'company'));
 
         return response()->json([
             'id'          => $message->id,
@@ -92,10 +94,8 @@ class PropostasController extends Controller
     {
         $proposal->loadMissing('demand');
         return Message::where('demand_id', $proposal->demand_id)
-            ->where(function ($q) use ($proposal) {
-                $q->where(fn ($q2) => $q2->where('sender_type', 'provider')->where('sender_id', $proposal->provider_id))
-                  ->orWhere(fn ($q2) => $q2->where('sender_type', 'company')->where('sender_id', $proposal->demand->company_id));
-            })
+            ->where('thread_party_type', 'company')
+            ->where('thread_party_id', $proposal->demand->company_id)
             ->orderBy('created_at');
     }
 }

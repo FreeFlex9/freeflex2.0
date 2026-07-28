@@ -6,7 +6,11 @@ use Illuminate\Database\Eloquent\Model;
 
 class Message extends Model
 {
-    protected $fillable = ['demand_id', 'sender_type', 'sender_id', 'body', 'read_at'];
+    protected $fillable = [
+        'demand_id', 'sender_type', 'sender_id',
+        'thread_party_type', 'thread_party_id',
+        'body', 'read_at',
+    ];
 
     protected function casts(): array
     {

@@ -160,5 +160,11 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         Route::get('/config-email', [Admin\ConfigEmailController::class, 'index'])->name('config-email.index');
         Route::put('/config-email', [Admin\ConfigEmailController::class, 'salvar'])->name('config-email.update');
+
+        Route::get('/suporte', [Admin\SuporteController::class, 'index'])->name('suporte.index');
+        Route::get('/suporte/{proposal}/{threadType}', [Admin\SuporteController::class, 'mensagens'])
+            ->whereIn('threadType', ['provider', 'company'])->name('suporte.mensagens');
+        Route::post('/suporte/{proposal}/{threadType}', [Admin\SuporteController::class, 'enviarMensagem'])
+            ->whereIn('threadType', ['provider', 'company'])->name('suporte.mensagens.enviar');
     });
 });
