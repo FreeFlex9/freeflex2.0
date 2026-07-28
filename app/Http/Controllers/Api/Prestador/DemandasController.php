@@ -167,6 +167,7 @@ class DemandasController extends Controller
             'data' => $d->date?->toDateString(),
             'hora_inicio' => $d->start_time,
             'hora_fim' => $d->end_time,
+            'periodo' => $d->period,
             'vagas_necessarias' => $d->slots_needed,
             'vagas_confirmadas' => $d->slots_confirmed,
             'servico' => $d->service?->name,

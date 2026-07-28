@@ -71,6 +71,17 @@
                 <p v-if="form.errors.end_time" class="text-xs text-red-500">{{ form.errors.end_time }}</p>
               </div>
 
+              <div class="flex flex-col gap-1">
+                <label class="text-xs font-medium text-gray-500">Período <span class="text-red-400">*</span></label>
+                <select v-model="form.period"
+                  class="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white"
+                  :class="form.errors.period ? 'border-red-400' : 'border-gray-300'">
+                  <option value="">Selecione...</option>
+                  <option v-for="p in periodos" :key="p.value" :value="p.value">{{ p.label }}</option>
+                </select>
+                <p v-if="form.errors.period" class="text-xs text-red-500">{{ form.errors.period }}</p>
+              </div>
+
               <!-- Duração calculada -->
               <p v-if="duracaoHoras" class="sm:col-span-3 text-xs text-teal-600">
                 ⏱ Duração: {{ duracaoHoras }}
@@ -178,6 +189,7 @@ const form = useForm({
   date:         '',
   start_time:   '',
   end_time:     '',
+  period:       '',
   zip_code:     '',
   street:       '',
   number:       '',
@@ -223,4 +235,10 @@ function submit() {
 }
 
 const ufs = ['AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS','MG','PA','PB','PR','PE','PI','RJ','RN','RS','RO','RR','SC','SP','SE','TO']
+
+const periodos = [
+  { value: 'manha', label: 'Manhã' },
+  { value: 'tarde', label: 'Tarde' },
+  { value: 'noite', label: 'Noite' },
+]
 </script>

@@ -41,7 +41,7 @@
             <div class="mt-1 text-sm text-gray-500 space-y-0.5">
               <p>Empresa: <span class="text-gray-700">{{ dem.company?.trade_name ?? '—' }}</span></p>
               <p>Serviço: <span class="text-gray-700">{{ dem.service?.name ?? '—' }}</span></p>
-              <p>Data: {{ formatDate(dem.date) }} | {{ dem.start_time }} – {{ dem.end_time }}</p>
+              <p>Data: {{ formatDate(dem.date) }} | {{ dem.start_time }} – {{ dem.end_time }}<span v-if="dem.period"> | {{ periodoLabel(dem.period) }}</span></p>
               <p>Vagas: {{ dem.slots_needed }} | Confirmados: {{ dem.slots_confirmed }}</p>
               <p v-if="dem.description" class="truncate max-w-xs">{{ dem.description }}</p>
             </div>
@@ -94,4 +94,7 @@ function filtrar() {
 }
 function limpar() { filtros.value = { status: '', empresa: '', servico: '' }; filtrar() }
 function formatDate(d) { return d ? new Date(d).toLocaleDateString('pt-BR') : '-' }
+function periodoLabel(period) {
+  return { manha: 'Manhã', tarde: 'Tarde', noite: 'Noite' }[period] ?? period
+}
 </script>

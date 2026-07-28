@@ -49,6 +49,7 @@
             <div class="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-sm text-gray-500">
               <span>📅 {{ formatDate(p.demand?.date) }}</span>
               <span>🕐 {{ p.demand?.start_time?.slice(0,5) }} – {{ p.demand?.end_time?.slice(0,5) }}</span>
+              <span v-if="p.demand?.period">🌙 {{ periodoLabel(p.demand.period) }}</span>
               <span v-if="p.demand?.city">📍 {{ p.demand?.city }}/{{ p.demand?.state }}</span>
             </div>
 
@@ -371,6 +372,9 @@ function formatDate(d) {
 function formatDateTime(d) {
   if (!d) return ''
   return new Date(d).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })
+}
+function periodoLabel(period) {
+  return { manha: 'Manhã', tarde: 'Tarde', noite: 'Noite' }[period] ?? period
 }
 function formatTime(d) {
   if (!d) return ''

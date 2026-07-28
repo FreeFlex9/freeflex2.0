@@ -50,6 +50,7 @@ class DemandasController extends Controller
             'date'         => 'required|date|after_or_equal:today',
             'start_time'   => 'required|date_format:H:i',
             'end_time'     => 'required|date_format:H:i|after:start_time',
+            'period'       => 'required|in:manha,tarde,noite',
             'slots_needed' => 'required|integer|min:1|max:50',
             'description'  => 'nullable|string|max:2000',
             'zip_code'     => 'nullable|string|max:9',
@@ -62,6 +63,7 @@ class DemandasController extends Controller
         ], [
             'date.after_or_equal' => 'A data não pode ser no passado.',
             'end_time.after'      => 'O horário de fim deve ser depois do início.',
+            'period.required'     => 'O período da demanda é obrigatório.',
             'city.required'       => 'A cidade é obrigatória.',
             'state.required'      => 'O estado é obrigatório.',
         ]);
@@ -120,6 +122,7 @@ class DemandasController extends Controller
             'date'         => 'required|date|after_or_equal:today',
             'start_time'   => 'required|date_format:H:i',
             'end_time'     => 'required|date_format:H:i|after:start_time',
+            'period'       => 'required|in:manha,tarde,noite',
             'slots_needed' => 'required|integer|min:1|max:50',
             'description'  => 'nullable|string|max:2000',
             'zip_code'     => 'nullable|string|max:9',
@@ -132,6 +135,7 @@ class DemandasController extends Controller
         ], [
             'date.after_or_equal' => 'A data não pode ser no passado.',
             'end_time.after'      => 'O horário de fim deve ser depois do início.',
+            'period.required'    => 'O período da demanda é obrigatório.',
         ]);
 
         $demand->update($data);

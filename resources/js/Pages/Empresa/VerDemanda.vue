@@ -21,6 +21,7 @@
             <h2 class="font-bold text-gray-800 text-lg">{{ demand.title }}</h2>
             <p class="text-sm text-gray-500 mt-0.5">
               {{ formatDate(demand.date) }} · {{ demand.start_time?.slice(0,5) }} – {{ demand.end_time?.slice(0,5) }}
+              <span v-if="demand.period"> · {{ periodoLabel(demand.period) }}</span>
             </p>
             <p class="text-sm text-gray-500 mt-0.5" v-if="demand.city">
               📍 {{ [demand.street, demand.number, demand.neighborhood, demand.city + '/' + demand.state].filter(Boolean).join(', ') }}
@@ -204,6 +205,9 @@ function statusClass(status) {
 }
 function statusLabel(status) {
   return { open:'Aberta', partially_scheduled:'Parcialmente agendada', scheduled:'Agendada', cancelled:'Cancelada' }[status] ?? status
+}
+function periodoLabel(period) {
+  return { manha: 'Manhã', tarde: 'Tarde', noite: 'Noite' }[period] ?? period
 }
 function propostaStatusClass(status) {
   return {
