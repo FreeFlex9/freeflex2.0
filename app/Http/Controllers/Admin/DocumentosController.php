@@ -13,7 +13,7 @@ class DocumentosController extends Controller
     private const CAMPOS_PRESTADOR = [
         'rg_front_path', 'rg_back_path',
         'license_front_path', 'license_back_path',
-        'ccmei_path', 'address_proof_path', 'profile_photo_path',
+        'ccmei_path', 'address_proof_path', 'ctps_path', 'profile_photo_path',
     ];
 
     private const CAMPOS_EMPRESA = [

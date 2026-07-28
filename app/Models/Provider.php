@@ -15,7 +15,7 @@ class Provider extends Authenticatable
         'has_license', 'is_digital_license', 'license_number',
         'license_front_path', 'license_back_path',
         'rg_front_path', 'rg_back_path',
-        'mei_cnpj', 'ccmei_path', 'address_proof_path', 'profile_photo_path', 'bio',
+        'mei_cnpj', 'ccmei_path', 'address_proof_path', 'ctps_path', 'profile_photo_path', 'bio',
         'is_pcd', 'pcd_type',
         'status', 'approved_at', 'rejection_reason', 'active',
         'blocked_at', 'blocked_until', 'block_reason', 'blocked_by_admin_id',

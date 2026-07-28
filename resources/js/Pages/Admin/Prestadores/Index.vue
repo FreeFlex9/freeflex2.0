@@ -80,6 +80,7 @@
                 </template>
                 <DocCard v-if="pres.mei_cnpj" :path="pres.ccmei_path" :prestador-id="pres.id" campo="ccmei_path" label="CCMEI (MEI)" obrigatorio />
                 <DocCard :path="pres.address_proof_path" :prestador-id="pres.id" campo="address_proof_path" label="Comprovante de Residência" obrigatorio />
+                <DocCard :path="pres.ctps_path" :prestador-id="pres.id" campo="ctps_path" label="Carteira de Trabalho (CTPS)" obrigatorio />
                 <DocCard :path="pres.profile_photo_path" :prestador-id="pres.id" campo="profile_photo_path" label="Foto de perfil" :obrigatorio="false" />
               </div>
             </div>
@@ -283,6 +284,7 @@ function formatDate(d) { return d ? new Date(d).toLocaleDateString('pt-BR') : '-
 
 function docsOk(pres) {
   if (!pres.address_proof_path) return false
+  if (!pres.ctps_path) return false
   if (pres.has_license) {
     if (pres.is_digital_license) return !!pres.license_front_path
     return !!(pres.license_front_path && pres.license_back_path)

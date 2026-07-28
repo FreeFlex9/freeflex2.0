@@ -66,6 +66,7 @@ class AuthController extends Controller
         $hasLicense = $request->boolean('has_license');
         $isDigital  = $request->boolean('is_digital_license');
         $docRules   = ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf,webp', 'max:5120'];
+        $fileRules  = ['file', 'mimes:jpg,jpeg,png,pdf,webp', 'max:5120'];
 
         $data = $request->validate([
             'name'               => 'required|string|max:255',
@@ -82,19 +83,23 @@ class AuthController extends Controller
             'rg_back'            => [Rule::requiredIf(!$hasLicense), ...$docRules],
             'license_front'      => [Rule::requiredIf($hasLicense), ...$docRules],
             'license_back'       => [Rule::requiredIf($hasLicense && !$isDigital), ...$docRules],
+            'ctps'               => ['required', ...$fileRules],
         ], [
             'rg_front.required'      => 'Envie a foto da frente do RG.',
             'rg_back.required'       => 'Envie a foto do verso do RG.',
             'license_front.required' => 'Envie a foto da CNH.',
             'license_back.required'  => 'Envie a foto do verso da CNH.',
+            'ctps.required'          => 'Envie a Carteira de Trabalho (CTPS).',
             'rg_front.mimes'         => 'Somente JPG, PNG, WebP ou PDF.',
             'rg_back.mimes'          => 'Somente JPG, PNG, WebP ou PDF.',
             'license_front.mimes'    => 'Somente JPG, PNG, WebP ou PDF.',
             'license_back.mimes'     => 'Somente JPG, PNG, WebP ou PDF.',
+            'ctps.mimes'             => 'Somente JPG, PNG, WebP ou PDF.',
             'rg_front.max'           => 'Arquivo muito grande. Máximo 5 MB.',
             'rg_back.max'            => 'Arquivo muito grande. Máximo 5 MB.',
             'license_front.max'      => 'Arquivo muito grande. Máximo 5 MB.',
             'license_back.max'       => 'Arquivo muito grande. Máximo 5 MB.',
+            'ctps.max'               => 'Arquivo muito grande. Máximo 5 MB.',
         ]);
 
         $cpf = preg_replace('/\D/', '', $data['cpf']);
@@ -149,6 +154,7 @@ class AuthController extends Controller
             $provider->rg_front_path = $this->storeOptimized($request->file('rg_front'), $dir);
             $provider->rg_back_path  = $this->storeOptimized($request->file('rg_back'), $dir);
         }
+        $provider->ctps_path = $this->storeOptimized($request->file('ctps'), $dir);
         $provider->save();
 
         Auth::guard('provider')->login($provider);
