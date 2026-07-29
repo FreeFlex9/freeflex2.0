@@ -69,6 +69,7 @@ Route::prefix('prestador')->name('prestador.')->group(function () {
     Route::middleware('is_provider')->group(function () {
         Route::get('/dashboard',           [Provider\DashboardController::class, 'index'])->name('dashboard');
         Route::get('/agenda',              [Provider\AgendaController::class, 'index'])->name('agenda.index');
+        Route::post('/agenda/{schedule}/justificar-falta', [Provider\AgendaController::class, 'justificarFalta'])->name('agenda.justificarFalta');
         Route::get('/ponto',               [Provider\PontoController::class, 'index'])->name('ponto.index');
         Route::post('/ponto/{schedule}/checkin',  [Provider\PontoController::class, 'checkin'])->name('ponto.checkin');
         Route::post('/ponto/{schedule}/checkout', [Provider\PontoController::class, 'checkout'])->name('ponto.checkout');
@@ -138,6 +139,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
             ->where('id', '[0-9]+')
             ->name('usuarios.desbloquear');
         Route::get('/pontos', [Admin\PontosController::class, 'index'])->name('pontos.index');
+
+        Route::get('/faltas', [Admin\FaltasController::class, 'index'])->name('faltas.index');
+        Route::post('/faltas/{schedule}/aprovar', [Admin\FaltasController::class, 'aprovar'])->name('faltas.aprovar');
+        Route::post('/faltas/{schedule}/rejeitar', [Admin\FaltasController::class, 'rejeitar'])->name('faltas.rejeitar');
 
         Route::get('/demandas', [Admin\DemandasController::class, 'index'])->name('demandas.index');
         Route::get('/demandas/{demanda}/propostas', [Admin\DemandasController::class, 'propostas'])->name('demandas.propostas');

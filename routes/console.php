@@ -9,3 +9,5 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::command('app:desbloquear-usuarios-expirados')->everyMinute();
+Schedule::command('app:detectar-faltas')->everyFifteenMinutes();
+Schedule::command('app:aplicar-penalidade-faltas')->everyFifteenMinutes();

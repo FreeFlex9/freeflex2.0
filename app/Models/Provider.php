@@ -19,6 +19,7 @@ class Provider extends Authenticatable
         'is_pcd', 'pcd_type',
         'status', 'approved_at', 'rejection_reason', 'active',
         'blocked_at', 'blocked_until', 'block_reason', 'blocked_by_admin_id',
+        'application_blocked_until', 'application_block_reason',
         'cnh_status', 'cnh_rejection_reason',
         'zip_code', 'street', 'number', 'complement', 'neighborhood', 'city', 'state',
         'latitude', 'longitude', 'start_hour', 'end_hour',
@@ -39,7 +40,13 @@ class Provider extends Authenticatable
             'birth_date'        => 'date',
             'blocked_at'        => 'datetime',
             'blocked_until'     => 'datetime',
+            'application_blocked_until' => 'datetime',
         ];
+    }
+
+    public function isBlockedFromApplying(): bool
+    {
+        return $this->application_blocked_until !== null && $this->application_blocked_until->isFuture();
     }
 
     public function documents()

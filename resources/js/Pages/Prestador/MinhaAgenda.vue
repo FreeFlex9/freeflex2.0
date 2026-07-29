@@ -1,6 +1,29 @@
 <template>
   <PrestadorLayout title="Minha Agenda">
 
+    <!-- Faltas pendentes de justificativa -->
+    <div v-if="faltasPendentes.length" class="mb-5 space-y-3">
+      <div v-for="s in faltasPendentes" :key="s.id"
+        class="bg-red-50 border border-red-200 rounded-xl p-4">
+        <p class="text-sm font-semibold text-red-800">
+          Falta registrada em {{ formatarData(s.date) }} — {{ s.service_name }} ({{ s.company_name }})
+        </p>
+        <p class="text-xs text-red-700 mt-1">
+          Você não fez check-in neste agendamento. Justifique até
+          {{ formatarPrazo(s.no_show_justification_deadline) }} para evitar o bloqueio temporário de candidatura a novas vagas.
+        </p>
+        <textarea v-model="justificativas[s.id]"
+          rows="2" maxlength="1000"
+          placeholder="Explique o motivo da ausência..."
+          class="mt-3 w-full text-sm border border-red-200 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-red-300"></textarea>
+        <button @click="enviarJustificativa(s.id)"
+          :disabled="!justificativas[s.id]?.trim()"
+          class="mt-2 text-sm font-medium bg-red-600 text-white px-4 py-1.5 rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition">
+          Enviar justificativa
+        </button>
+      </div>
+    </div>
+
     <!-- Header: tabs de modo + navegação -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
       <div class="flex rounded-lg border border-gray-200 overflow-hidden self-start">
@@ -151,6 +174,28 @@ const props = defineProps({
   modo:        String,
   data_inicio: String,
 })
+
+const faltasPendentes = computed(() => props.schedules.filter(s => s.no_show_status === 'pending_justification'))
+const justificativas = ref({})
+
+function formatarData(dateStr) {
+  const [y, m, d] = dateStr.split('-').map(Number)
+  return new Date(y, m - 1, d).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' })
+}
+
+function formatarPrazo(iso) {
+  if (!iso) return '—'
+  return new Date(iso).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+}
+
+function enviarJustificativa(scheduleId) {
+  const texto = (justificativas.value[scheduleId] ?? '').trim()
+  if (!texto) return
+  router.post(route('prestador.agenda.justificarFalta', scheduleId), { justificativa: texto }, {
+    preserveScroll: true,
+    onSuccess: () => { justificativas.value[scheduleId] = '' },
+  })
+}
 
 const modoAtual = ref(props.modo ?? 'mes')
 const mesAtual  = ref(props.mes  ?? new Date().getMonth() + 1)
@@ -314,6 +359,14 @@ const horasTotais = computed(() => {
   return m > 0 ? `${h}h${m}` : `${h}h`
 })
 
+// ─── Badge de status (falta / concluído / agendado) ───────────────────────
+function badgeFalta(s) {
+  if (s.no_show_status === 'unjustified') return { classe: 'bg-red-100 text-red-700', texto: 'Falta' }
+  if (s.no_show_status === 'pending_justification') return { classe: 'bg-amber-100 text-amber-700', texto: 'Aguardando justificativa' }
+  if (s.status === 'completed') return { classe: 'bg-green-100 text-green-700', texto: 'Concluído' }
+  return { classe: 'bg-orange-100 text-orange-700', texto: 'Agendado' }
+}
+
 // ─── Componente: detalhe do dia ────────────────────────────────────────────
 const DetalhesDia = {
   props: { dateStr: String, label: String, items: Array },
@@ -334,8 +387,8 @@ const DetalhesDia = {
                     h('p', { class: 'text-xs text-gray-500 truncate' }, s.company_name),
                   ]),
                   h('span', {
-                    class: `text-xs px-1.5 py-0.5 rounded font-medium shrink-0 ${s.status === 'completed' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}`
-                  }, s.status === 'completed' ? 'Concluído' : 'Agendado'),
+                    class: `text-xs px-1.5 py-0.5 rounded font-medium shrink-0 ${badgeFalta(s).classe}`
+                  }, badgeFalta(s).texto),
                 ]),
                 h('div', { class: 'flex items-center gap-3 mt-2 text-xs text-gray-500' }, [
                   h('span', `${s.start_time} – ${s.end_time}`),

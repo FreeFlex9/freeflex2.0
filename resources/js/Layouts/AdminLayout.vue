@@ -49,6 +49,7 @@
         </div>
         <NavItem :href="route('admin.usuarios.index')" icon="search">Gerenciar Usuários</NavItem>
         <NavItem :href="route('admin.pontos.index')" icon="map-pin">Check-in/Check-out</NavItem>
+        <NavItem :href="route('admin.faltas.index')" icon="alert-triangle">Faltas</NavItem>
         <NavItem :href="route('admin.demandas.index')" icon="list">Demandas</NavItem>
         <NavItem :href="route('admin.servicos.index')" icon="briefcase">Serviços</NavItem>
         <NavItem :href="route('admin.suporte.index')" icon="chat">Suporte</NavItem>
