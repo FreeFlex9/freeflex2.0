@@ -43,6 +43,7 @@
             <h3 class="font-semibold text-gray-800 text-sm">{{ d.title }}</h3>
             <p class="text-xs text-gray-500 mt-0.5">
               {{ formatDate(d.date) }} · {{ d.start_time?.slice(0,5) }} – {{ d.end_time?.slice(0,5) }}
+              <span v-if="d.period"> · {{ periodoLabel(d.period) }}</span>
               · {{ d.city }}/{{ d.state }}
             </p>
             <p class="text-xs text-gray-400 mt-1">
@@ -148,6 +149,10 @@ function statusLabel(status) {
     scheduled:             'Agendada',
     cancelled:             'Cancelada',
   }[status] ?? status
+}
+
+function periodoLabel(period) {
+  return { manha: 'Manhã', tarde: 'Tarde', noite: 'Noite' }[period] ?? period
 }
 
 function formatDate(dateStr) {

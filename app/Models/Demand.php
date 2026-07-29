@@ -8,7 +8,7 @@ class Demand extends Model
 {
     protected $fillable = [
         'company_id', 'service_id', 'title', 'description',
-        'date', 'start_time', 'end_time', 'slots_needed', 'slots_confirmed',
+        'date', 'start_time', 'end_time', 'period', 'slots_needed', 'slots_confirmed',
         'zip_code', 'street', 'number', 'complement', 'neighborhood', 'city', 'state',
         'latitude', 'longitude', 'total_value', 'status',
     ];

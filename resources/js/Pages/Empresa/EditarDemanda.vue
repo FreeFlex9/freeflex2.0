@@ -64,6 +64,17 @@
                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500" />
               </div>
 
+              <div class="flex flex-col gap-1">
+                <label class="text-xs font-medium text-gray-500">Período <span class="text-red-400">*</span></label>
+                <select v-model="form.period"
+                  class="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white"
+                  :class="form.errors.period ? 'border-red-400' : 'border-gray-300'">
+                  <option value="">Selecione...</option>
+                  <option v-for="p in periodos" :key="p.value" :value="p.value">{{ p.label }}</option>
+                </select>
+                <p v-if="form.errors.period" class="text-xs text-red-500">{{ form.errors.period }}</p>
+              </div>
+
               <p v-if="duracaoHoras" class="sm:col-span-3 text-xs text-teal-600">
                 ⏱ Duração: {{ duracaoHoras }}
               </p>
@@ -166,6 +177,7 @@ const form = useForm({
   date:         props.demand.date?.slice(0, 10) ?? '',
   start_time:   props.demand.start_time?.slice(0, 5) ?? '',
   end_time:     props.demand.end_time?.slice(0, 5) ?? '',
+  period:       props.demand.period       ?? '',
   zip_code:     props.demand.zip_code     ?? '',
   street:       props.demand.street       ?? '',
   number:       props.demand.number       ?? '',
@@ -207,4 +219,10 @@ function submit() {
 }
 
 const ufs = ['AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS','MG','PA','PB','PR','PE','PI','RJ','RN','RS','RO','RR','SC','SP','SE','TO']
+
+const periodos = [
+  { value: 'manha', label: 'Manhã' },
+  { value: 'tarde', label: 'Tarde' },
+  { value: 'noite', label: 'Noite' },
+]
 </script>

@@ -79,6 +79,10 @@
                 {{ d.start_time?.slice(0,5) }} – {{ d.end_time?.slice(0,5) }}
                 <span class="text-gray-400">({{ calcHoras(d.start_time, d.end_time) }}h)</span>
               </span>
+              <span v-if="d.period" class="flex items-center gap-1">
+                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+                {{ periodoLabel(d.period) }}
+              </span>
               <span v-if="d.city" class="flex items-center gap-1">
                 <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                 {{ d.neighborhood ? d.neighborhood + ', ' : '' }}{{ d.city }}/{{ d.state }}
@@ -120,6 +124,7 @@
         <!-- Resumo da demanda -->
         <div class="bg-gray-50 rounded-lg p-3 mb-4 text-sm text-gray-600 space-y-1">
           <p>📅 {{ formatDate(modalDemanda.date) }} · {{ modalDemanda.start_time?.slice(0,5) }} – {{ modalDemanda.end_time?.slice(0,5) }}</p>
+          <p v-if="modalDemanda.period">🕒 {{ periodoLabel(modalDemanda.period) }}</p>
           <p v-if="modalDemanda.city">📍 {{ modalDemanda.city }}/{{ modalDemanda.state }}</p>
           <p v-if="modalDemanda.service?.provider_rate" class="text-green-600 font-medium">
             💰 Valor estimado: R$ {{ calcValor(modalDemanda.service.provider_rate, modalDemanda.start_time, modalDemanda.end_time) }}
@@ -210,5 +215,9 @@ function calcHoras(ini, fim) {
 function calcValor(rate, ini, fim) {
   const h = parseFloat(calcHoras(ini, fim))
   return (h * parseFloat(rate)).toFixed(2).replace('.', ',')
+}
+
+function periodoLabel(period) {
+  return { manha: 'Manhã', tarde: 'Tarde', noite: 'Noite' }[period] ?? period
 }
 </script>

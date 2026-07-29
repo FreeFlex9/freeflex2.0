@@ -31,6 +31,10 @@
           {{ demand.start_time?.slice(0,5) }} – {{ demand.end_time?.slice(0,5) }}
           <span class="text-gray-400">({{ calcHoras(demand.start_time, demand.end_time) }}h)</span>
         </span>
+        <span v-if="demand.period" class="flex items-center gap-1.5">
+          <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+          {{ periodoLabel(demand.period) }}
+        </span>
         <span v-if="demand.city" class="flex items-center gap-1.5">
           <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
           {{ [demand.street, demand.number, demand.neighborhood, demand.city + '/' + demand.state].filter(Boolean).join(', ') }}
@@ -153,6 +157,9 @@ function statusClass(status) {
 }
 function statusLabel(status) {
   return { open: 'Aberta', partially_scheduled: 'Parcialmente agendada', scheduled: 'Agendada', cancelled: 'Cancelada' }[status] ?? status
+}
+function periodoLabel(period) {
+  return { manha: 'Manhã', tarde: 'Tarde', noite: 'Noite' }[period] ?? period
 }
 
 const proposalMap = {
