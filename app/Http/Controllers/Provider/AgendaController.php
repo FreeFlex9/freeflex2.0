@@ -53,6 +53,10 @@ class AgendaController extends Controller
                 'demand_id'    => $s->demand_id,
                 'city'         => $s->demand->city ?? '',
                 'state'        => $s->demand->state ?? '',
+                'no_show_status'                     => $s->no_show_status,
+                'no_show_justification'              => $s->no_show_justification,
+                'no_show_justification_deadline'     => $s->no_show_justification_deadline?->toIso8601String(),
+                'no_show_justification_submitted_at' => $s->no_show_justification_submitted_at?->toIso8601String(),
             ]);
 
         return inertia('Prestador/MinhaAgenda', [
@@ -62,5 +66,30 @@ class AgendaController extends Controller
             'modo'        => $modo,
             'data_inicio' => $dataInicio,
         ]);
+    }
+
+    public function justificarFalta(Request $request, Schedule $schedule)
+    {
+        $provider = Auth::guard('provider')->user();
+        abort_if($schedule->provider_id !== $provider->id, 403);
+
+        if ($schedule->no_show_status !== 'pending_justification') {
+            return back()->withErrors(['error' => 'Esta falta não está disponível para justificativa.']);
+        }
+
+        if ($schedule->no_show_justification_deadline && $schedule->no_show_justification_deadline->isPast()) {
+            return back()->withErrors(['error' => 'O prazo para justificar esta falta expirou.']);
+        }
+
+        $data = $request->validate([
+            'justificativa' => 'required|string|max:1000',
+        ]);
+
+        $schedule->update([
+            'no_show_justification'              => $data['justificativa'],
+            'no_show_justification_submitted_at' => now(),
+        ]);
+
+        return back()->with('success', 'Justificativa enviada. Ela será analisada pela equipe FreeFlex.');
     }
 }

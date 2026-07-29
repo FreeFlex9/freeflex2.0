@@ -129,6 +129,11 @@ class DemandasController extends Controller
             return back()->withErrors(['error' => 'Seu cadastro ainda não foi aprovado.']);
         }
 
+        if ($provider->isBlockedFromApplying()) {
+            return back()->withErrors(['error' => 'Você está temporariamente impedido de se candidatar a novas vagas até ' .
+                $provider->application_blocked_until->format('d/m/Y \à\s H:i') . '. Motivo: ' . $provider->application_block_reason]);
+        }
+
         $data = $request->validate([
             'demand_id'            => 'required|exists:demands,id',
             'message'              => 'nullable|string|max:1000',
