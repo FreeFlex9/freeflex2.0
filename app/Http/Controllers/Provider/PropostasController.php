@@ -69,6 +69,21 @@ class PropostasController extends Controller
         return back()->with('success', 'Proposta cancelada.');
     }
 
+    public function destroy(Proposal $proposal)
+    {
+        $provider = Auth::guard('provider')->user();
+        abort_if($proposal->provider_id !== $provider->id, 403);
+
+        $proposal->loadMissing('demand');
+        $vinculoAtivo = $proposal->status === 'accepted'
+            || in_array($proposal->demand?->status, ['scheduled', 'in_progress']);
+
+        abort_if($vinculoAtivo, 422, 'Não é possível excluir uma proposta vinculada a uma demanda ativa.');
+
+        $proposal->delete();
+        return back()->with('success', 'Proposta excluída.');
+    }
+
     // ── Chat ────────────────────────────────────────────────────────────────────
 
     public function mensagens(Proposal $proposal)

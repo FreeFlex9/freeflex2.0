@@ -129,13 +129,19 @@ class PerfilController extends Controller
         $company = Auth::guard('company')->user();
 
         $data = $request->validate([
+            'password'        => 'required|string',
             'motivo'          => 'required|in:' . implode(',', array_keys(AccountDeletionService::MOTIVOS)),
             'motivo_detalhes' => 'required_if:motivo,outro|nullable|string|max:1000',
         ], [
+            'password.required'           => 'Confirme sua senha para excluir a conta.',
             'motivo.required'             => 'Selecione o motivo da exclusão.',
             'motivo.in'                   => 'Selecione um motivo válido.',
             'motivo_detalhes.required_if' => 'Conte um pouco mais sobre o motivo.',
         ]);
+
+        if (!Hash::check($data['password'], $company->password)) {
+            return back()->withErrors(['password' => 'Senha incorreta.']);
+        }
 
         AccountDeletionService::excluir(
             $company,

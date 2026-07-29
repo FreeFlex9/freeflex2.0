@@ -57,10 +57,10 @@
               class="px-3 py-1.5 border border-teal-600 text-teal-600 hover:bg-teal-50 text-xs font-medium rounded-lg transition">
               Ver propostas
             </Link>
-            <button v-if="['open','partially_scheduled'].includes(d.status)"
+            <button v-if="['open','partially_scheduled','scheduled'].includes(d.status)"
               @click="cancelarDemanda(d)"
               class="px-3 py-1.5 border border-red-300 text-red-500 hover:bg-red-50 text-xs font-medium rounded-lg transition">
-              Cancelar
+              {{ d.status === 'open' ? 'Excluir' : 'Cancelar' }}
             </button>
           </div>
         </div>
@@ -88,12 +88,19 @@
       </Link>
     </div>
 
-    <!-- Modal confirmação cancelar -->
+    <!-- Modal confirmação cancelar/excluir -->
     <div v-if="demandaCancelar" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-40">
       <div class="bg-white rounded-xl p-6 w-full max-w-sm shadow-xl">
-        <h3 class="font-semibold text-gray-800 mb-2">Cancelar demanda?</h3>
+        <h3 class="font-semibold text-gray-800 mb-2">
+          {{ demandaCancelar.status === 'open' ? 'Excluir demanda?' : 'Cancelar demanda?' }}
+        </h3>
         <p class="text-sm text-gray-500 mb-5">
-          A demanda "<strong>{{ demandaCancelar.title }}</strong>" será cancelada e não aparecerá mais para prestadores.
+          <template v-if="demandaCancelar.status === 'open'">
+            A demanda "<strong>{{ demandaCancelar.title }}</strong>" será excluída permanentemente. Essa ação não pode ser desfeita.
+          </template>
+          <template v-else>
+            Já existe prestador vinculado à demanda "<strong>{{ demandaCancelar.title }}</strong>". Ela será cancelada em vez de excluída e não aparecerá mais para prestadores.
+          </template>
         </p>
         <div class="flex gap-3">
           <button @click="demandaCancelar = null"
@@ -102,7 +109,7 @@
           </button>
           <button @click="confirmarCancelar"
             class="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition">
-            Cancelar demanda
+            {{ demandaCancelar.status === 'open' ? 'Excluir demanda' : 'Cancelar demanda' }}
           </button>
         </div>
       </div>

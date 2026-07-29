@@ -152,9 +152,17 @@ class DemandasController extends Controller
     {
         $company = Auth::guard('company')->user();
         abort_if($demand->company_id !== $company->id, 403);
-        abort_if(!in_array($demand->status, ['open', 'partially_scheduled']), 422, 'Não é possível cancelar esta demanda.');
 
-        $demand->update(['status' => 'cancelled']);
-        return back()->with('success', 'Demanda cancelada.');
+        if ($demand->status === 'open') {
+            $demand->delete();
+            return back()->with('success', 'Demanda excluída.');
+        }
+
+        if (in_array($demand->status, ['partially_scheduled', 'scheduled'])) {
+            $demand->update(['status' => 'cancelled']);
+            return back()->with('success', 'Já existe prestador vinculado a esta demanda — ela foi cancelada em vez de excluída.');
+        }
+
+        abort(422, 'Não é possível excluir ou cancelar esta demanda.');
     }
 }

@@ -234,8 +234,16 @@
             class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-400"></textarea>
         </div>
 
+        <label class="block text-xs font-medium text-gray-500 mb-2">
+          Confirme sua senha <span class="text-red-400">*</span>
+        </label>
+        <input v-model="excluirForm.password" type="password"
+          class="w-full mb-3 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-400"
+          placeholder="Sua senha atual" />
+
         <p v-if="excluirForm.errors.motivo" class="text-xs text-red-600 mb-2">{{ excluirForm.errors.motivo }}</p>
         <p v-if="excluirForm.errors.motivo_detalhes" class="text-xs text-red-600 mb-2">{{ excluirForm.errors.motivo_detalhes }}</p>
+        <p v-if="excluirForm.errors.password" class="text-xs text-red-600 mb-2">{{ excluirForm.errors.password }}</p>
 
         <div class="flex gap-2 mt-4">
           <button @click="fecharExclusao" type="button"
@@ -377,10 +385,13 @@ const modalExcluir = ref(false)
 const excluirForm = useForm({
   motivo: '',
   motivo_detalhes: '',
+  password: '',
 })
 
 const exclusaoValida = computed(() =>
-  excluirForm.motivo !== '' && (excluirForm.motivo !== 'outro' || excluirForm.motivo_detalhes.trim() !== '')
+  excluirForm.motivo !== ''
+  && (excluirForm.motivo !== 'outro' || excluirForm.motivo_detalhes.trim() !== '')
+  && excluirForm.password.trim() !== ''
 )
 
 function abrirExclusao() {

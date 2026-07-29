@@ -6,6 +6,10 @@
         Selecione os serviços que você oferece. As demandas correspondentes aparecerão para você em Buscar Demandas.
       </p>
 
+      <div v-if="errorMsg" class="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
+        {{ errorMsg }}
+      </div>
+
       <div class="space-y-3">
         <div v-for="s in services" :key="s.id"
           class="bg-white border rounded-xl p-4 flex items-center justify-between gap-4 transition"
@@ -48,7 +52,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { router, usePage } from '@inertiajs/vue3'
 import PrestadorLayout from '@/Layouts/PrestadorLayout.vue'
 
@@ -59,6 +63,7 @@ const props = defineProps({
 
 const page = usePage()
 const providerHasLicense = page.props.auth?.provider?.has_license ?? false
+const errorMsg = computed(() => page.props.errors?.msg)
 
 const meuSet = ref(new Set(props.myIds))
 
