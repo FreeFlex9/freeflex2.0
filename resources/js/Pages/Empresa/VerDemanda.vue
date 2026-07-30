@@ -26,6 +26,9 @@
             <p class="text-sm text-gray-500 mt-0.5" v-if="demand.city">
               📍 {{ [demand.street, demand.number, demand.neighborhood, demand.city + '/' + demand.state].filter(Boolean).join(', ') }}
             </p>
+            <p class="text-sm text-gray-500 mt-0.5">
+              🍽️ {{ demand.has_meal ? 'Possui alimentação no local' : 'Não possui alimentação no local' }}
+            </p>
           </div>
 
           <div class="text-right flex flex-col items-end gap-2">

@@ -162,6 +162,22 @@
               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none" />
           </div>
 
+          <!-- ALIMENTAÇÃO -->
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-medium text-gray-500">Possui alimentação no local? <span class="text-red-400">*</span></label>
+            <div class="flex gap-4">
+              <label class="flex items-center gap-1.5 cursor-pointer text-sm text-gray-700">
+                <input type="radio" :value="true" v-model="form.has_meal" class="text-teal-600 focus:ring-teal-500" />
+                Sim
+              </label>
+              <label class="flex items-center gap-1.5 cursor-pointer text-sm text-gray-700">
+                <input type="radio" :value="false" v-model="form.has_meal" class="text-teal-600 focus:ring-teal-500" />
+                Não
+              </label>
+            </div>
+            <p v-if="form.errors.has_meal" class="text-xs text-red-500">{{ form.errors.has_meal }}</p>
+          </div>
+
           <!-- Botões -->
           <div class="flex gap-3 pt-2">
             <Link :href="route('empresa.demandas.index')"
@@ -205,6 +221,7 @@ const form = useForm({
   city:         '',
   state:        '',
   description:  '',
+  has_meal:     false,
 })
 
 const useCompanyAddress = ref(false)

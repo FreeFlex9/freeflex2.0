@@ -57,6 +57,7 @@ class DemandasController extends Controller
             'period'       => 'required|in:manha,tarde,noite',
             'slots_needed' => 'required|integer|min:1|max:50',
             'description'  => 'nullable|string|max:2000',
+            'has_meal'     => 'required|boolean',
             'zip_code'     => 'nullable|string|max:9',
             'street'       => 'nullable|string|max:255',
             'number'       => 'nullable|string|max:20',
@@ -68,6 +69,7 @@ class DemandasController extends Controller
             'date.after_or_equal' => 'A data não pode ser no passado.',
             'end_time.after'      => 'O horário de fim deve ser depois do início.',
             'period.required'     => 'O período da demanda é obrigatório.',
+            'has_meal.required'   => 'Informe se haverá alimentação no local.',
             'city.required'       => 'A cidade é obrigatória.',
             'state.required'      => 'O estado é obrigatório.',
         ]);
@@ -129,6 +131,7 @@ class DemandasController extends Controller
             'period'       => 'required|in:manha,tarde,noite',
             'slots_needed' => 'required|integer|min:1|max:50',
             'description'  => 'nullable|string|max:2000',
+            'has_meal'     => 'required|boolean',
             'zip_code'     => 'nullable|string|max:9',
             'street'       => 'nullable|string|max:255',
             'number'       => 'nullable|string|max:20',
@@ -140,6 +143,7 @@ class DemandasController extends Controller
             'date.after_or_equal' => 'A data não pode ser no passado.',
             'end_time.after'      => 'O horário de fim deve ser depois do início.',
             'period.required'    => 'O período da demanda é obrigatório.',
+            'has_meal.required'  => 'Informe se haverá alimentação no local.',
         ]);
 
         $demand->update($data);
