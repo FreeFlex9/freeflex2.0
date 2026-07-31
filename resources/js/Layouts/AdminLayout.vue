@@ -52,7 +52,12 @@
         <NavItem :href="route('admin.faltas.index')" icon="alert-triangle">Faltas</NavItem>
         <NavItem :href="route('admin.demandas.index')" icon="list">Demandas</NavItem>
         <NavItem :href="route('admin.servicos.index')" icon="briefcase">Serviços</NavItem>
-        <NavItem :href="route('admin.suporte.index')" icon="chat">Suporte</NavItem>
+        <NavItem :href="route('admin.suporte.index')" icon="chat">
+          Suporte
+          <span v-if="chatUnread" class="ml-auto text-xs bg-red-500 text-white rounded-full px-2 py-0.5">
+            {{ chatUnread > 9 ? '9+' : chatUnread }}
+          </span>
+        </NavItem>
 
         <div class="pt-4 pb-1 px-3">
           <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Configurações</p>
@@ -124,7 +129,7 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, ref, onMounted, onUnmounted } from 'vue'
 import { Link, usePage } from '@inertiajs/vue3'
 import NavItem from '@/Components/Admin/NavItem.vue'
 import NotificationBell from '@/Components/Admin/NotificationBell.vue'
@@ -136,6 +141,19 @@ defineProps({
 
 const sidebarOpen = ref(false)
 const page = usePage()
+
+const chatUnread = ref(page.props.chatUnread ?? 0)
+let inboxChannel = null
+
+onMounted(() => {
+  if (!window.Echo) return
+  inboxChannel = window.Echo.private('chat-inbox.admin')
+    .listen('.chat.inbox.ping', (e) => { chatUnread.value = e.unread_count })
+})
+
+onUnmounted(() => {
+  if (inboxChannel) window.Echo?.leave('chat-inbox.admin')
+})
 
 const errorMessage = computed(() => {
   const errors = page.props.errors

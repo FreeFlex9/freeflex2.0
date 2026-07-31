@@ -2,11 +2,13 @@
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\Empresa\DashboardController as EmpresaDashboardController;
+use App\Http\Controllers\Api\Empresa\MensagensController as EmpresaMensagensController;
 use App\Http\Controllers\Api\Empresa\PropostasController as EmpresaPropostasController;
 use App\Http\Controllers\Api\PasswordResetController;
 use App\Http\Controllers\Api\Prestador\AgendaController as PrestadorAgendaController;
 use App\Http\Controllers\Api\Prestador\DashboardController as PrestadorDashboardController;
 use App\Http\Controllers\Api\Prestador\DemandasController as PrestadorDemandasController;
+use App\Http\Controllers\Api\Prestador\MensagensController as PrestadorMensagensController;
 use App\Http\Controllers\Api\Prestador\PropostasController as PrestadorPropostasController;
 use App\Http\Controllers\Api\RegisterController;
 use App\Http\Controllers\Api\ServicoController;
@@ -46,10 +48,22 @@ Route::middleware(['auth:sanctum', 'api.provider'])->prefix('prestador')->group(
     Route::delete('/propostas/{proposal}/cancelar', [PrestadorPropostasController::class, 'cancelar']);
 
     Route::get('/agenda', [PrestadorAgendaController::class, 'index']);
+
+    Route::get('/mensagens', [PrestadorMensagensController::class, 'index']);
+    Route::get('/mensagens/nao-lidas', [PrestadorMensagensController::class, 'unreadCount']);
+    Route::get('/mensagens/{proposal}', [PrestadorMensagensController::class, 'show']);
+    Route::post('/mensagens/{proposal}', [PrestadorMensagensController::class, 'store']);
+    Route::post('/mensagens/{proposal}/lida', [PrestadorMensagensController::class, 'markRead']);
 });
 
 Route::middleware(['auth:sanctum', 'api.company'])->prefix('empresa')->group(function () {
     Route::get('/dashboard', [EmpresaDashboardController::class, 'index']);
     Route::post('/propostas/{proposal}/aceitar', [EmpresaPropostasController::class, 'aceitar']);
     Route::post('/propostas/{proposal}/rejeitar', [EmpresaPropostasController::class, 'rejeitar']);
+
+    Route::get('/mensagens', [EmpresaMensagensController::class, 'index']);
+    Route::get('/mensagens/nao-lidas', [EmpresaMensagensController::class, 'unreadCount']);
+    Route::get('/mensagens/{demand}', [EmpresaMensagensController::class, 'show']);
+    Route::post('/mensagens/{demand}', [EmpresaMensagensController::class, 'store']);
+    Route::post('/mensagens/{demand}/lida', [EmpresaMensagensController::class, 'markRead']);
 });

@@ -32,11 +32,13 @@ Route::prefix('empresa')->name('empresa.')->group(function () {
         Route::get('/demandas/{demand}/editar',    [Company\DemandasController::class, 'edit'])->name('demandas.edit');
         Route::put('/demandas/{demand}',           [Company\DemandasController::class, 'update'])->name('demandas.update');
         Route::delete('/demandas/{demand}',        [Company\DemandasController::class, 'destroy'])->name('demandas.destroy');
+        Route::get('/demandas/{demand}/mensagens',  [Company\PropostasController::class, 'mensagens'])->name('demandas.mensagens');
+        Route::post('/demandas/{demand}/mensagens', [Company\PropostasController::class, 'enviarMensagem'])->name('demandas.mensagens.enviar');
+
+        Route::get('/mensagens', [Company\MensagensController::class, 'index'])->name('mensagens.index');
 
         Route::post('/propostas/{proposal}/aceitar',    [Company\PropostasController::class, 'aceitar'])->name('propostas.aceitar');
         Route::post('/propostas/{proposal}/rejeitar',   [Company\PropostasController::class, 'rejeitar'])->name('propostas.rejeitar');
-        Route::get('/propostas/{proposal}/mensagens',   [Company\PropostasController::class, 'mensagens'])->name('propostas.mensagens');
-        Route::post('/propostas/{proposal}/mensagens',  [Company\PropostasController::class, 'enviarMensagem'])->name('propostas.mensagens.enviar');
 
         Route::get('/prestadores',                         [Company\BuscaPrestadoresController::class, 'index'])->name('prestadores.index');
         Route::get('/pontos',                              [Company\PontosController::class, 'index'])->name('pontos.index');
@@ -87,6 +89,8 @@ Route::prefix('prestador')->name('prestador.')->group(function () {
         Route::delete('/propostas/{proposal}',                [Provider\PropostasController::class, 'destroy'])->name('propostas.destroy');
         Route::get('/propostas/{proposal}/mensagens',        [Provider\PropostasController::class, 'mensagens'])->name('propostas.mensagens');
         Route::post('/propostas/{proposal}/mensagens',       [Provider\PropostasController::class, 'enviarMensagem'])->name('propostas.mensagens.enviar');
+
+        Route::get('/mensagens', [Provider\MensagensController::class, 'index'])->name('mensagens.index');
         Route::get('/perfil',              [Provider\PerfilController::class, 'index'])->name('perfil');
         Route::put('/perfil',              [Provider\PerfilController::class, 'updateInfo'])->name('perfil.update');
         Route::put('/perfil/senha',        [Provider\PerfilController::class, 'updatePassword'])->name('perfil.senha');

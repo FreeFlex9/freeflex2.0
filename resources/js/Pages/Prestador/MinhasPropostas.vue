@@ -337,7 +337,7 @@ async function abrirChat(proposta) {
 
   // Assina canal Reverb
   echoChannel = window.Echo
-    .private(`proposal.${proposta.id}.provider`)
+    .private(`chat.${proposta.demand_id}.provider`)
     .listen('.message.sent', (e) => {
       // Evita duplicata (a própria mensagem enviada já foi adicionada localmente)
       if (!mensagens.value.find(m => m.id === e.id)) {
@@ -350,7 +350,7 @@ async function abrirChat(proposta) {
 function fecharChat() {
   chatAberto.value = false
   if (echoChannel) {
-    window.Echo.leave(`proposal.${chatProposta.value?.id}.provider`)
+    window.Echo.leave(`chat.${chatProposta.value?.demand_id}.provider`)
     echoChannel = null
   }
 }
@@ -390,7 +390,7 @@ async function scrollBottom() {
 }
 
 onUnmounted(() => {
-  if (echoChannel) window.Echo.leave(`proposal.${chatProposta.value?.id}.provider`)
+  if (echoChannel) window.Echo.leave(`chat.${chatProposta.value?.demand_id}.provider`)
 })
 
 // ── Helpers de data ────────────────────────────────────────────────────────────

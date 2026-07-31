@@ -2,15 +2,17 @@
 
 namespace App\Http\Controllers\Company;
 
-use App\Events\MessageSent;
 use App\Http\Controllers\Controller;
-use App\Models\Message;
+use App\Models\Demand;
 use App\Models\Proposal;
+use App\Services\ChatService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class PropostasController extends Controller
 {
+    public function __construct(private ChatService $chat) {}
+
     public function aceitar(Proposal $proposal)
     {
         $company = Auth::guard('company')->user();
@@ -40,13 +42,15 @@ class PropostasController extends Controller
     }
 
     // ── Chat ────────────────────────────────────────────────────────────────────
+    // A conversa da empresa é por demanda (todas as propostas de uma mesma demanda
+    // compartilham a mesma thread empresa↔suporte) — a rota recebe a demanda diretamente.
 
-    public function mensagens(Proposal $proposal)
+    public function mensagens(Demand $demand)
     {
         $company = Auth::guard('company')->user();
-        abort_if($proposal->demand->company_id !== $company->id, 403);
+        abort_if($demand->company_id !== $company->id, 403);
 
-        $messages = $this->scopedMessages($proposal)->get();
+        $messages = $this->chat->threadMessages($demand->id, 'company', $company->id, 'company');
 
         return response()->json($messages->map(fn ($m) => [
             'id'          => $m->id,
@@ -57,28 +61,22 @@ class PropostasController extends Controller
         ]));
     }
 
-    public function enviarMensagem(Request $request, Proposal $proposal)
+    public function enviarMensagem(Request $request, Demand $demand)
     {
         $company = Auth::guard('company')->user();
-        abort_if($proposal->demand->company_id !== $company->id, 403);
+        abort_if($demand->company_id !== $company->id, 403);
         abort_if(
-            !in_array($proposal->status, ['pending', 'pending_admin_approval', 'accepted']),
+            !$demand->proposals()->whereIn('status', ChatService::COMPANY_ELIGIBLE_STATUSES)->exists(),
             422,
-            'Chat não disponível para esta proposta.'
+            'Chat não disponível para esta demanda.'
         );
 
         $request->validate(['body' => 'required|string|max:2000']);
 
-        $message = Message::create([
-            'demand_id'          => $proposal->demand_id,
-            'sender_type'        => 'company',
-            'sender_id'          => $company->id,
-            'thread_party_type'  => 'company',
-            'thread_party_id'    => $company->id,
-            'body'               => $request->body,
-        ]);
-
-        broadcast(new MessageSent($message, $proposal->id, $company->trade_name, 'company'));
+        $message = $this->chat->send(
+            $demand->id, 'company', $company->id,
+            'company', $company->id, $company->trade_name, $request->body,
+        );
 
         return response()->json([
             'id'          => $message->id,
@@ -88,14 +86,5 @@ class PropostasController extends Controller
             'sender_name' => $company->trade_name,
             'created_at'  => $message->created_at->toISOString(),
         ]);
-    }
-
-    private function scopedMessages(Proposal $proposal)
-    {
-        $proposal->loadMissing('demand');
-        return Message::where('demand_id', $proposal->demand_id)
-            ->where('thread_party_type', 'company')
-            ->where('thread_party_id', $proposal->demand->company_id)
-            ->orderBy('created_at');
     }
 }
