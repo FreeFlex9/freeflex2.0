@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Demand extends Model
 {
     protected $fillable = [
-        'company_id', 'service_id', 'title', 'description',
+        'company_id', 'service_id', 'title', 'description', 'has_meal',
         'date', 'start_time', 'end_time', 'period', 'slots_needed', 'slots_confirmed',
         'zip_code', 'street', 'number', 'complement', 'neighborhood', 'city', 'state',
         'latitude', 'longitude', 'total_value', 'status',
@@ -15,7 +15,10 @@ class Demand extends Model
 
     protected function casts(): array
     {
-        return ['date' => 'date'];
+        return [
+            'date' => 'date',
+            'has_meal' => 'boolean',
+        ];
     }
 
     public function company()

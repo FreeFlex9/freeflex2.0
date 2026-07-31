@@ -65,6 +65,8 @@
               <span class="text-xs px-2 py-0.5 bg-orange-100 text-orange-700 rounded-full font-medium">{{ d.service?.name }}</span>
               <span v-if="d.service?.requires_license"
                 class="text-xs px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full">Exige CNH</span>
+              <span v-if="d.has_meal"
+                class="text-xs px-2 py-0.5 bg-green-100 text-green-700 rounded-full">Alimentação no local</span>
             </div>
 
             <p class="text-sm text-gray-500 mt-1">{{ d.company?.trade_name }}</p>
