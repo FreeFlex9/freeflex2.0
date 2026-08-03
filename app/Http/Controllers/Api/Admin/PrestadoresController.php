@@ -14,7 +14,7 @@ class PrestadoresController extends Controller
     public function index()
     {
         $providers = Provider::where('status', 'pending')
-            ->orderBy('created_at')
+            ->orderBy('name')
             ->get([
                 'id', 'name', 'cpf', 'email', 'phone',
                 'has_license', 'is_digital_license', 'license_number', 'mei_cnpj',
@@ -25,7 +25,7 @@ class PrestadoresController extends Controller
 
         $cnhPendentes = Provider::where('status', 'approved')
             ->where('cnh_status', 'pending')
-            ->orderBy('updated_at')
+            ->orderBy('name')
             ->get([
                 'id', 'name', 'email', 'phone',
                 'is_digital_license', 'license_front_path', 'license_back_path',

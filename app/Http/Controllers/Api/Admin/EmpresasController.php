@@ -14,7 +14,7 @@ class EmpresasController extends Controller
     public function index()
     {
         $companies = Company::where('status', 'pending')
-            ->orderBy('created_at')
+            ->orderBy('trade_name')
             ->get(['id', 'trade_name', 'cnpj', 'email', 'phone', 'cnpj_card_path', 'address_proof_path', 'created_at']);
 
         return response()->json([
