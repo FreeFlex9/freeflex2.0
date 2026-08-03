@@ -1,5 +1,9 @@
 <?php
 
+use App\Http\Controllers\Api\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Api\Admin\DocumentosController as AdminDocumentosController;
+use App\Http\Controllers\Api\Admin\EmpresasController as AdminEmpresasController;
+use App\Http\Controllers\Api\Admin\PrestadoresController as AdminPrestadoresController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\Empresa\DashboardController as EmpresaDashboardController;
 use App\Http\Controllers\Api\Empresa\MensagensController as EmpresaMensagensController;
@@ -66,4 +70,22 @@ Route::middleware(['auth:sanctum', 'api.company'])->prefix('empresa')->group(fun
     Route::get('/mensagens/{demand}', [EmpresaMensagensController::class, 'show']);
     Route::post('/mensagens/{demand}', [EmpresaMensagensController::class, 'store']);
     Route::post('/mensagens/{demand}/lida', [EmpresaMensagensController::class, 'markRead']);
+});
+
+Route::middleware(['auth:sanctum', 'api.admin'])->prefix('admin')->group(function () {
+    Route::get('/dashboard', [AdminDashboardController::class, 'index']);
+
+    Route::get('/empresas', [AdminEmpresasController::class, 'index']);
+    Route::post('/empresas/{empresa}/aprovar', [AdminEmpresasController::class, 'aprovar']);
+    Route::post('/empresas/{empresa}/rejeitar', [AdminEmpresasController::class, 'rejeitar']);
+
+    Route::get('/prestadores', [AdminPrestadoresController::class, 'index']);
+    Route::post('/prestadores/{prestador}/aprovar', [AdminPrestadoresController::class, 'aprovar']);
+    Route::post('/prestadores/{prestador}/rejeitar', [AdminPrestadoresController::class, 'rejeitar']);
+    Route::post('/prestadores/{prestador}/aprovar-cnh', [AdminPrestadoresController::class, 'aprovarCnh']);
+    Route::post('/prestadores/{prestador}/rejeitar-cnh', [AdminPrestadoresController::class, 'rejeitarCnh']);
+
+    Route::get('/documentos/{tipo}/{id}/{campo}', [AdminDocumentosController::class, 'show'])
+        ->where('tipo', 'prestador|empresa')
+        ->where('id', '[0-9]+');
 });

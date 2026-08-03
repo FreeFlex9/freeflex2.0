@@ -26,6 +26,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'guest'        => \App\Http\Middleware\RedirectIfAuthenticated::class,
             'api.provider' => \App\Http\Middleware\EnsureApiProvider::class,
             'api.company'  => \App\Http\Middleware\EnsureApiCompany::class,
+            'api.admin'    => \App\Http\Middleware\EnsureApiAdmin::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

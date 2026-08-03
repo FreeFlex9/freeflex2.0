@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Admin;
 use App\Models\Company;
 use App\Models\Provider;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
@@ -30,6 +32,8 @@ class AuthController extends Controller
                 $userType = 'prestador';
             } elseif ($account = Company::where('email', $login)->first()) {
                 $userType = 'empresa';
+            } elseif ($account = Admin::where('email', $login)->first()) {
+                $userType = 'admin';
             }
         } elseif (strlen($digits) === 11) {
             $account = Provider::where('cpf', $digits)->first();
@@ -62,7 +66,11 @@ class AuthController extends Controller
     public function me(Request $request)
     {
         $account = $request->user();
-        $userType = $account instanceof Provider ? 'prestador' : 'empresa';
+        $userType = match (true) {
+            $account instanceof Provider => 'prestador',
+            $account instanceof Company => 'empresa',
+            $account instanceof Admin => 'admin',
+        };
 
         return response()->json([
             'user_type' => $userType,
@@ -70,8 +78,16 @@ class AuthController extends Controller
         ]);
     }
 
-    private function formatUser(Provider|Company $account): array
+    private function formatUser(Provider|Company|Admin $account): array
     {
+        if ($account instanceof Admin) {
+            return [
+                'id' => $account->id,
+                'nome' => Str::before($account->email, '@'),
+                'email' => $account->email,
+            ];
+        }
+
         return [
             'id' => $account->id,
             'nome' => $account instanceof Provider ? $account->name : $account->trade_name,

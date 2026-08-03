@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Company;
 use App\Models\Provider;
 use Illuminate\Support\Facades\Storage;
-use Symfony\Component\HttpFoundation\StreamedResponse;
+use Illuminate\Support\Facades\URL;
 
 class DocumentosController extends Controller
 {
@@ -20,17 +20,7 @@ class DocumentosController extends Controller
         'cnpj_card_path', 'address_proof_path',
     ];
 
-    public function show(string $tipo, int $id, string $campo): StreamedResponse
-    {
-        return Storage::disk('public')->response($this->resolvePath($tipo, $id, $campo));
-    }
-
-    public function showSigned(string $tipo, int $id, string $campo): StreamedResponse
-    {
-        return Storage::disk('public')->response($this->resolvePath($tipo, $id, $campo));
-    }
-
-    private function resolvePath(string $tipo, int $id, string $campo): string
+    public function show(string $tipo, int $id, string $campo)
     {
         $campos = match ($tipo) {
             'prestador' => self::CAMPOS_PRESTADOR,
@@ -49,6 +39,13 @@ class DocumentosController extends Controller
         abort_if(empty($path), 404);
         abort_unless(Storage::disk('public')->exists($path), 404);
 
-        return $path;
+        return response()->json([
+            'url' => URL::temporarySignedRoute(
+                'admin.documentos.assinado',
+                now()->addMinutes(10),
+                ['tipo' => $tipo, 'id' => $id, 'campo' => $campo],
+            ),
+            'mime_type' => Storage::disk('public')->mimeType($path),
+        ]);
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Concerns\ApprovesProviders;
 use App\Http\Controllers\Controller;
 use App\Models\Provider;
 use Illuminate\Http\Request;
@@ -9,6 +10,8 @@ use Inertia\Inertia;
 
 class PrestadoresController extends Controller
 {
+    use ApprovesProviders;
+
     public function index()
     {
         $providers = Provider::where('status', 'pending')
@@ -38,31 +41,7 @@ class PrestadoresController extends Controller
 
     public function aprovar(Request $request, Provider $prestador)
     {
-        abort_if($prestador->status !== 'pending', 422, 'Status inválido.');
-
-        if ($prestador->has_license) {
-            if ($prestador->is_digital_license) {
-                abort_if(empty($prestador->license_front_path), 422, 'CNH digital não enviada.');
-            } else {
-                abort_if(
-                    empty($prestador->license_front_path) || empty($prestador->license_back_path),
-                    422, 'CNH (frente e verso) não enviada.'
-                );
-            }
-        } else {
-            abort_if(
-                empty($prestador->rg_front_path) || empty($prestador->rg_back_path),
-                422, 'RG (frente e verso) não enviado.'
-            );
-        }
-
-        if (!empty($prestador->mei_cnpj) && empty($prestador->ccmei_path)) {
-            abort(422, 'CCMEI não enviado para MEI.');
-        }
-
-        abort_if(empty($prestador->address_proof_path), 422, 'Comprovante de residência não enviado.');
-
-        abort_if(empty($prestador->ctps_path), 422, 'Carteira de Trabalho (CTPS) não enviada.');
+        $this->assertProviderApprovable($prestador);
 
         $prestador->update(['status' => 'approved', 'approved_at' => now(), 'rejection_reason' => null]);
 
@@ -82,13 +61,7 @@ class PrestadoresController extends Controller
 
     public function aprovarCnh(Provider $prestador)
     {
-        abort_if($prestador->cnh_status !== 'pending', 422, 'CNH não está pendente.');
-
-        $docsOk = $prestador->is_digital_license
-            ? !empty($prestador->license_front_path)
-            : !empty($prestador->license_front_path) && !empty($prestador->license_back_path);
-
-        abort_if(!$docsOk, 422, 'Documentos de CNH não enviados.');
+        $this->assertProviderCnhApprovable($prestador);
 
         $prestador->update([
             'has_license'          => true,

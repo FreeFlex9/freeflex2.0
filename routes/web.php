@@ -111,6 +111,12 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
     Route::post('/logout', [Admin\AuthController::class, 'logout'])->name('logout');
 
+    Route::get('/documentos/assinado/{tipo}/{id}/{campo}', [Admin\DocumentosController::class, 'showSigned'])
+        ->where('tipo', 'prestador|empresa')
+        ->where('id', '[0-9]+')
+        ->name('documentos.assinado')
+        ->middleware('signed');
+
     Route::middleware('is_admin')->group(function () {
         Route::get('/', [Admin\DashboardController::class, 'index'])->name('dashboard');
 

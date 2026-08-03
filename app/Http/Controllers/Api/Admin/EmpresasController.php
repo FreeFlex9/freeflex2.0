@@ -1,12 +1,11 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Concerns\ApprovesCompanies;
 use App\Http\Controllers\Controller;
 use App\Models\Company;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
 
 class EmpresasController extends Controller
 {
@@ -18,8 +17,19 @@ class EmpresasController extends Controller
             ->orderBy('created_at')
             ->get(['id', 'trade_name', 'cnpj', 'email', 'phone', 'cnpj_card_path', 'address_proof_path', 'created_at']);
 
-        return Inertia::render('Admin/Empresas/Index', [
-            'empresas' => $companies,
+        return response()->json([
+            'empresas' => $companies->map(fn (Company $c) => [
+                'id' => $c->id,
+                'nome_fantasia' => $c->trade_name,
+                'cnpj' => $c->cnpj,
+                'email' => $c->email,
+                'telefone' => $c->phone,
+                'criado_em' => $c->created_at?->toISOString(),
+                'documentos' => [
+                    'cnpj_card_path' => !empty($c->cnpj_card_path),
+                    'address_proof_path' => !empty($c->address_proof_path),
+                ],
+            ]),
         ]);
     }
 
@@ -29,7 +39,7 @@ class EmpresasController extends Controller
 
         $empresa->update(['status' => 'approved', 'approved_at' => now(), 'rejection_reason' => null]);
 
-        return back()->with('success', "Empresa {$empresa->trade_name} aprovada com sucesso!");
+        return response()->json(['message' => "Empresa {$empresa->trade_name} aprovada com sucesso!"]);
     }
 
     public function rejeitar(Request $request, Company $empresa)
@@ -40,6 +50,6 @@ class EmpresasController extends Controller
 
         $empresa->update(['status' => 'rejected', 'rejection_reason' => $request->motivo]);
 
-        return back()->with('success', "Empresa {$empresa->trade_name} rejeitada.");
+        return response()->json(['message' => "Empresa {$empresa->trade_name} rejeitada."]);
     }
 }
