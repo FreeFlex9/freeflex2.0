@@ -73,6 +73,13 @@
           </svg>
         </NavLink>
 
+        <NavLink :href="route('empresa.mensagens.index')" :active="isActive('/empresa/mensagens')"
+          :collapsed="collapsed" label="Mensagens" active-color="teal" :badge="chatUnread">
+          <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+          </svg>
+        </NavLink>
+
         <NavLink :href="route('empresa.pontos.index')" :active="isActive('/empresa/pontos')"
           :collapsed="collapsed" label="Check-in/Check-out" active-color="teal">
           <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -164,14 +171,30 @@
 </template>
 
 <script setup>
-import { ref, computed, h } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { Link, usePage } from '@inertiajs/vue3'
+import NavLink from '@/Components/SidebarNavLink.vue'
 
 defineProps({ title: { type: String, default: 'Painel Empresa' } })
 
 const open = ref(false)
 const collapsed = ref(localStorage.getItem('sidebar-empresa') === 'true')
 const page = usePage()
+
+const chatUnread = ref(page.props.chatUnread ?? 0)
+let inboxChannel = null
+
+onMounted(() => {
+  const companyId = page.props.auth.company?.id
+  if (!companyId || !window.Echo) return
+  inboxChannel = window.Echo.private(`chat-inbox.company.${companyId}`)
+    .listen('.chat.inbox.ping', (e) => { chatUnread.value = e.unread_count })
+})
+
+onUnmounted(() => {
+  const companyId = page.props.auth.company?.id
+  if (inboxChannel && companyId) window.Echo?.leave(`chat-inbox.company.${companyId}`)
+})
 
 function toggleCollapse() {
   collapsed.value = !collapsed.value
@@ -203,34 +226,4 @@ const statusLabel = computed(() => ({
   approved: 'Aprovada',
   rejected: 'Rejeitada',
 }[page.props.auth.company?.status] ?? ''))
-
-const NavLink = {
-  props: {
-    href: String,
-    active: Boolean,
-    collapsed: Boolean,
-    label: String,
-    activeColor: { type: String, default: 'teal' },
-  },
-  setup(props, { slots }) {
-    return () => {
-      const activeClasses = props.activeColor === 'teal'
-        ? 'bg-teal-50 text-teal-700 font-medium dark:bg-teal-500/10 dark:text-teal-400'
-        : 'bg-orange-50 text-orange-600 font-medium dark:bg-orange-500/10 dark:text-orange-400'
-      const inactiveClasses = 'text-gray-600 hover:bg-gray-100 hover:text-gray-800 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-100'
-      return h(Link, {
-        href: props.href,
-        title: props.collapsed ? props.label : undefined,
-        class: [
-          'flex items-center rounded-lg transition-colors',
-          props.active ? activeClasses : inactiveClasses,
-          props.collapsed ? 'justify-center p-2' : 'gap-2.5 px-3 py-2',
-        ],
-      }, () => [
-        slots.default?.(),
-        !props.collapsed ? h('span', { class: 'text-sm truncate' }, props.label) : null,
-      ])
-    }
-  },
-}
 </script>

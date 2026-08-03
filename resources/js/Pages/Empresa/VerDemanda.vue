@@ -36,7 +36,7 @@
               <p class="text-xs text-gray-400">Vagas confirmadas</p>
               <p class="text-2xl font-bold text-teal-600">{{ demand.slots_confirmed }}<span class="text-gray-400 text-base font-normal">/{{ demand.slots_needed }}</span></p>
             </div>
-            <Link v-if="demand.status === 'open'" :href="route('empresa.demandas.edit', demand.id)"
+            <Link v-if="demand.status === 'open'" :href="route('empresa.demandas.edit', props.demand.id)"
               class="text-xs px-3 py-1.5 border border-teal-600 text-teal-600 hover:bg-teal-50 rounded-lg transition">
               Editar demanda
             </Link>
@@ -260,7 +260,7 @@ async function abrirChat(proposta) {
   mensagens.value = []
   novaMensagem.value = ''
 
-  const res = await fetch(route('empresa.propostas.mensagens', proposta.id), {
+  const res = await fetch(route('empresa.demandas.mensagens', props.demand.id), {
     headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
   })
   if (res.ok) mensagens.value = await res.json()
@@ -270,7 +270,7 @@ async function abrirChat(proposta) {
   scrollBaixo()
 
   if (window.Echo) {
-    echoChannel = window.Echo.private(`proposal.${proposta.id}.company`)
+    echoChannel = window.Echo.private(`chat.${props.demand.id}.company`)
       .listen('.message.sent', (e) => {
         if (!mensagens.value.find(m => m.id === e.id)) {
           mensagens.value.push(e)
@@ -281,8 +281,8 @@ async function abrirChat(proposta) {
 }
 
 function fecharChat() {
-  if (echoChannel && chatProposta.value) {
-    window.Echo?.leave(`proposal.${chatProposta.value.id}.company`)
+  if (echoChannel) {
+    window.Echo?.leave(`chat.${props.demand.id}.company`)
   }
   echoChannel = null
   chatProposta.value = null
@@ -293,7 +293,7 @@ async function enviarMensagem() {
   if (!body) return
   novaMensagem.value = ''
 
-  const res = await fetch(route('empresa.propostas.mensagens.enviar', chatProposta.value.id), {
+  const res = await fetch(route('empresa.demandas.mensagens.enviar', props.demand.id), {
     method: 'POST',
     headers: {
       'Content-Type':     'application/json',
@@ -318,8 +318,8 @@ function scrollBaixo() {
 }
 
 onUnmounted(() => {
-  if (echoChannel && chatProposta.value) {
-    window.Echo?.leave(`proposal.${chatProposta.value.id}.company`)
+  if (echoChannel) {
+    window.Echo?.leave(`chat.${props.demand.id}.company`)
   }
 })
 </script>

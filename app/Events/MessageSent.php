@@ -15,14 +15,14 @@ class MessageSent implements ShouldBroadcastNow
 
     public function __construct(
         public Message $message,
-        public int     $proposalId,
+        public int     $demandId,
         public string  $senderName,
         public string  $threadType,
     ) {}
 
     public function broadcastOn(): array
     {
-        return [new PrivateChannel("proposal.{$this->proposalId}.{$this->threadType}")];
+        return [new PrivateChannel("chat.{$this->demandId}.{$this->threadType}")];
     }
 
     public function broadcastWith(): array

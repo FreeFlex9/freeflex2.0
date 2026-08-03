@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Services\ChatService;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -60,7 +61,27 @@ class HandleInertiaRequests extends Middleware
                 'cnh_notice' => $request->session()->get('cnh_notice'),
             ],
             'notifications' => fn () => $this->adminNotifications($request),
+            'chatUnread'    => fn () => $this->chatUnread($request),
         ];
+    }
+
+    private function chatUnread(Request $request): ?int
+    {
+        $chat = app(ChatService::class);
+
+        if ($provider = $request->user('provider')) {
+            return $chat->totalUnreadForProvider($provider->id);
+        }
+
+        if ($company = $request->user('company')) {
+            return $chat->totalUnreadForCompany($company->id);
+        }
+
+        if ($request->user('admin')) {
+            return $chat->totalUnreadForAdmin();
+        }
+
+        return null;
     }
 
     private function adminNotifications(Request $request): ?array

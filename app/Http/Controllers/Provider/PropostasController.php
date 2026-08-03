@@ -2,15 +2,16 @@
 
 namespace App\Http\Controllers\Provider;
 
-use App\Events\MessageSent;
 use App\Http\Controllers\Controller;
-use App\Models\Message;
 use App\Models\Proposal;
+use App\Services\ChatService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class PropostasController extends Controller
 {
+    public function __construct(private ChatService $chat) {}
+
     public function index(Request $request)
     {
         $provider = Auth::guard('provider')->user();
@@ -91,7 +92,7 @@ class PropostasController extends Controller
         $provider = Auth::guard('provider')->user();
         abort_if($proposal->provider_id !== $provider->id, 403);
 
-        $messages = $this->scopedMessages($proposal)->get();
+        $messages = $this->chat->threadMessages($proposal->demand_id, 'provider', $provider->id, 'provider');
 
         return response()->json($messages->map(fn ($m) => [
             'id'          => $m->id,
@@ -107,23 +108,17 @@ class PropostasController extends Controller
         $provider = Auth::guard('provider')->user();
         abort_if($proposal->provider_id !== $provider->id, 403);
         abort_if(
-            !in_array($proposal->status, ['pending', 'pending_company_accept', 'pending_admin_approval', 'accepted']),
+            !in_array($proposal->status, ChatService::PROVIDER_ELIGIBLE_STATUSES),
             422,
             'Chat não disponível para esta proposta.'
         );
 
         $request->validate(['body' => 'required|string|max:2000']);
 
-        $message = Message::create([
-            'demand_id'          => $proposal->demand_id,
-            'sender_type'        => 'provider',
-            'sender_id'          => $provider->id,
-            'thread_party_type'  => 'provider',
-            'thread_party_id'    => $provider->id,
-            'body'               => $request->body,
-        ]);
-
-        broadcast(new MessageSent($message, $proposal->id, $provider->name, 'provider'));
+        $message = $this->chat->send(
+            $proposal->demand_id, 'provider', $provider->id,
+            'provider', $provider->id, $provider->name, $request->body,
+        );
 
         return response()->json([
             'id'          => $message->id,
@@ -133,13 +128,5 @@ class PropostasController extends Controller
             'sender_name' => $provider->name,
             'created_at'  => $message->created_at->toISOString(),
         ]);
-    }
-
-    private function scopedMessages(Proposal $proposal)
-    {
-        return Message::where('demand_id', $proposal->demand_id)
-            ->where('thread_party_type', 'provider')
-            ->where('thread_party_id', $proposal->provider_id)
-            ->orderBy('created_at');
     }
 }

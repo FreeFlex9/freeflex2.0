@@ -163,7 +163,7 @@ async function abrirChat(proposta, threadType) {
   scrollBaixo()
 
   if (window.Echo) {
-    echoChannel = window.Echo.private(`proposal.${proposta.id}.${threadType}`)
+    echoChannel = window.Echo.private(`chat.${proposta.demand.id}.${threadType}`)
       .listen('.message.sent', (e) => {
         if (!mensagens.value.find(m => m.id === e.id)) {
           mensagens.value.push(e)
@@ -175,7 +175,7 @@ async function abrirChat(proposta, threadType) {
 
 function fecharChat() {
   if (echoChannel && chatProposta.value) {
-    window.Echo?.leave(`proposal.${chatProposta.value.id}.${chatThreadType.value}`)
+    window.Echo?.leave(`chat.${chatProposta.value.demand.id}.${chatThreadType.value}`)
   }
   echoChannel = null
   chatProposta.value = null
@@ -213,7 +213,7 @@ function scrollBaixo() {
 
 onUnmounted(() => {
   if (echoChannel && chatProposta.value) {
-    window.Echo?.leave(`proposal.${chatProposta.value.id}.${chatThreadType.value}`)
+    window.Echo?.leave(`chat.${chatProposta.value.demand.id}.${chatThreadType.value}`)
   }
 })
 </script>
