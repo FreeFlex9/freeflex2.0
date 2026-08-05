@@ -48,6 +48,10 @@
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 8h1a4 4 0 010 8h-1M5 8h13v9a4 4 0 01-4 4H9a4 4 0 01-4-4V8zM5 8V5a2 2 0 012-2h6a2 2 0 012 2v3"/></svg>
           Alimentação no local
         </span>
+        <span v-if="demand.dress_code" class="flex items-center gap-1.5">
+          <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375"/></svg>
+          Vestimenta: {{ dressCodeLabel(demand.dress_code, demand.dress_code_other) }}
+        </span>
       </div>
 
       <p v-if="demand.description" class="text-sm text-gray-600 mt-4 border-t border-gray-100 pt-4">{{ demand.description }}</p>
@@ -164,6 +168,10 @@ function statusLabel(status) {
 }
 function periodoLabel(period) {
   return { manha: 'Manhã', tarde: 'Tarde', noite: 'Noite' }[period] ?? period
+}
+function dressCodeLabel(dressCode, other) {
+  if (dressCode === 'outro') return other || 'Outro'
+  return { uniforme: 'Uniforme', social: 'Social', casual: 'Casual', esportiva: 'Esportiva', epi: 'EPI' }[dressCode] ?? dressCode
 }
 
 const proposalMap = {

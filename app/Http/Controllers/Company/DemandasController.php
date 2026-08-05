@@ -58,6 +58,8 @@ class DemandasController extends Controller
             'slots_needed' => 'required|integer|min:1|max:50',
             'description'  => 'nullable|string|max:2000',
             'has_meal'     => 'required|boolean',
+            'dress_code'       => 'nullable|in:uniforme,social,casual,esportiva,epi,outro',
+            'dress_code_other' => 'nullable|required_if:dress_code,outro|string|max:255',
             'zip_code'     => 'nullable|string|max:9',
             'street'       => 'nullable|string|max:255',
             'number'       => 'nullable|string|max:20',
@@ -66,12 +68,13 @@ class DemandasController extends Controller
             'city'         => 'required|string|max:100',
             'state'        => 'required|string|size:2',
         ], [
-            'date.after_or_equal' => 'A data não pode ser no passado.',
-            'end_time.after'      => 'O horário de fim deve ser depois do início.',
-            'period.required'     => 'O período da demanda é obrigatório.',
-            'has_meal.required'   => 'Informe se haverá alimentação no local.',
-            'city.required'       => 'A cidade é obrigatória.',
-            'state.required'      => 'O estado é obrigatório.',
+            'date.after_or_equal'          => 'A data não pode ser no passado.',
+            'end_time.after'               => 'O horário de fim deve ser depois do início.',
+            'period.required'              => 'O período da demanda é obrigatório.',
+            'has_meal.required'            => 'Informe se haverá alimentação no local.',
+            'dress_code_other.required_if' => 'Descreva o critério de vestimenta.',
+            'city.required'                => 'A cidade é obrigatória.',
+            'state.required'               => 'O estado é obrigatório.',
         ]);
 
         $data['company_id'] = $company->id;
@@ -132,6 +135,8 @@ class DemandasController extends Controller
             'slots_needed' => 'required|integer|min:1|max:50',
             'description'  => 'nullable|string|max:2000',
             'has_meal'     => 'required|boolean',
+            'dress_code'       => 'nullable|in:uniforme,social,casual,esportiva,epi,outro',
+            'dress_code_other' => 'nullable|required_if:dress_code,outro|string|max:255',
             'zip_code'     => 'nullable|string|max:9',
             'street'       => 'nullable|string|max:255',
             'number'       => 'nullable|string|max:20',
@@ -140,10 +145,11 @@ class DemandasController extends Controller
             'city'         => 'required|string|max:100',
             'state'        => 'required|string|size:2',
         ], [
-            'date.after_or_equal' => 'A data não pode ser no passado.',
-            'end_time.after'      => 'O horário de fim deve ser depois do início.',
-            'period.required'    => 'O período da demanda é obrigatório.',
-            'has_meal.required'  => 'Informe se haverá alimentação no local.',
+            'date.after_or_equal'          => 'A data não pode ser no passado.',
+            'end_time.after'               => 'O horário de fim deve ser depois do início.',
+            'period.required'              => 'O período da demanda é obrigatório.',
+            'has_meal.required'            => 'Informe se haverá alimentação no local.',
+            'dress_code_other.required_if' => 'Descreva o critério de vestimenta.',
         ]);
 
         $demand->update($data);

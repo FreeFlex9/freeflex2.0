@@ -29,6 +29,9 @@
             <p class="text-sm text-gray-500 mt-0.5">
               🍽️ {{ demand.has_meal ? 'Possui alimentação no local' : 'Não possui alimentação no local' }}
             </p>
+            <p v-if="demand.dress_code" class="text-sm text-gray-500 mt-0.5">
+              👔 Vestimenta: {{ dressCodeLabel(demand.dress_code, demand.dress_code_other) }}
+            </p>
           </div>
 
           <div class="text-right flex flex-col items-end gap-2">
@@ -211,6 +214,10 @@ function statusLabel(status) {
 }
 function periodoLabel(period) {
   return { manha: 'Manhã', tarde: 'Tarde', noite: 'Noite' }[period] ?? period
+}
+function dressCodeLabel(dressCode, other) {
+  if (dressCode === 'outro') return other || 'Outro'
+  return { uniforme: 'Uniforme', social: 'Social', casual: 'Casual', esportiva: 'Esportiva', epi: 'EPI' }[dressCode] ?? dressCode
 }
 function propostaStatusClass(status) {
   return {

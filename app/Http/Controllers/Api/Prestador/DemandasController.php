@@ -169,6 +169,8 @@ class DemandasController extends Controller
             'hora_fim' => $d->end_time,
             'periodo' => $d->period,
             'possui_alimentacao' => (bool) $d->has_meal,
+            'criterio_vestimenta' => $d->dress_code,
+            'criterio_vestimenta_outro' => $d->dress_code_other,
             'vagas_necessarias' => $d->slots_needed,
             'vagas_confirmadas' => $d->slots_confirmed,
             'servico' => $d->service?->name,
