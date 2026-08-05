@@ -86,6 +86,7 @@ Route::prefix('prestador')->name('prestador.')->group(function () {
         Route::post('/propostas/{proposal}/aceitar',         [Provider\PropostasController::class, 'aceitar'])->name('propostas.aceitar');
         Route::post('/propostas/{proposal}/recusar',         [Provider\PropostasController::class, 'recusar'])->name('propostas.recusar');
         Route::delete('/propostas/{proposal}/cancelar',      [Provider\PropostasController::class, 'cancelar'])->name('propostas.cancelar');
+        Route::post('/propostas/{proposal}/desistir',        [Provider\PropostasController::class, 'desistir'])->name('propostas.desistir');
         Route::delete('/propostas/{proposal}',                [Provider\PropostasController::class, 'destroy'])->name('propostas.destroy');
         Route::get('/propostas/{proposal}/mensagens',        [Provider\PropostasController::class, 'mensagens'])->name('propostas.mensagens');
         Route::post('/propostas/{proposal}/mensagens',       [Provider\PropostasController::class, 'enviarMensagem'])->name('propostas.mensagens.enviar');

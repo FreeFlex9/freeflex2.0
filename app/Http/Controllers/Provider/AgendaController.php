@@ -22,7 +22,8 @@ class AgendaController extends Controller
         $query = Schedule::with([
             'demand.company:id,trade_name',
             'demand.service:id,name',
-        ])->where('provider_id', $provider->id);
+        ])->where('provider_id', $provider->id)
+            ->where('status', '!=', 'cancelled');
 
         if ($modo === 'semana') {
             if ($request->filled('data_inicio')) {

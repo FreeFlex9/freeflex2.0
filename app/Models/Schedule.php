@@ -8,6 +8,7 @@ class Schedule extends Model
 {
     protected $fillable = [
         'provider_id', 'demand_id', 'date', 'start_time', 'end_time', 'description', 'status',
+        'cancelled_at', 'cancelled_reason',
         'check_in_at', 'check_in_lat', 'check_in_lng', 'check_in_distance_m',
         'check_out_at', 'check_out_lat', 'check_out_lng', 'check_out_distance_m',
         'no_show_status', 'no_show_detected_at', 'no_show_justification',
@@ -19,6 +20,7 @@ class Schedule extends Model
     {
         return [
             'date'                                => 'date',
+            'cancelled_at'                        => 'datetime',
             'check_in_at'                         => 'datetime',
             'check_out_at'                         => 'datetime',
             'no_show_detected_at'                  => 'datetime',

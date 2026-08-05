@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Demand;
 use App\Models\Proposal;
 use App\Models\Schedule;
+use App\Notifications\CandidaturaConfirmadaNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -73,10 +74,12 @@ class DemandasController extends Controller
             return back()->withErrors(['msg' => "Prestador já tem {$jaFormatado}h agendadas nessa data. Acumulado ultrapassaria 9h/dia."]);
         }
 
+        $acceptedAt = now();
+
         try {
             DB::beginTransaction();
 
-            $proposta->update(['status' => 'accepted']);
+            $proposta->update(['status' => 'accepted', 'accepted_at' => $acceptedAt]);
             $demanda->increment('slots_confirmed');
             $novaQtd = $demanda->slots_confirmed;
 
@@ -104,6 +107,17 @@ class DemandasController extends Controller
         } catch (\Throwable $e) {
             DB::rollBack();
             return back()->withErrors(['msg' => 'Erro ao aprovar: ' . $e->getMessage()]);
+        }
+
+        try {
+            $proposta->provider?->notify(new CandidaturaConfirmadaNotification(
+                $demanda->id,
+                $demanda->title,
+                $demanda->company?->trade_name,
+                $proposta->desistenciaPrazo(),
+            ));
+        } catch (\Throwable $e) {
+            // A aprovação já foi confirmada; falha ao notificar não deve reverter o fluxo.
         }
 
         $msg = 'Contratação aprovada e agendada.';

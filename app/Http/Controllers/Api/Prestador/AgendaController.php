@@ -16,7 +16,8 @@ class AgendaController extends Controller
         $ano = $request->integer('ano', now()->year);
 
         $query = Schedule::with(['demand.company:id,trade_name', 'demand.service:id,name'])
-            ->where('provider_id', $provider->id);
+            ->where('provider_id', $provider->id)
+            ->where('status', '!=', 'cancelled');
 
         if (!$request->boolean('todos')) {
             $query->whereMonth('date', $mes)->whereYear('date', $ano);
