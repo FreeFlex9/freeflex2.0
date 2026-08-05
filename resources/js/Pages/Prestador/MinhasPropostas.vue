@@ -58,6 +58,20 @@
             </p>
 
             <p class="text-xs text-gray-400 mt-1">Enviada em {{ formatDateTime(p.created_at) }}</p>
+
+            <!-- Aviso de prazo de desistência -->
+            <div v-if="podeDesistir(p)"
+              class="flex items-center gap-1.5 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-1.5 mt-2 w-fit">
+              <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              Você pode desistir sem penalidade até {{ formatDateTime(prazoDesistencia(p)) }}
+              (faltam {{ tempoRestante(p) }})
+            </div>
+            <p v-else-if="p.status === 'accepted' && p.accepted_at"
+              class="text-xs text-gray-400 mt-2">
+              Prazo de desistência encerrado.
+            </p>
           </div>
 
           <!-- Ações -->
@@ -93,6 +107,13 @@
               @click="cancelar(p)"
               class="text-xs text-red-400 hover:text-red-600 transition">
               Cancelar proposta
+            </button>
+
+            <!-- Desistir: apenas para propostas confirmadas, dentro do prazo -->
+            <button v-if="podeDesistir(p)"
+              @click="desistir(p)"
+              class="flex items-center gap-1.5 px-4 py-2 bg-white border border-red-300 text-red-500 text-sm font-medium rounded-lg hover:bg-red-50 transition">
+              Desistir da demanda
             </button>
 
             <!-- Excluir: propostas sem vínculo ativo (aceita/agendada não pode) -->
@@ -193,6 +214,16 @@
       @confirm="confirmarCancelar"
       @cancel="confirmCancelar = null" />
 
+    <!-- Modal confirmar desistência -->
+    <ConfirmModal
+      :show="!!confirmDesistir"
+      title="Desistir da demanda"
+      :message="`Tem certeza que deseja desistir de &quot;${confirmDesistir?.demand?.title}&quot;? Como ainda está dentro do prazo de ${props.janelaDesistenciaHoras}h, nenhuma penalidade será aplicada. Esta ação não pode ser desfeita.`"
+      confirm-text="Desistir da demanda"
+      variant="danger"
+      @confirm="confirmarDesistir"
+      @cancel="confirmDesistir = null" />
+
     <!-- Modal confirmar exclusão -->
     <ConfirmModal
       :show="!!confirmExcluir"
@@ -207,7 +238,7 @@
 </template>
 
 <script setup>
-import { ref, computed, nextTick, onUnmounted } from 'vue'
+import { ref, computed, nextTick, onMounted, onUnmounted } from 'vue'
 import { router, useForm } from '@inertiajs/vue3'
 import PrestadorLayout from '@/Layouts/PrestadorLayout.vue'
 import ConfirmModal from '@/Components/ConfirmModal.vue'
@@ -215,6 +246,7 @@ import ConfirmModal from '@/Components/ConfirmModal.vue'
 const props = defineProps({
   proposals: Array,
   filters:   Object,
+  janelaDesistenciaHoras: { type: Number, default: 3 },
 })
 
 // ── Filtro por status ──────────────────────────────────────────────────────────
@@ -226,6 +258,7 @@ const statusOpts = [
   { value: 'accepted',              label: 'Aceitas' },
   { value: 'rejected',              label: 'Recusadas' },
   { value: 'rejected_provider',     label: 'Canceladas' },
+  { value: 'withdrawn_by_provider', label: 'Desistências' },
 ]
 
 const filtroAtivo = ref(props.filters?.status ?? '')
@@ -250,12 +283,42 @@ function statusStyle(status) {
     rejected:               { label: 'Recusada',                badge: 'bg-red-100 text-red-600' },
     rejected_admin:         { label: 'Rejeitada pelo admin',    badge: 'bg-red-100 text-red-600' },
     rejected_provider:      { label: 'Cancelada por você',      badge: 'bg-gray-100 text-gray-500' },
+    withdrawn_by_provider:  { label: 'Desistência (sem penalidade)', badge: 'bg-amber-100 text-amber-700' },
   }
   return map[status] ?? { label: status, badge: 'bg-gray-100 text-gray-500' }
 }
 
 function podeChat(status) {
   return ['pending', 'pending_company_accept', 'pending_admin_approval', 'accepted'].includes(status)
+}
+
+// ── Prazo de desistência (3h após confirmação) ──────────────────────────────────
+const agora = ref(new Date())
+let relogio = null
+onMounted(() => { relogio = setInterval(() => { agora.value = new Date() }, 1000) })
+onUnmounted(() => { if (relogio) clearInterval(relogio) })
+
+function prazoDesistencia(p) {
+  if (!p.accepted_at) return null
+  return new Date(new Date(p.accepted_at).getTime() + props.janelaDesistenciaHoras * 60 * 60 * 1000)
+}
+
+function podeDesistir(p) {
+  if (p.status !== 'accepted' || !p.accepted_at) return false
+  const prazo = prazoDesistencia(p)
+  return prazo && agora.value < prazo
+}
+
+function tempoRestante(p) {
+  const prazo = prazoDesistencia(p)
+  if (!prazo) return ''
+  const diffMs = prazo.getTime() - agora.value.getTime()
+  if (diffMs <= 0) return '00:00:00'
+  const totalSeg = Math.floor(diffMs / 1000)
+  const h = String(Math.floor(totalSeg / 3600)).padStart(2, '0')
+  const m = String(Math.floor((totalSeg % 3600) / 60)).padStart(2, '0')
+  const s = String(totalSeg % 60).padStart(2, '0')
+  return `${h}:${m}:${s}`
 }
 
 // ── Aceitar / Recusar convite direto ──────────────────────────────────────────
@@ -288,6 +351,19 @@ function cancelar(proposta) {
 function confirmarCancelar() {
   router.delete(route('prestador.propostas.cancelar', confirmCancelar.value.id), {
     onFinish: () => { confirmCancelar.value = null },
+  })
+}
+
+// ── Desistir da demanda (dentro do prazo) ────────────────────────────────────────
+const confirmDesistir = ref(null)
+
+function desistir(proposta) {
+  confirmDesistir.value = proposta
+}
+
+function confirmarDesistir() {
+  router.post(route('prestador.propostas.desistir', confirmDesistir.value.id), {}, {
+    onFinish: () => { confirmDesistir.value = null },
   })
 }
 

@@ -49,6 +49,25 @@ class Provider extends Authenticatable
         return $this->application_blocked_until !== null && $this->application_blocked_until->isFuture();
     }
 
+    /**
+     * Número em E.164 (+55DDDNNNNNNNNN) para envio via WhatsApp, ou null se o telefone
+     * cadastrado não tiver DDD + número válidos.
+     */
+    public function whatsappNumber(): ?string
+    {
+        $digits = preg_replace('/\D/', '', (string) $this->phone);
+
+        if (str_starts_with($digits, '55') && strlen($digits) >= 12) {
+            return '+' . $digits;
+        }
+
+        if (in_array(strlen($digits), [10, 11], true)) {
+            return '+55' . $digits;
+        }
+
+        return null;
+    }
+
     public function documents()
     {
         return $this->hasMany(ProviderDocument::class);

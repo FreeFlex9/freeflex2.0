@@ -4,9 +4,11 @@ namespace App\Http\Controllers\Provider;
 
 use App\Http\Controllers\Controller;
 use App\Models\Proposal;
+use App\Models\Schedule;
 use App\Services\ChatService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class PropostasController extends Controller
 {
@@ -26,8 +28,9 @@ class PropostasController extends Controller
             ->get();
 
         return inertia('Prestador/MinhasPropostas', [
-            'proposals' => $proposals,
-            'filters'   => $request->only(['status']),
+            'proposals'              => $proposals,
+            'filters'                => $request->only(['status']),
+            'janelaDesistenciaHoras' => (int) config('faltas.janela_desistencia_horas'),
         ]);
     }
 
@@ -68,6 +71,36 @@ class PropostasController extends Controller
 
         $proposal->update(['status' => 'rejected_provider']);
         return back()->with('success', 'Proposta cancelada.');
+    }
+
+    public function desistir(Proposal $proposal)
+    {
+        $provider = Auth::guard('provider')->user();
+
+        abort_if($proposal->provider_id !== $provider->id, 403);
+        abort_if($proposal->status !== 'accepted', 422, 'Esta proposta não está confirmada.');
+        abort_if(!$proposal->podeDesistir(), 422, 'O prazo de ' . config('faltas.janela_desistencia_horas') . ' horas para desistir desta demanda já expirou.');
+
+        DB::transaction(function () use ($proposal) {
+            $proposal->update(['status' => 'withdrawn_by_provider', 'withdrawn_at' => now()]);
+
+            Schedule::where('demand_id', $proposal->demand_id)
+                ->where('provider_id', $proposal->provider_id)
+                ->where('status', 'scheduled')
+                ->update([
+                    'status'           => 'cancelled',
+                    'cancelled_at'     => now(),
+                    'cancelled_reason' => 'Desistência do prestador dentro do prazo de ' . config('faltas.janela_desistencia_horas') . 'h.',
+                ]);
+
+            $demanda = $proposal->demand;
+            $demanda->decrement('slots_confirmed');
+            if ($demanda->status === 'scheduled') {
+                $demanda->update(['status' => 'open']);
+            }
+        });
+
+        return back()->with('success', 'Você desistiu da demanda dentro do prazo permitido. Nenhuma penalidade foi aplicada.');
     }
 
     public function destroy(Proposal $proposal)

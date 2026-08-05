@@ -9,4 +9,7 @@ return [
 
     // Duração do bloqueio de candidatura aplicado quando a falta não é justificada
     'duracao_bloqueio_dias' => env('FALTAS_DURACAO_BLOQUEIO_DIAS', 7),
+
+    // Prazo que o prestador tem, após a confirmação da candidatura, para desistir da demanda sem penalidade
+    'janela_desistencia_horas' => env('FALTAS_JANELA_DESISTENCIA_HORAS', 3),
 ];

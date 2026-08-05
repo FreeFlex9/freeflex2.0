@@ -50,6 +50,7 @@ Route::middleware(['auth:sanctum', 'api.provider'])->prefix('prestador')->group(
     Route::post('/propostas/{proposal}/aceitar', [PrestadorPropostasController::class, 'aceitar']);
     Route::post('/propostas/{proposal}/recusar', [PrestadorPropostasController::class, 'recusar']);
     Route::delete('/propostas/{proposal}/cancelar', [PrestadorPropostasController::class, 'cancelar']);
+    Route::post('/propostas/{proposal}/desistir', [PrestadorPropostasController::class, 'desistir']);
 
     Route::get('/agenda', [PrestadorAgendaController::class, 'index']);
 
