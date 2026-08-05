@@ -67,6 +67,8 @@
                 class="text-xs px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full">Exige CNH</span>
               <span v-if="d.has_meal"
                 class="text-xs px-2 py-0.5 bg-green-100 text-green-700 rounded-full">Alimentação no local</span>
+              <span v-if="d.dress_code"
+                class="text-xs px-2 py-0.5 bg-gray-100 text-gray-600 rounded-full">{{ dressCodeLabel(d.dress_code, d.dress_code_other) }}</span>
             </div>
 
             <p class="text-sm text-gray-500 mt-1">{{ d.company?.trade_name }}</p>
@@ -221,5 +223,9 @@ function calcValor(rate, ini, fim) {
 
 function periodoLabel(period) {
   return { manha: 'Manhã', tarde: 'Tarde', noite: 'Noite' }[period] ?? period
+}
+function dressCodeLabel(dressCode, other) {
+  if (dressCode === 'outro') return other || 'Outro'
+  return { uniforme: 'Uniforme', social: 'Social', casual: 'Casual', esportiva: 'Esportiva', epi: 'EPI' }[dressCode] ?? dressCode
 }
 </script>

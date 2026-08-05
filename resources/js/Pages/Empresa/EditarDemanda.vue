@@ -161,6 +161,24 @@
             <p v-if="form.errors.has_meal" class="text-xs text-red-500">{{ form.errors.has_meal }}</p>
           </div>
 
+          <!-- CRITÉRIO DE VESTIMENTA -->
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-medium text-gray-500">Critério de vestimenta</label>
+            <select v-model="form.dress_code"
+              class="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white"
+              :class="form.errors.dress_code ? 'border-red-400' : 'border-gray-300'">
+              <option value="">Não especificado</option>
+              <option v-for="d in dressCodes" :key="d.value" :value="d.value">{{ d.label }}</option>
+            </select>
+            <p v-if="form.errors.dress_code" class="text-xs text-red-500">{{ form.errors.dress_code }}</p>
+
+            <input v-if="form.dress_code === 'outro'" v-model="form.dress_code_other" type="text"
+              placeholder="Descreva o critério de vestimenta"
+              class="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 mt-1"
+              :class="form.errors.dress_code_other ? 'border-red-400' : 'border-gray-300'" />
+            <p v-if="form.errors.dress_code_other" class="text-xs text-red-500">{{ form.errors.dress_code_other }}</p>
+          </div>
+
           <!-- Botões -->
           <div class="flex gap-3 pt-2">
             <Link :href="route('empresa.demandas.show', demand.id)"
@@ -203,6 +221,8 @@ const form = useForm({
   state:        props.demand.state        ?? '',
   description:  props.demand.description  ?? '',
   has_meal:     props.demand.has_meal     ?? false,
+  dress_code:       props.demand.dress_code       ?? '',
+  dress_code_other: props.demand.dress_code_other ?? '',
 })
 
 const duracaoHoras = computed(() => {
@@ -241,5 +261,14 @@ const periodos = [
   { value: 'manha', label: 'Manhã' },
   { value: 'tarde', label: 'Tarde' },
   { value: 'noite', label: 'Noite' },
+]
+
+const dressCodes = [
+  { value: 'uniforme',  label: 'Uniforme' },
+  { value: 'social',    label: 'Social' },
+  { value: 'casual',    label: 'Casual' },
+  { value: 'esportiva', label: 'Esportiva' },
+  { value: 'epi',       label: 'EPI (Equipamento de Proteção Individual)' },
+  { value: 'outro',     label: 'Outro' },
 ]
 </script>

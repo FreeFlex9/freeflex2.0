@@ -8,6 +8,7 @@ class Demand extends Model
 {
     protected $fillable = [
         'company_id', 'service_id', 'title', 'description', 'has_meal',
+        'dress_code', 'dress_code_other',
         'date', 'start_time', 'end_time', 'period', 'slots_needed', 'slots_confirmed',
         'zip_code', 'street', 'number', 'complement', 'neighborhood', 'city', 'state',
         'latitude', 'longitude', 'total_value', 'status',
